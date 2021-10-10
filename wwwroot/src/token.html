@@ -1,0 +1,55 @@
+<div class="mb-5">
+    <h3>Refresh</h3>
+    <p>Refresh accessToken</p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Method</th>
+                <th scope="col">Endpoint path</th>
+                <th scope="col">Body</th>
+                <th scope="col">Return</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" id="register">1</th>
+                <td>POST</td>
+                <td>/api/Auth/register</td>
+                <td>
+                    <pre><code>{ 
+    &quot;username&quot;: &quot;string&quot;, 
+    &quot;password&quot;: &quot;string&quot;, 
+    &quot;fullname&quot;:&quot;string&quot; 
+}</code></pre>
+                </td>
+                <td></td>
+                <td>201 400 409</td>
+            </tr>
+            <tr>
+                <th scope="row" id="login">2</th>
+                <td>POST</td>
+                <td>/api/Auth/login</td>
+                <td>
+                    <pre><code>{
+    &quot;username&quot;: &quot;string&quot;,
+    &quot;password&quot;: &quot;string&quot; 
+}</code></pre>
+                </td>
+                <td>
+                    <pre><code>{
+    &quot;userId&quot;: 0,
+    &quot;username&quot;: &quot;string&quot;,
+    &quot;fullname&quot;: &quot;string&quot;,
+    &quot;avatarURL&quot;: &quot;string&quot;,
+    &quot;roles&quot;: [ &quot;string&quot; ],
+    &quot;accessToken&quot;: &quot;string&quot;
+}</code></pre>
+                </td>
+                <td>200 400 404</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
