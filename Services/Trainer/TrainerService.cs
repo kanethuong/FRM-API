@@ -98,14 +98,14 @@ namespace kroniiapi.Services
             {
                 return -1;
             }
-            existedTrainer.Email = trainer.Email;
-            if(_dataContext.Trainer.Any(t =>
-                t.TrainerID != trainer.ID &&
-                t.Email == trainer.Email
-            ))
-            {
-                return 0;
-            }
+            // existedTrainer.Email = trainer.Email;
+            // if(_dataContext.Trainer.Any(t =>
+            //     t.TrainerID != trainer.ID &&
+            //     t.Email == trainer.Email
+            // ))
+            // {
+            //     return 0;
+            // }
             existedTrainer.FullName = trainer.FullName;
             existedTrainer.Phone = trainer.Phone;
             existedTrainer.DOB = trainer.DOB;
@@ -129,7 +129,7 @@ namespace kroniiapi.Services
             {
                 return -1;
             }
-            existedTrainer.isDeactivated = "true";
+            existedTrainer.IsDeactivated = "true";
             var rowDeleted = await _dataContext.SaveChangesAsync();
 
             return rowDeleted;
