@@ -31,9 +31,15 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of account with pagination / 404: search username not found</returns>
         [HttpGet("page")]
-        public async Task<ActionResult> GetAccountList([FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<AccountResponse>>>> GetAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecord,IEnumerable<AccountResponse> listAccount) = await _accountService.GetAccountList(paginationParameter);
+
+            if(totalRecord==0){
+                return NotFound(new ResponseDTO(404,"Search username not found"));
+            }
+
+            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord,listAccount));
         }
 
         /// <summary>
