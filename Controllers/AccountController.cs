@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DTO;
 using kroniiapi.DTO.AccountDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
@@ -77,7 +78,12 @@ namespace kroniiapi.Controllers
         [HttpGet("deleted")]
         public async Task<ActionResult> GetDeactivatedAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecord, IEnumerable<AccountResponse> deletedAccount) = await _accountService.GetDeactivatedAccountList(paginationParameter);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404));
+            }
+            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord,deletedAccount));
         }
 
         /// <summary>
