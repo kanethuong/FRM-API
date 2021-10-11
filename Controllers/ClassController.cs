@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DB.Models;
+using kroniiapi.DTO;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
@@ -64,7 +66,12 @@ namespace kroniiapi.Controllers
         [HttpGet("deleted")]
         public async Task<ActionResult> GetDeactivatedClass([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecord, IEnumerable<Class> deletedClass) = await _classService.GetDeletedClassList(paginationParameter);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404,"List empty"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<Class>>(totalRecord,deletedClass));
         }
     }
 }
