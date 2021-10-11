@@ -44,7 +44,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request")]
         public async Task<ActionResult> GetDeleteClassRequestList([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecords, IEnumerable<DeleteClassRequest> deleteClassRequests) = await _classService.GetRequestDeleteClassList(paginationParameter);
+            if (totalRecords == 0)
+            {
+                return NotFound (new ResponseDTO(404,"Class name not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<DeleteClassRequest>>(totalRecords,deleteClassRequests));
         }
 
         /// <summary>
