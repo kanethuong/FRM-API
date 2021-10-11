@@ -75,7 +75,7 @@ namespace kroniiapi.Services
             {
                 return -1;
             }
-            existedAdmin.Username = admin.Username;
+            existedAdmin.Fullname = admin.Fullname;
             existedAdmin.AvatarURL = admin.AvatarURL;
             existedAdmin.Phone = admin.Phone;
             existedAdmin.DOB = admin.DOB;
