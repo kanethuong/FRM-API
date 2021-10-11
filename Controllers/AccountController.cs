@@ -100,7 +100,23 @@ namespace kroniiapi.Controllers
         [HttpPost("forgot")]
         public async Task<ActionResult> ForgotPassword([FromBody] EmailInput emailInput)
         {
+            //check email exist
+
+            //generate password
+
+            //send email
             return Ok();
         }
+        // Delete before commit
+        // [HttpPost("test")]
+        // public async Task<ActionResult> Test([FromBody] AccountInput accountInput)
+        // {
+        //     //check email exist
+
+        //     //generate password
+        //     await _accountService.InsertNewAccount(accountInput);
+        //     //send email
+        //     return Ok();
+        // }
     }
 }
