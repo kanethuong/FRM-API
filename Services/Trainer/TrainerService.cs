@@ -20,7 +20,7 @@ namespace kroniiapi.Services
         /// Get Trainer method by id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns>Trainer data</returns>
+        /// <returns>null:fail / Trainer data</returns>
         public async Task<Trainer> GetTrainerById(int id)
         {
             return await _dataContext.Trainers.Where(t => t.TrainerId == id &&
