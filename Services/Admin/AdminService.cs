@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
@@ -18,22 +19,32 @@ namespace kroniiapi.Services
 
         public async Task<Admin> GetAdminById(int id)
         {
-            return null;
+            return await _dataContext.Admins.Where(a => a.AdminId == id && a.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         public async Task<Admin> GetAdminByUsername(string username)
         {
-            return null;
+            return await _dataContext.Admins.Where(a => a.Username.Equals(username) && a.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         public async Task<Admin> GetAdminByEmail(string email)
         {
-            return null;
+            return await _dataContext.Admins.Where(a => a.Email.Equals(email) && a.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         public async Task<int> InsertNewAdmin(Admin admin)
         {
-            return 0;
+            if (_dataContext.Admins.Any(a =>
+                a.Username.Equals(admin.Username) ||
+                a.Email.Equals(admin.Email)
+            ))
+            {
+                return -1;
+            }
+            int rowInserted = 0;
+            _dataContext.Admins.Add(admin);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
         }
 
         public async Task<int> UpdateAdmin(int id, Admin admin)
