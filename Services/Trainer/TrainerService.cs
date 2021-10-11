@@ -20,15 +20,11 @@ namespace kroniiapi.Services
         /// Get Trainer method by id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns>null:fail / Trainer data</returns>
+        /// <returns>Trainer data</returns>
         public async Task<Trainer> GetTrainerById(int id)
         {
-            var result = await _dataContext.Trainers.Where(t => t.TrainerId == id).FirstOrDefaultAsync();
-            if(result.IsDeactivated == true)
-            {
-                return null;
-            }
-            return result;
+            return await _dataContext.Trainers.Where(t => t.TrainerId == id &&
+            t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -38,12 +34,8 @@ namespace kroniiapi.Services
         /// <returns>Trainer data</returns>
         public async Task<Trainer> GetTrainerByUsername(string username)
         {
-            var result =  await _dataContext.Trainers.Where(t => t.Username == username).FirstOrDefaultAsync();
-            if(result.IsDeactivated == true)
-            {
-                return null;
-            }
-            return result;
+            return await _dataContext.Trainers.Where(t => t.Username == username &&
+            t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -53,12 +45,8 @@ namespace kroniiapi.Services
         /// <returns>Trainer data</returns>
         public async Task<Trainer> GetTrainerByEmail(string email)
         {
-            var result = await _dataContext.Trainers.Where(t => t.Email == email).FirstOrDefaultAsync();
-            if(result.IsDeactivated == true)
-            {
-                return null;
-            }
-            return result;
+            return await _dataContext.Trainers.Where(t => t.Email == email &&
+            t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
