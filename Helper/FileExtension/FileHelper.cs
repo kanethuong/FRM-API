@@ -6,7 +6,7 @@ using OfficeOpenXml;
 
 namespace kroniiapi.Helper
 {
-    public class FileHepler
+    public static class FileHelper
     {
         /// <summary>
         /// Check a file is has .xlsx extension or not
@@ -80,7 +80,7 @@ namespace kroniiapi.Helper
                 {
                     // Add the cells from the row to the dictionary
                     for (int col = 1; col <= colCount; col++) {
-                        cellsDict.TryAdd(colNames[col], worksheet.Cells[row, col].Value);
+                        cellsDict.TryAdd(colNames[col - 1], worksheet.Cells[row, col].Value);
                     }
 
                     // Convert the dictionary and add to the final list
