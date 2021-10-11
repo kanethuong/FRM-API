@@ -21,45 +21,33 @@ namespace kroniiapi.Services
         /// Get trainee method by id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns>null:fail / Trainee data</returns>
+        /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeById(int id)
         {
-            var result = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
-            if(result.IsDeactivated == true)
-            {
-                return null;
-            }
-            return result;
+            return await _dataContext.Trainees.Where(t => t.TraineeId == id && 
+            t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
         /// Get trainee method by username
         /// </summary>
         /// <param name="username"></param>
-        /// <returns>null:fail / Trainee data</returns>
+        /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeByUsername(string username)
         {
-            var result =  await _dataContext.Trainees.Where(t => t.Username == username).FirstOrDefaultAsync();
-            if(result.IsDeactivated == true)
-            {
-                return null;
-            }
-            return result;
+            return await _dataContext.Trainees.Where(t => t.Username == username && 
+            t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
         /// Get trainee method by email
         /// </summary>
         /// <param name="email"></param>
-        /// <returns>null:fail / Trainee data</returns>
+        /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeByEmail(string email)
         {
-            var result = await _dataContext.Trainees.Where(t => t.Email == email).FirstOrDefaultAsync();
-            if(result.IsDeactivated == true)
-            {
-                return null;
-            }
-            return result;
+            return await _dataContext.Trainees.Where(t => t.Email == email && 
+            t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
 
