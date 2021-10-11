@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
@@ -20,13 +21,13 @@ namespace kroniiapi.Services
         /// Get trainee method by id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns>0:fail / Trainee data</returns>
+        /// <returns>null:fail / Trainee data</returns>
         public async Task<Trainee> GetTraineeById(int id)
         {
-            result = await _dataContext.Trainee.Where(t => t.TraineeID == id).FirstOrDefaultAsync();
-            if(result.IsDeactivated == "true"))
+            var result = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
+            if(result.IsDeactivated == true)
             {
-                return 0;
+                return null;
             }
             return result;
         }
@@ -35,13 +36,13 @@ namespace kroniiapi.Services
         /// Get trainee method by username
         /// </summary>
         /// <param name="username"></param>
-        /// <returns>0:fail / Trainee data</returns>
+        /// <returns>null:fail / Trainee data</returns>
         public async Task<Trainee> GetTraineeByUsername(string username)
         {
-            result =  await _dataContext.Trainee.Where(t => t.Username == username).FirstOrDefaultAsync();
-            if(result.IsDeactivated == "true"))
+            var result =  await _dataContext.Trainees.Where(t => t.Username == username).FirstOrDefaultAsync();
+            if(result.IsDeactivated == true)
             {
-                return 0;
+                return null;
             }
             return result;
         }
@@ -50,13 +51,13 @@ namespace kroniiapi.Services
         /// Get trainee method by email
         /// </summary>
         /// <param name="email"></param>
-        /// <returns>0:fail / Trainee data</returns>
+        /// <returns>null:fail / Trainee data</returns>
         public async Task<Trainee> GetTraineeByEmail(string email)
         {
-            result await _dataContext.Trainee.Where(t => t.Email == email).FirstOrDefaultAsync();
-            if(result.IsDeactivated == "true")
+            var result = await _dataContext.Trainees.Where(t => t.Email == email).FirstOrDefaultAsync();
+            if(result.IsDeactivated == true)
             {
-                return 0;
+                return null;
             }
             return result;
         }
@@ -69,8 +70,8 @@ namespace kroniiapi.Services
         /// <returns>-1:existed / 0:fail / 1:success</returns>
         public async Task<int> InsertNewTrainee(Trainee trainee)
         {
-            if(_dataContext.Trainee.Any(t => 
-                t.TraineeID == trainee.TraineeID &&
+            if(_dataContext.Trainees.Any(t => 
+                t.TraineeId == trainee.TraineeId &&
                 t.Username == trainee.Username &&
                 t.Email == trainee.Email
             ))
@@ -79,7 +80,7 @@ namespace kroniiapi.Services
             }
             int rowInserted = 0;
 
-            _dataContext.Trainee.Add(trainee);
+            _dataContext.Trainees.Add(trainee);
             rowInserted = await _dataContext.SaveChangesAsync();
 
             return rowInserted;
@@ -93,12 +94,12 @@ namespace kroniiapi.Services
         /// <returns>-1:not existed / 0:fail / 1:success</returns>
         public async Task<int> UpdateTrainee(int id, Trainee trainee)
         {
-            var existedTrainee = await _dataContext.Trainee.Where(t => t.TraineeID == id).FirstOrDefaultAsync();
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
             if(existedTrainee == null)
             {
                 return -1;
             }
-            existedTrainee.FullName = trainee.FullName;
+            existedTrainee.Fullname = trainee.Fullname;
             existedTrainee.Phone = trainee.Phone;
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
@@ -116,12 +117,12 @@ namespace kroniiapi.Services
         /// <returns>-1:not existed / 0:fail / 1:success</returns>
         public async Task<int> DeleteTrainee(int id)
         {
-            var existedTrainee = await _dataContext.Trainee.Where(t => t.TraineeID == id).FirstOrDefaultAsync();
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
             if(existedTrainee == null)
             {
                 return -1;
             }
-            existedTrainee.IsDeactivated = "true";
+            existedTrainee.IsDeactivated = true;
             var rowDeleted = await _dataContext.SaveChangesAsync();
 
             return rowDeleted;
