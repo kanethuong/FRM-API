@@ -101,6 +101,9 @@ namespace kroniiapi
             // Add IJwtGenerator to use in all project
             services.AddSingleton<IJwtGenerator>(new JwtGenerator(Configuration["Jwt:Key"]));
 
+            // Add Refresh Token Service 
+            services.AddSingleton<IRefreshToken, RefreshToken>();
+
             // Access restrict with IAuthorizationHandler
             services.AddSingleton<IAuthorizationHandler, AccessHandler>();
 
