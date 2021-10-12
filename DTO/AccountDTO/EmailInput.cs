@@ -9,6 +9,7 @@ namespace kroniiapi.DTO.AccountDTO
     public class EmailInput
     {
         [Required]
+        [EmailAddress] //need confirm
         public string Email { get; set; }
     }
 }
