@@ -219,6 +219,7 @@ namespace kroniiapi.Helper
                     if (failToAdd)
                     {
                         message = "Fail to convert value on row " + row;
+                        success = false;
                         break;
                     }
 
