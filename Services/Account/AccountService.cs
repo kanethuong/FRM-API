@@ -7,6 +7,7 @@ using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.AccountDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 
 namespace kroniiapi.Services
 {
@@ -21,8 +22,8 @@ namespace kroniiapi.Services
         private IMapper _mapper;
 
         public AccountService(DataContext dataContext, IMapper mapper, IAdminService adminService
-        ,IAdministratorService administratorService, ICompanyService companyService, ITraineeService traineeService
-        ,ITrainerService trainerService)
+        , IAdministratorService administratorService, ICompanyService companyService, ITraineeService traineeService
+        , ITrainerService trainerService)
         {
             _dataContext = dataContext;
             _adminService = adminService;
@@ -33,9 +34,68 @@ namespace kroniiapi.Services
             _mapper = mapper;
         }
 
+        private async Task<string> getRoleName(int id)
+        {
+            Role role = await _dataContext.Roles.FindAsync(id);
+            return role.RoleName;
+        }
+
+        /// <summary>
+        /// get all account in 5 role
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
-            return null;
+            List<AccountResponse> totalAccount = new List<AccountResponse>();
+            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList();
+            IEnumerable<Admin> admins = _dataContext.Admins.ToList();
+            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList();
+            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList();
+            IEnumerable<Company> companies = _dataContext.Companies.ToList();
+
+            foreach (var item in administrators)
+            {
+                var itemToResponse = _mapper.Map<AccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                itemToResponse.AccountId = item.AdministratorId;
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in admins)
+            {
+                var itemToResponse = _mapper.Map<AccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                itemToResponse.AccountId = item.AdminId;
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in trainers)
+            {
+                var itemToResponse = _mapper.Map<AccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                itemToResponse.AccountId = item.TrainerId;
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in trainees)
+            {
+                var itemToResponse = _mapper.Map<AccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                itemToResponse.AccountId = item.TraineeId;
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in companies)
+            {
+                var itemToResponse = _mapper.Map<AccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                itemToResponse.AccountId = item.CompanyId;
+                totalAccount.Add(itemToResponse);
+            }
+
+            return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
         }
 
         /// <summary>
@@ -47,49 +107,48 @@ namespace kroniiapi.Services
         {
             AccountResponse accountToReponse;
 
-            async Task<string> getRoleName(int id)
-            {
-                Role role = await _dataContext.Roles.FindAsync(id);
-                return role.RoleName;
-            } 
-
             Administrator administrator = await _administratorService.GetAdministratorByUsername(username);
-            if(administrator != null)
-            {                 
+            if (administrator != null)
+            {
                 accountToReponse = _mapper.Map<AccountResponse>(administrator);
                 accountToReponse.Role = await getRoleName(administrator.RoleId);
+                accountToReponse.AccountId = administrator.AdministratorId;
                 return accountToReponse;
             }
 
             Company company = await _companyService.GetCompanyByUsername(username);
-            if(company != null)
+            if (company != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(company);
                 accountToReponse.Role = await getRoleName(company.RoleId);
+                accountToReponse.AccountId = company.CompanyId;
                 return accountToReponse;
             }
 
             Trainer trainer = await _trainerService.GetTrainerByUsername(username);
-            if(trainer != null)
+            if (trainer != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(trainer);
                 accountToReponse.Role = await getRoleName(trainer.RoleId);
+                accountToReponse.AccountId = trainer.TrainerId;
                 return accountToReponse;
             }
 
             Trainee trainee = await _traineeService.GetTraineeByUsername(username);
-            if(trainee != null)
+            if (trainee != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(trainee);
                 accountToReponse.Role = await getRoleName(trainee.RoleId);
+                accountToReponse.AccountId = trainee.TraineeId;
                 return accountToReponse;
             }
-            
+
             Admin admin = await _adminService.GetAdminByUsername(username);
-            if(admin != null)
+            if (admin != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(admin);
                 accountToReponse.Role = await getRoleName(admin.RoleId);
+                accountToReponse.AccountId = admin.AdminId;
                 return accountToReponse;
             }
             return null;
@@ -109,49 +168,54 @@ namespace kroniiapi.Services
             {
                 Role role = await _dataContext.Roles.FindAsync(id);
                 return role.RoleName;
-            } 
+            }
 
             Administrator administrator = await _administratorService.GetAdministratorByEmail(email);
-            if(administrator != null)
-            {                 
+            if (administrator != null)
+            {
                 accountToReponse = _mapper.Map<AccountResponse>(administrator);
                 accountToReponse.Role = await getRoleName(administrator.RoleId);
+                accountToReponse.AccountId = administrator.AdministratorId;
                 password = administrator.Password;
                 return Tuple.Create(accountToReponse, password);
             }
 
             Company company = await _companyService.GetCompanyByEmail(email);
-            if(company != null)
+            if (company != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(company);
                 accountToReponse.Role = await getRoleName(company.RoleId);
+                accountToReponse.AccountId = company.CompanyId;
                 password = company.Password;
                 return Tuple.Create(accountToReponse, password);
             }
 
             Trainer trainer = await _trainerService.GetTrainerByEmail(email);
-            if(trainer != null)
+            if (trainer != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(trainer);
                 accountToReponse.Role = await getRoleName(trainer.RoleId);
+                accountToReponse.AccountId = trainer.TrainerId;
                 password = trainer.Password;
                 return Tuple.Create(accountToReponse, password);
             }
 
             Trainee trainee = await _traineeService.GetTraineeByEmail(email);
-            if(trainee != null)
+            if (trainee != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(trainee);
                 accountToReponse.Role = await getRoleName(trainee.RoleId);
+                accountToReponse.AccountId = trainee.TraineeId;
                 password = trainee.Password;
                 return Tuple.Create(accountToReponse, password);
             }
-            
+
             Admin admin = await _adminService.GetAdminByEmail(email);
-            if(admin != null)
+            if (admin != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(admin);
                 accountToReponse.Role = await getRoleName(admin.RoleId);
+                accountToReponse.AccountId = admin.AdminId;
                 password = admin.Password;
                 return Tuple.Create(accountToReponse, password);
             }
@@ -172,7 +236,7 @@ namespace kroniiapi.Services
                     return 0;
                 case "admin":
                     return await _adminService.DeleteAdmin(id);
-                case "trainer":    
+                case "trainer":
                     return await _trainerService.DeleteTrainer(id);
                 case "trainee":
                     return await _traineeService.DeleteTrainee(id);
@@ -182,7 +246,7 @@ namespace kroniiapi.Services
                     return 0;
             }
         }
-        
+
         /// <summary>
         /// Insert new account method
         /// </summary>
@@ -212,14 +276,14 @@ namespace kroniiapi.Services
                     rowInserted = await _traineeService.InsertNewTrainee(traineeToAdd);
                     break;
                 case "company":
-                     var companyToAdd = _mapper.Map<Company>(accountInput);
+                    var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
                     rowInserted = await _companyService.InsertNewCompany(companyToAdd);
                     break;
                 default:
                     break;
             }
-            
+
             return rowInserted;
         }
 
