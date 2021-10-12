@@ -95,11 +95,16 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList();
-            IEnumerable<Admin> admins = _dataContext.Admins.ToList();
-            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList();
-            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList();
-            IEnumerable<Company> companies = _dataContext.Companies.ToList();
+            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t
+                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
+                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
+                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t
+                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
+                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
 
@@ -304,11 +309,16 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList();
-            IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t => t.IsDeactivated == true);
-            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t => t.IsDeactivated == true);
-            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t => t.IsDeactivated == true);
-            IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t => t.IsDeactivated == true);
+            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t =>
+                 t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));;
+            IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t =>
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+            IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
 
