@@ -40,19 +40,10 @@ namespace kroniiapi.Services
             return role.RoleName;
         }
 
-        /// <summary>
-        /// get all account in 5 role
-        /// </summary>
-        /// <param name="paginationParameter"></param>
-        /// <returns></returns>
-        public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
+        private async Task<IEnumerable<AccountResponse>> addAccountToTotalList(IEnumerable<Administrator> administrators,
+        IEnumerable<Admin> admins, IEnumerable<Trainer> trainers, IEnumerable<Trainee> trainees, IEnumerable<Company> companies)
         {
             List<AccountResponse> totalAccount = new List<AccountResponse>();
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList();
-            IEnumerable<Admin> admins = _dataContext.Admins.ToList();
-            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList();
-            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList();
-            IEnumerable<Company> companies = _dataContext.Companies.ToList();
 
             foreach (var item in administrators)
             {
@@ -93,6 +84,25 @@ namespace kroniiapi.Services
                 itemToResponse.AccountId = item.CompanyId;
                 totalAccount.Add(itemToResponse);
             }
+
+            return totalAccount;
+        }
+
+        /// <summary>
+        /// get all account in 5 role
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
+        public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
+        {
+            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList();
+            IEnumerable<Admin> admins = _dataContext.Admins.ToList();
+            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList();
+            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList();
+            IEnumerable<Company> companies = _dataContext.Companies.ToList();
+
+            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
+
 
             return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
@@ -287,9 +297,23 @@ namespace kroniiapi.Services
             return rowInserted;
         }
 
+        /// <summary>
+        /// get all account which is deactivated in 5 role
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
-            return null;
+            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList();
+            IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t => t.IsDeactivated == true);
+            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t => t.IsDeactivated == true);
+            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t => t.IsDeactivated == true);
+            IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t => t.IsDeactivated == true);
+
+            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
+
+            return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
         }
 
         public async Task<int> UpdateAccountPassword(string email, string password)
