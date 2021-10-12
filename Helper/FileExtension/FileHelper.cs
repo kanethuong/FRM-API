@@ -26,6 +26,10 @@ namespace kroniiapi.Helper
             {
                 return Tuple.Create(false, "Not support file extension");
             }
+            if (!Path.GetExtension(file.FileName).Equals(".xls", StringComparison.OrdinalIgnoreCase))
+            {
+                return Tuple.Create(false, "Not support file extension");
+            }
 
             // Check MIME type is XLSX
             Stream fs = file.OpenReadStream();
@@ -35,6 +39,110 @@ namespace kroniiapi.Helper
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
             if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            {
+                return Tuple.Create(false, "Not support fake extension");
+            }
+            if (!mimeType.Equals("application/vnd.ms-excel"))
+            {
+                return Tuple.Create(false, "Not support fake extension");
+            }
+
+            return Tuple.Create(true, "");
+        }
+        /// <summary>
+        /// Check a file is has .doc or .docx or not
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns>true / false + error_message</returns>
+        public static Tuple<bool, string> CheckDocExtension(IFormFile file)
+        {
+            // Check file length
+            if (file == null || file.Length <= 0)
+            {
+                return Tuple.Create(false, "No upload file");
+            }
+
+            // Check file extension
+            if ((!Path.GetExtension(file.FileName).Equals(".doc", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".docx", StringComparison.OrdinalIgnoreCase)) )
+            {
+                return Tuple.Create(false, "Not support file extension");
+            }
+
+            Stream fs = file.OpenReadStream();
+            BinaryReader br = new BinaryReader(fs);
+            byte[] bytes = br.ReadBytes((Int32)fs.Length);
+            
+            var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
+
+            // Check MIME type is Docx
+            if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            {
+                return Tuple.Create(false, "Not support fake extension");
+            }
+            // Check MIME type is Doc
+            if (!mimeType.Equals("application/msword"))
+            {
+                return Tuple.Create(false, "Not support fake extension");
+            }
+
+            return Tuple.Create(true, "");
+        }
+        /// <summary>
+        /// Check a file is has .png or .jpeg or .jpg or not
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns>true / false + error_message</returns>
+        public static Tuple<bool, string> CheckImageExtension(IFormFile file)
+        {
+            // Check file length
+            if (file == null || file.Length <= 0)
+            {
+                return Tuple.Create(false, "No upload file");
+            }
+
+            // Check file extension
+            if ((!Path.GetExtension(file.FileName).Equals(".jpeg", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".jpg", StringComparison.OrdinalIgnoreCase)) )
+            {
+                return Tuple.Create(false, "Not support file extension");
+            }
+            Stream fs = file.OpenReadStream();
+            BinaryReader br = new BinaryReader(fs);
+            byte[] bytes = br.ReadBytes((Int32)fs.Length);
+            
+            var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
+
+            if ((!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/png")) )
+            {
+                return Tuple.Create(false, "Not support fake extension");
+            }
+
+            return Tuple.Create(true, "");
+        }
+        /// <summary>
+        /// Check a file is has .pdf not
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static Tuple<bool, string> CheckPDFExtension (IFormFile file)
+        {
+            if (file == null || file.Length <= 0)
+            {
+                return Tuple.Create(false, "No upload file");
+            }
+
+            // Check file extension
+            if (!Path.GetExtension(file.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return Tuple.Create(false, "Not support file extension");
+            }
+
+            Stream fs = file.OpenReadStream();
+            BinaryReader br = new BinaryReader(fs);
+            byte[] bytes = br.ReadBytes((Int32)fs.Length);
+
+            var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
+
+            if (!mimeType.Equals("application/pdf"))
             {
                 return Tuple.Create(false, "Not support fake extension");
             }
