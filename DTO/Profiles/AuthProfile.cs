@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.AuthDTO;
+using kroniiapi.DTO.AccountDTO;
 
 namespace kroniiapi.DTO.Profiles
 {
@@ -12,14 +13,16 @@ namespace kroniiapi.DTO.Profiles
     {
         public AuthProfile()
         {
-            CreateMap<Admin, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Admin, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, a => a.MapFrom(s => s.Role.RoleName));
-            CreateMap<Trainer, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Trainer, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, t => t.MapFrom(s => s.Role.RoleName));
-            CreateMap<Trainee, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Trainee, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, t => t.MapFrom(s => s.Role.RoleName));
-            CreateMap<Company, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Company, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, c => c.MapFrom(s => s.Role.RoleName));
+
+            CreateMap<AccountDTO.AccountResponse, AuthDTO.AccountResponse>();
         }
     }
 }
