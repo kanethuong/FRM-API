@@ -12,7 +12,7 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter);
         Task<AccountResponse> GetAccountByUsername(string username);
         Task<Tuple<AccountResponse, string>> GetAccountByEmail(string email);
-        Task<bool> DeactivateAccount(int id, string role);
+        Task<int> DeactivateAccount(int id, string role);
         Task<int> InsertNewAccount(AccountInput accountInput);
         Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter);
         Task<int> UpdateAccountPassword(string email, string password);
