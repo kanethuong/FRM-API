@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
@@ -18,12 +19,19 @@ namespace kroniiapi.Services
 
         public async Task<Module> GetModuleById(int id)
         {
-            return null;
+            return await _dataContext.Modules.Where(m => m.ModuleId == id).FirstOrDefaultAsync();
         }
 
         public async Task<int> InsertNewModule(Module module)
         {
-            return 0;
+            if (_dataContext.Modules.Any(m => m.ModuleId == module.ModuleId))
+            {
+                return -1;
+            }
+            int rowInserted = 0;
+            _dataContext.Modules.Add(module);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
         }
 
         public async Task<int> UpdateModule(int id, Module module)
