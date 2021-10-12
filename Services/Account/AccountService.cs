@@ -38,8 +38,60 @@ namespace kroniiapi.Services
             return null;
         }
 
+        /// <summary>
+        /// get account  in 5 role by username
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
         public async Task<AccountResponse> GetAccountByUsername(string username)
         {
+            AccountResponse accountToReponse;
+
+            async Task<string> getRoleName(int id)
+            {
+                Role role = await _dataContext.Roles.FindAsync(id);
+                return role.RoleName;
+            } 
+
+            Administrator administrator = await _administratorService.GetAdministratorByUsername(username);
+            if(administrator != null)
+            {                 
+                accountToReponse = _mapper.Map<AccountResponse>(administrator);
+                accountToReponse.Role = await getRoleName(administrator.RoleId);
+                return accountToReponse;
+            }
+
+            Company company = await _companyService.GetCompanyByUsername(username);
+            if(company != null)
+            {
+                accountToReponse = _mapper.Map<AccountResponse>(company);
+                accountToReponse.Role = await getRoleName(company.RoleId);
+                return accountToReponse;
+            }
+
+            Trainer trainer = await _trainerService.GetTrainerByUsername(username);
+            if(trainer != null)
+            {
+                accountToReponse = _mapper.Map<AccountResponse>(trainer);
+                accountToReponse.Role = await getRoleName(trainer.RoleId);
+                return accountToReponse;
+            }
+
+            Trainee trainee = await _traineeService.GetTraineeByUsername(username);
+            if(trainee != null)
+            {
+                accountToReponse = _mapper.Map<AccountResponse>(trainee);
+                accountToReponse.Role = await getRoleName(trainee.RoleId);
+                return accountToReponse;
+            }
+            
+            Admin admin = await _adminService.GetAdminByUsername(username);
+            if(admin != null)
+            {
+                accountToReponse = _mapper.Map<AccountResponse>(admin);
+                accountToReponse.Role = await getRoleName(admin.RoleId);
+                return accountToReponse;
+            }
             return null;
         }
 
@@ -96,7 +148,7 @@ namespace kroniiapi.Services
             }
             
             Admin admin = await _adminService.GetAdminByEmail(email);
-            if(trainer != null)
+            if(admin != null)
             {
                 accountToReponse = _mapper.Map<AccountResponse>(admin);
                 accountToReponse.Role = await getRoleName(admin.RoleId);
@@ -106,9 +158,29 @@ namespace kroniiapi.Services
             return null;
         }
 
-        public async Task<bool> DeactivateAccount(int id, string role)
+        /// <summary>
+        /// Deactivate base on role
+        /// </summary>
+        /// <param name="id">id of user</param>
+        /// <param name="role">role of user</param>
+        /// <returns>-1:existed / 0:fail / 1:success</returns>
+        public async Task<int> DeactivateAccount(int id, string role)
         {
-            return true;
+            switch (role.ToLower())
+            {
+                case "administrator":
+                    return 0;
+                case "admin":
+                    return await _adminService.DeleteAdmin(id);
+                case "trainer":    
+                    return await _trainerService.DeleteTrainer(id);
+                case "trainee":
+                    return await _traineeService.DeleteTrainee(id);
+                case "company":
+                    return await _companyService.DeleteCompany(id);
+                default:
+                    return 0;
+            }
         }
         
         /// <summary>
