@@ -51,9 +51,9 @@ namespace kroniiapi.Controllers
         [HttpDelete("{id:int}/{role}")]
         public async Task<ActionResult> DeactivateAccount(int id, string role)
         {
-            bool result = await _accountService.DeactivateAccount(id, role);
+            int result = await _accountService.DeactivateAccount(id, role);
 
-            if (result == false)
+            if (result == 0)
             {
                 return NotFound(new ResponseDTO(409,"Id not found!"));
             }
