@@ -36,12 +36,20 @@ namespace kroniiapi.Services
 
         public async Task<int> UpdateModule(int id, Module module)
         {
-            return 0;
+            var existedModule = await _dataContext.Modules.Where(m => m.ModuleId == id).FirstOrDefaultAsync();
+            if (existedModule is null)
+            {
+                return -1;
+            }
+            existedModule.ModuleName = module.ModuleName;
+            existedModule.Description = module.Description;
+            existedModule.NoOfSlot = module.NoOfSlot;
+            existedModule.SyllabusURL = module.SyllabusURL;
+            var rowUpdated = 0;
+            rowUpdated = await _dataContext.SaveChangesAsync();
+            return rowUpdated;
         }
 
-        public async Task<int> DeleteModule(int id)
-        {
-            return 0;
-        }
+
     }
 }
