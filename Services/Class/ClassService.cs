@@ -6,6 +6,7 @@ using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.PaginationDTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
@@ -17,30 +18,173 @@ namespace kroniiapi.Services
         {
             _dataContext = dataContext;
         }
-
+        /// <summary>
+        /// Get Class List
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            return null;
-        }
+            var listClass = await _dataContext.Classes
+                                    .Where(c => c.IsDeactivated == false)
+                                    .Select(c => new Class
+                                    {
+                                        ClassId = c.ClassId,
+                                        ClassName = c.ClassName,
+                                        Description = c.Description,
+                                        CreatedAt = c.CreatedAt,
+                                        IsDeactivated = c.IsDeactivated,
+                                        DeactivatedAt = c.DeactivatedAt,
+                                        Trainees = c.Trainees,
+                                        AdminId = c.AdminId,
+                                        Admin = c.Admin,
+                                        TrainerId = c.TrainerId,
+                                        Trainer = c.Trainer,
+                                        RoomId = c.RoomId,
+                                        Room = c.Room,
+                                        Modules = c.Modules,
+                                    }).ToListAsync();
 
+            int totalRecords = listClass.Count();
+
+            var rs = listClass.OrderBy(c => c.ClassId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+
+            return Tuple.Create(totalRecords, rs);
+        }
+        /// <summary>
+        /// Get Class By ClassName
+        /// </summary>
+        /// <param name="className"></param>
+        /// <returns> Class </returns>
         public async Task<Class> GetClassByClassName(string className)
         {
-            return null;
+            var classGet = await (
+                from c in _dataContext.Classes
+                where c.ClassName == className
+                select new Class
+                {
+                    ClassId = c.ClassId,
+                    ClassName = className,
+                    Description = c.Description,
+                    CreatedAt = c.CreatedAt,
+                    IsDeactivated = c.IsDeactivated,
+                    DeactivatedAt = c.DeactivatedAt,
+                    Trainees = c.Trainees,
+                    Room = c.Room,
+                    Modules = c.Modules,
+                    Calendars = c.Calendars,
+                }).FirstOrDefaultAsync();
+            return classGet;
         }
-
-        public async Task<Tuple<int, IEnumerable<Class>>> GetRequestDeletedClassList(PaginationParameter paginationParameter)
+        /// <summary>
+        /// Get Request Deleted Class List
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Tuple List of  Class Delete Request</returns>
+        public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
-            return null;
-        }
+            var listRequest = await _dataContext.DeleteClassRequests
+                                    .Select(c => new DeleteClassRequest
+                                    {
+                                        DeleteClassRequestId = c.DeleteClassRequestId,
+                                        Reason = c.Reason,
+                                        CreatedAt = c.CreatedAt,
+                                        IsAccepted = c.IsAccepted,
+                                        AcceptedAt = c.AcceptedAt,
+                                        Class = new Class
+                                        {
+                                            ClassId = c.ClassId,
+                                            ClassName = c.Class.ClassName,
+                                            Description = c.Class.Description,
+                                            CreatedAt = c.Class.CreatedAt,
+                                        },
+                                        Admin = new Admin
+                                        {
+                                            AdminId = c.AdminId,
+                                            Username = c.Admin.Username,
+                                            Fullname = c.Admin.Fullname,
+                                            AvatarURL = c.Admin.AvatarURL,
+                                            Email = c.Admin.Email,
+                                        }
+                                    }
+                                    ).ToListAsync();
 
-        public async Task<Tuple<int, IEnumerable<Class>>> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
+            int totalRecords = listRequest.Count();
+
+            var rs = listRequest.OrderBy(c => c.ClassId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+
+            return Tuple.Create(totalRecords, rs);
+        }
+        /// <summary>
+        /// Update Deleted Class
+        /// </summary>
+        /// <param name="confirmDeleteClassInput"></param>
+        /// <returns>True if Success to Change & False if false to change</returns>
+        public async Task<bool> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
         {
-            return null;
+            if (confirmDeleteClassInput.IsDeactivate == true)
+            {
+                // get Class in Input
+                var existedClass = await _dataContext.Classes.Where(i => i.ClassId == confirmDeleteClassInput.ClassId).FirstOrDefaultAsync();
+                if (existedClass == null)
+                {
+                    return false;
+                }
+                existedClass.IsDeactivated = true;
+                // get Request in Input
+                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
+                if (existedRequest == null)
+                {
+                    return false;
+                }
+                existedRequest.IsAccepted = true;
+                // Save Change 
+                var rs = await _dataContext.SaveChangesAsync();
+                if (rs == 1)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
-
+        /// <summary>
+        ///  Get Deleted Class List
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            return null;
+            var listClass = await _dataContext.Classes
+                                    .Where(c => c.IsDeactivated == true)
+                                    .Select(c => new Class
+                                    {
+                                        ClassId = c.ClassId,
+                                        ClassName = c.ClassName,
+                                        Description = c.Description,
+                                        CreatedAt = c.CreatedAt,
+                                        IsDeactivated = c.IsDeactivated,
+                                        DeactivatedAt = c.DeactivatedAt,
+                                        Trainees = c.Trainees,
+                                        AdminId = c.AdminId,
+                                        Admin = c.Admin,
+                                        TrainerId = c.TrainerId,
+                                        Trainer = c.Trainer,
+                                        RoomId = c.RoomId,
+                                        Room = c.Room,
+                                        Modules = c.Modules,
+                                    }).ToListAsync();
+
+            int totalRecords = listClass.Count();
+
+            var rs = listClass.OrderBy(c => c.ClassId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+
+            return Tuple.Create(totalRecords, rs);
         }
     }
 }

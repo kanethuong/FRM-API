@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DTO;
 using kroniiapi.DTO.AccountDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
@@ -30,9 +31,15 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of account with pagination / 404: search username not found</returns>
         [HttpGet("page")]
-        public async Task<ActionResult> GetAccountList([FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<AccountResponse>>>> GetAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecord,IEnumerable<AccountResponse> listAccount) = await _accountService.GetAccountList(paginationParameter);
+
+            if(totalRecord==0){
+                return NotFound(new ResponseDTO(404,"Search username not found"));
+            }
+
+            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord,listAccount));
         }
 
         /// <summary>
@@ -44,7 +51,13 @@ namespace kroniiapi.Controllers
         [HttpDelete("{id:int}/{role}")]
         public async Task<ActionResult> DeactivateAccount(int id, string role)
         {
-            return Ok();
+            bool result = await _accountService.DeactivateAccount(id, role);
+
+            if (result == false)
+            {
+                return NotFound(new ResponseDTO(409,"Id not found!"));
+            }
+            return Ok(new ResponseDTO(201,"Created!"));
         }
 
         /// <summary>
@@ -55,7 +68,11 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
-            return Ok();
+            int result = await _accountService.InsertNewAccount(accountInput);
+            if (result != 201) {
+                return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
+            }     
+            return Ok(new ResponseDTO(201,"Created!"));
         }
 
         /// <summary>
@@ -77,7 +94,12 @@ namespace kroniiapi.Controllers
         [HttpGet("deleted")]
         public async Task<ActionResult> GetDeactivatedAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecord, IEnumerable<AccountResponse> deletedAccount) = await _accountService.GetDeactivatedAccountList(paginationParameter);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404));
+            }
+            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord,deletedAccount));
         }
 
         /// <summary>
@@ -88,7 +110,23 @@ namespace kroniiapi.Controllers
         [HttpPost("forgot")]
         public async Task<ActionResult> ForgotPassword([FromBody] EmailInput emailInput)
         {
+            //check email exist
+
+            //generate password
+
+            //send email
             return Ok();
         }
+        // Delete before commit
+        // [HttpPost("test")]
+        // public async Task<ActionResult> Test([FromBody] AccountInput accountInput)
+        // {
+        //     //check email exist
+
+        //     //generate password
+        //     await _accountService.InsertNewAccount(accountInput);
+        //     //send email
+        //     return Ok();
+        // }
     }
 }
