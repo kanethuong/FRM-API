@@ -132,7 +132,7 @@ namespace kroniiapi.Services
                 return false;
             }
 
-            _dataContext.Trainees.Add(trainee);            
+            _dataContext.Trainees.Add(trainee);
 
             return true;
         }

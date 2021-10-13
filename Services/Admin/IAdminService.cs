@@ -12,7 +12,7 @@ namespace kroniiapi.Services
         Task<Admin> GetAdminByUsername(string username);
         Task<Admin> GetAdminByEmail(string email);
         Task<int> InsertNewAdmin(Admin admin);
-        Task<bool> InsertNewAdminNoSaveChange(Admin admin);
+        bool InsertNewAdminNoSaveChange(Admin admin);
         Task<int> UpdateAdmin(int id, Admin admin);
         Task<int> DeleteAdmin(int id);
     }

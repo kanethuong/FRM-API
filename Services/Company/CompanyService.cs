@@ -120,7 +120,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="company">Company data</param>
         /// <returns>true: insert done / false: dupplicate data</returns>
-        public Task<bool> InsertNewCompanyNoSaveChange(Company company)
+        public bool InsertNewCompanyNoSaveChange(Company company)
         {
             throw new NotImplementedException();
         }
