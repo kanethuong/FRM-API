@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace kroniiapi.Migrations
 {
-    public partial class initial : Migration
+    public partial class CreatedAtWageFee : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,6 +44,7 @@ namespace kroniiapi.Migrations
                     ModuleName = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     NoOfSlot = table.Column<int>(type: "integer", nullable: false),
+                    IconURL = table.Column<string>(type: "text", nullable: true),
                     SyllabusURL = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
@@ -118,8 +119,9 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
+                    Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: true),
+                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -149,7 +151,7 @@ namespace kroniiapi.Migrations
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: true),
+                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -179,8 +181,9 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
+                    Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: true),
+                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -415,8 +418,10 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
+                    TuitionFee = table.Column<decimal>(type: "money", nullable: false),
+                    Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: true),
+                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     RoleId = table.Column<int>(type: "integer", nullable: false),
                     ClassId = table.Column<int>(type: "integer", nullable: false)

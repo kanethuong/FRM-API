@@ -12,6 +12,6 @@ namespace kroniiapi.DB.Models
         public int TraineeId { get; set; }
         public Trainee Trainee { get; set; }
         public float Score { get; set; }
-        public DateTime PublishedAt { get; set; }
+        public DateTime PublishedAt { get; set; } = DateTime.Now;
     }
 }

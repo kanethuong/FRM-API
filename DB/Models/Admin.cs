@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,8 +18,10 @@ namespace kroniiapi.DB.Models
         public DateTime DOB { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool? IsDeactivated { get; set; }
+        [Column(TypeName = "money")]
+        public decimal Wage { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsDeactivated { get; set; } = false;
         public DateTime DeactivatedAt { get; set; }
 
         // One-Many role
