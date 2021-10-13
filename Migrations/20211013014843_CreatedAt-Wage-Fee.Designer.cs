@@ -10,8 +10,8 @@ using kroniiapi.DB;
 namespace kroniiapi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20211010093455_initial")]
-    partial class initial
+    [Migration("20211013014843_CreatedAt-Wage-Fee")]
+    partial class CreatedAtWageFee
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -52,7 +52,7 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeactivated")
+                    b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
@@ -66,6 +66,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<string>("Username")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("Wage")
+                        .HasColumnType("money");
 
                     b.HasKey("AdminId");
 
@@ -361,7 +364,7 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeactivated")
+                    b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
@@ -579,6 +582,9 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<string>("IconURL")
+                        .HasColumnType("text");
+
                     b.Property<string>("ModuleName")
                         .HasColumnType("text");
 
@@ -721,7 +727,7 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeactivated")
+                    b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
@@ -733,8 +739,14 @@ namespace kroniiapi.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("TuitionFee")
+                        .HasColumnType("money");
+
                     b.Property<string>("Username")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("Wage")
+                        .HasColumnType("money");
 
                     b.HasKey("TraineeId");
 
@@ -794,7 +806,7 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeactivated")
+                    b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
@@ -808,6 +820,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<string>("Username")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("Wage")
+                        .HasColumnType("money");
 
                     b.HasKey("TrainerId");
 

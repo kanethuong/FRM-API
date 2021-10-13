@@ -10,7 +10,7 @@ namespace kroniiapi.DB.Models
         public int TrainerFeedbackId { get; set; }
         public int Rate { get; set; }
         public string Content { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public int TraineeId { get; set; }
         public Trainee Trainee { get; set; }
         public int TrainerId { get; set; }
