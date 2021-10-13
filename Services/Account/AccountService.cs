@@ -265,9 +265,9 @@ namespace kroniiapi.Services
             }
         }
 
-        private string processPasswordAndSendEmail(string email)
+        async private Task<string> processPasswordAndSendEmail(string email)
         {
-            string password = AutoGeneratorPassword.passwordGenerator(15,5,5,5);
+            string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
@@ -275,7 +275,7 @@ namespace kroniiapi.Services
             emailContent.Subject = "Your Password";
             emailContent.Body = password;
 
-            _emailService.SendEmailAsync(emailContent);
+            await _emailService.SendEmailAsync(emailContent);
 
             password = BCrypt.Net.BCrypt.HashPassword(password);
             return password;
@@ -288,6 +288,16 @@ namespace kroniiapi.Services
         /// <returns>-1:existed / 0:fail / 1:success</returns>
         public async Task<int> InsertNewAccount(AccountInput accountInput)
         {
+            if(await GetAccountByEmail(accountInput.Email) != null )
+            {
+                return -1;
+            }
+
+            if(await GetAccountByUsername(accountInput.Username) != null )
+            {
+                return -1;
+            }
+
             accountInput.Role = accountInput.Role.ToLower();
             int rowInserted = 0;
             switch (accountInput.Role)
@@ -297,25 +307,25 @@ namespace kroniiapi.Services
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
-                    adminToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    adminToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _adminService.InsertNewAdmin(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
-                    trainerToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    trainerToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _trainerService.InsertNewTrainer(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
-                    traineeToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    traineeToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _traineeService.InsertNewTrainee(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
-                    companyToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    companyToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _companyService.InsertNewCompany(companyToAdd);
                     break;
                 default:
@@ -333,7 +343,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
             IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t =>
-                 t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));;
+                 t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper())); ;
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
