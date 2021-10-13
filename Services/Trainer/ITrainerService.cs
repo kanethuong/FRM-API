@@ -12,7 +12,7 @@ namespace kroniiapi.Services
         Task<Trainer> GetTrainerByUsername(string username);
         Task<Trainer> GetTrainerByEmail(string email);
         Task<int> InsertNewTrainer(Trainer trainer);
-        Task<bool> InsertNewTrainerNoSaveChange(Trainer trainer);
+        bool InsertNewTrainerNoSaveChange(Trainer trainer);
         Task<int> UpdateTrainer(int id, Trainer trainer);
         Task<int> DeleteTrainer(int id);
     }
