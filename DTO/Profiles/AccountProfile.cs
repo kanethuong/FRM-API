@@ -18,6 +18,8 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<AccountInput, Company>().ForMember(c => c.Role, act => act.Ignore());
             CreateMap<AccountInput, Administrator>().ForMember(c => c.Role, act => act.Ignore());
 
+            CreateMap<Administrator, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+                .ForMember(ac => ac.Role, a => a.MapFrom(s => s.Role.RoleName));
             CreateMap<Admin, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, a => a.MapFrom(s => s.Role.RoleName));
             CreateMap<Trainer, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
