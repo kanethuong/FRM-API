@@ -22,11 +22,7 @@ namespace kroniiapi.Helper
             }
 
             // Check file extension
-            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
-            {
-                return Tuple.Create(false, "Not support file extension");
-            }
-            else if (!Path.GetExtension(file.FileName).Equals(".xls", StringComparison.OrdinalIgnoreCase))
+            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase) && !Path.GetExtension(file.FileName).Equals(".xls", StringComparison.OrdinalIgnoreCase))
             {
                 return Tuple.Create(false, "Not support file extension");
             }
@@ -38,11 +34,7 @@ namespace kroniiapi.Helper
 
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
-            if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-            {
-                return Tuple.Create(false, "Not support fake extension");
-            }
-            if (!mimeType.Equals("application/vnd.ms-excel"))
+            if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && !mimeType.Equals("application/vnd.ms-excel"))
             {
                 return Tuple.Create(false, "Not support fake extension");
             }

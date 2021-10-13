@@ -31,7 +31,7 @@ namespace kroniiapi.DB.Models
         public Role Role { get; set; }
 
         // One-Many class
-        public int ClassId { get; set; }
+        public int? ClassId { get; set; }
         public Class Class { get; set; }
 
         // Many-Many module by mark

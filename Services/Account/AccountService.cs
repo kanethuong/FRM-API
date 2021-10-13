@@ -43,18 +43,10 @@ namespace kroniiapi.Services
             return role.RoleName;
         }
 
-        private async Task<IEnumerable<AccountResponse>> addAccountToTotalList(IEnumerable<Administrator> administrators,
+        private async Task<IEnumerable<AccountResponse>> addAccountToTotalList(
         IEnumerable<Admin> admins, IEnumerable<Trainer> trainers, IEnumerable<Trainee> trainees, IEnumerable<Company> companies)
         {
             List<AccountResponse> totalAccount = new List<AccountResponse>();
-
-            foreach (var item in administrators)
-            {
-                var itemToResponse = _mapper.Map<AccountResponse>(item);
-                itemToResponse.Role = await getRoleName(item.RoleId);
-                itemToResponse.AccountId = item.AdministratorId;
-                totalAccount.Add(itemToResponse);
-            }
 
             foreach (var item in admins)
             {
@@ -98,8 +90,6 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
                  => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
@@ -109,7 +99,7 @@ namespace kroniiapi.Services
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
                  => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
 
-            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
+            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
 
             return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
@@ -265,9 +255,9 @@ namespace kroniiapi.Services
             }
         }
 
-        private string processPasswordAndSendEmail(string email)
+        async private Task<string> processPasswordAndSendEmail(string email)
         {
-            string password = AutoGeneratorPassword.passwordGenerator(15,5,5,5);
+            string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
@@ -275,7 +265,7 @@ namespace kroniiapi.Services
             emailContent.Subject = "Your Password";
             emailContent.Body = password;
 
-            _emailService.SendEmailAsync(emailContent);
+            await _emailService.SendEmailAsync(emailContent);
 
             password = BCrypt.Net.BCrypt.HashPassword(password);
             return password;
@@ -288,34 +278,58 @@ namespace kroniiapi.Services
         /// <returns>-1:existed / 0:fail / 1:success</returns>
         public async Task<int> InsertNewAccount(AccountInput accountInput)
         {
+            if (await GetAccountByEmail(accountInput.Email) != null)
+            {
+                return -1;
+            }
+
+            if (await GetAccountByUsername(accountInput.Username) != null)
+            {
+                return -1;
+            }
+
             accountInput.Role = accountInput.Role.ToLower();
             int rowInserted = 0;
             switch (accountInput.Role)
             {
                 case "administrator":
+                    var adminstratorToAdd = _mapper.Map<Administrator>(accountInput);
+                    adminstratorToAdd.RoleId = 1;
+
+                    adminstratorToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+
+                    if (_dataContext.Administrators.Any(a =>
+                        a.Username.Equals(adminstratorToAdd.Username) ||
+                        a.Email.Equals(adminstratorToAdd.Email)
+                    ))
+                    {
+                        return -1;
+                    }
+                    _dataContext.Administrators.Add(adminstratorToAdd);
+                    rowInserted = await _dataContext.SaveChangesAsync();
                     break;
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
-                    adminToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    adminToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _adminService.InsertNewAdmin(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
-                    trainerToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    trainerToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _trainerService.InsertNewTrainer(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
-                    traineeToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    traineeToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _traineeService.InsertNewTrainee(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
-                    companyToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    companyToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _companyService.InsertNewCompany(companyToAdd);
                     break;
                 default:
@@ -332,8 +346,6 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t =>
-                 t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));;
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
@@ -343,14 +355,14 @@ namespace kroniiapi.Services
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
 
-            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
+            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
             return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
 
         public async Task<int> UpdateAccountPassword(string email, string password)
-        {
+        {     
             return 0;
         }
     }
