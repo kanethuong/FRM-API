@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DTO;
 using kroniiapi.DTO.AccountDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -69,7 +72,7 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
             int result = await _accountService.InsertNewAccount(accountInput);
-            if (result != 201) {
+            if (result == 0) {
                 return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
             }     
             return Ok(new ResponseDTO(201,"Created!"));
@@ -83,7 +86,64 @@ namespace kroniiapi.Controllers
         [HttpPost("excel")]
         public async Task<ActionResult> CreateNewAccountByExcel([FromForm] IFormFile file)
         {
-            return Ok();
+            bool success;
+            string message;
+
+            // Check the file extension
+            (success, message) = FileHelper.CheckExcelExtension(file);
+            if (!success) {
+                return BadRequest(new ResponseDTO(400, message));
+            }
+
+            // Arrange the checker and the converter
+            Predicate<List<string>> checker = list => list.Contains("username") && list.Contains("fullname") && list.Contains("email") && list.Contains("role");
+            Func<Dictionary<string, object>, AccountInput> converter = dict => new AccountInput() {
+                Username = dict["username"]?.ToString().Trim(),
+                Fullname = dict["fullname"]?.ToString().Trim(),
+                Email = dict["email"]?.ToString().Trim(),
+                Role = dict["role"]?.ToString().Trim()
+            };
+
+            // Try to export data from the file
+            List<AccountInput> list;
+            using (var stream = new MemoryStream()) {
+                await file.CopyToAsync(stream);
+                list = FileHelper.ExportDataFromExcel<AccountInput>(stream, converter, checker, out success, out message);
+            }
+
+            // Return if the attempt is failed
+            if (!success) {
+                return BadRequest(new ResponseDTO(400, message));
+            }
+
+            // Loop through each data
+            for (int i = 0; i < list.Count; i++) {
+                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                AccountInput accountInput = list[i];
+
+                // Validate the account
+                List<ValidationResult> errors;
+                if (!ValidationHelper.Validate(accountInput, out errors)) {
+                    return BadRequest(new ResponseDTO(400, "Failed to validate the account on row " + row) {
+                        Errors = errors
+                    });
+                }
+
+                // Try to insert the account
+                int result = await _accountService.InsertNewAccount(accountInput);
+
+                // Return if failed to insert
+                if (result <= 0) {
+                    if (result < 0) {
+                        return Conflict(new ResponseDTO(409, "The account on row " + row + " existed"));
+                    } else {
+                        return Conflict(new ResponseDTO(409, "Cannot insert the account on row " + row));
+                    }
+                }
+            }
+
+            // All successful
+            return Ok(new ResponseDTO(201,"Created!"));
         }
 
         /// <summary>
