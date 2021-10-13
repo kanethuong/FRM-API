@@ -129,9 +129,21 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="trainer">Trainer data</param>
         /// <returns>true: insert done / false: dupplicate data</returns>
-        public Task<bool> InsertNewTrainerNoSaveChange(Trainer trainer)
+        public bool InsertNewTrainerNoSaveChange(Trainer trainer)
         {
-            throw new NotImplementedException();
+            if (_dataContext.Trainers.Any(t =>
+                 t.TrainerId == trainer.TrainerId &&
+                 t.Username == trainer.Username &&
+                 t.Email == trainer.Email
+            ))
+            {
+                return false;
+            }
+
+            _dataContext.Trainers.Add(trainer);
+
+            return true;
         }
+
     }
 }
