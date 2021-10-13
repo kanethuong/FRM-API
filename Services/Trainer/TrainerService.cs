@@ -56,10 +56,10 @@ namespace kroniiapi.Services
         /// <returns>-1:existed / 0:fail / 1:success</returns>
         public async Task<int> InsertNewTrainer(Trainer trainer)
         {
-            if(_dataContext.Trainers.Any(t => 
-                t.TrainerId == trainer.TrainerId &&
-                t.Username == trainer.Username &&
-                t.Email == trainer.Email
+            if (_dataContext.Trainers.Any(t =>
+                 t.TrainerId == trainer.TrainerId &&
+                 t.Username == trainer.Username &&
+                 t.Email == trainer.Email
             ))
             {
                 return -1;
@@ -70,7 +70,7 @@ namespace kroniiapi.Services
             rowInserted = await _dataContext.SaveChangesAsync();
 
             return rowInserted;
-            
+
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace kroniiapi.Services
         {
 
             var existedTrainer = await _dataContext.Trainers.Where(t => t.TrainerId == id).FirstOrDefaultAsync();
-            if(existedTrainer == null)
+            if (existedTrainer == null)
             {
                 return -1;
             }
@@ -114,7 +114,7 @@ namespace kroniiapi.Services
         public async Task<int> DeleteTrainer(int id)
         {
             var existedTrainer = await _dataContext.Trainers.Where(t => t.TrainerId == id).FirstOrDefaultAsync();
-            if(existedTrainer == null)
+            if (existedTrainer == null)
             {
                 return -1;
             }
@@ -122,6 +122,16 @@ namespace kroniiapi.Services
             var rowDeleted = await _dataContext.SaveChangesAsync();
 
             return rowDeleted;
+        }
+
+        /// <summary>
+        /// Insert new (trainer) account to DbContext without save change to DB
+        /// </summary>
+        /// <param name="trainer">Trainer data</param>
+        /// <returns>true: insert done / false: dupplicate data</returns>
+        public Task<bool> InsertNewTrainerNoSaveChange(Trainer trainer)
+        {
+            throw new NotImplementedException();
         }
     }
 }
