@@ -40,57 +40,57 @@ namespace kroniiapi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] LoginInput loginInput)
         {
-            // Try to get account and password by input email 
-            (var account, string password) = await _accountService.GetAccountByEmail(loginInput.Email);
-
-            if (account == null)
-            {
-                return NotFound(new ResponseDTO(404, "Login fail"));
-            }
-
-            // Verify password with bcrypt
-            bool verified = false;
-
             try
             {
+                // Try to get account and password by input email 
+                (var account, string password) = await _accountService.GetAccountByEmail(loginInput.Email);
+
+                if (account == null)
+                {
+                    return NotFound(new ResponseDTO(404, "Wrong credentials"));
+                }
+
+                // Verify password with bcrypt
+                bool verified = false;
+
                 verified = BCrypt.Net.BCrypt.Verify(loginInput.Password, password);
+
+                if (verified == false)
+                {
+                    return NotFound(new ResponseDTO(404, "Wrong credentials"));
+                }
+
+                // Create claims and roles to set to token
+                var claims = new List<Claim>{
+                    new Claim(ClaimTypes.Email, account.Email)
+                };
+
+                claims.Add(new Claim("role", account.Role));
+
+                // Create access and refresh token
+                string accessToken = _jwtGenerator.GenerateAccessToken(claims);
+
+                string refreshToken = _refreshToken.CreateRefreshToken(account.Email);
+
+                if (accessToken == null || refreshToken == null)
+                {
+                    return NotFound(new ResponseDTO(404, "Token generate fail"));
+                }
+
+                // Add cookie with refresh token
+                Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
+
+                // Add access token to account response
+                var authResponse = _mapper.Map<DTO.AuthDTO.AccountResponse>(account);
+
+                authResponse.AccessToken = accessToken;
+
+                return Ok(authResponse);
             }
             catch
             {
-                return NotFound(new ResponseDTO(404, "login fail"));
+                return NotFound(new ResponseDTO(404, "Wrong credentials"));
             }
-
-            if (verified == false)
-            {
-                return NotFound(new ResponseDTO(404, "Login fail"));
-            }
-
-            // Create claims and roles to set to token
-            var claims = new List<Claim>{
-                new Claim(ClaimTypes.Email, account.Email)
-            };
-
-            claims.Add(new Claim("role", account.Role));
-
-            // Create access and refresh token
-            string accessToken = _jwtGenerator.GenerateAccessToken(claims);
-
-            string refreshToken = _refreshToken.CreateRefreshToken(account.Email);
-
-            if (accessToken == null || refreshToken == null)
-            {
-                return NotFound(new ResponseDTO(404, "Token generate fail"));
-            }
-
-            // Add cookie with refresh token
-            Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
-
-            // Add access token to account response
-            var authResponse = _mapper.Map<DTO.AuthDTO.AccountResponse>(account);
-
-            authResponse.AccessToken = accessToken;
-
-            return Ok(authResponse);
         }
 
         /// <summary>
@@ -99,15 +99,15 @@ namespace kroniiapi.Controllers
         /// <param name="token">Access token</param>
         /// <returns>200: Logout success</returns>
         [HttpPost("logout")]
-        public async Task<ActionResult> Logout([FromBody] Token token)
-        {   
-            if (!Request.Cookies.TryGetValue("X-Refresh-Token",out var refreshToken))
+        public ActionResult Logout()
+        {
+            if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
             {
                 return BadRequest(new ResponseDTO(400, "Invalid token request"));
             }
             var tokenEmail = _refreshToken.GetEmailByToken(refreshToken);
             _refreshToken.RemoveTokenByEmail(tokenEmail);
-            return Ok(new ResponseDTO(200,"Logout Success!"));
+            return Ok(new ResponseDTO(200, "Logout Success!"));
         }
     }
 }
