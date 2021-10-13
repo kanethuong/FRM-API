@@ -12,7 +12,7 @@ namespace kroniiapi.DB.Models
         public string Description { get; set; }
         public DateTime ExamDay { get; set; }
         public int DurationInMinute { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // One-Many module
         public int ModuleId { get; set; }
