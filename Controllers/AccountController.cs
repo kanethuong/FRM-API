@@ -69,7 +69,7 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
             int result = await _accountService.InsertNewAccount(accountInput);
-            if (result != 201) {
+            if (result == 0) {
                 return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
             }     
             return Ok(new ResponseDTO(201,"Created!"));

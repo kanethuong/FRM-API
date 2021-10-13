@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.AccountDTO;
+using kroniiapi.DTO.Email;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 
@@ -19,11 +20,12 @@ namespace kroniiapi.Services
         private ICompanyService _companyService;
         private ITrainerService _trainerService;
         private ITraineeService _traineeService;
+        private IEmailService _emailService;
         private IMapper _mapper;
 
         public AccountService(DataContext dataContext, IMapper mapper, IAdminService adminService
         , IAdministratorService administratorService, ICompanyService companyService, ITraineeService traineeService
-        , ITrainerService trainerService)
+        , ITrainerService trainerService, IEmailService emailService)
         {
             _dataContext = dataContext;
             _adminService = adminService;
@@ -31,6 +33,7 @@ namespace kroniiapi.Services
             _companyService = companyService;
             _traineeService = traineeService;
             _trainerService = trainerService;
+            _emailService = emailService;
             _mapper = mapper;
         }
 
@@ -262,6 +265,22 @@ namespace kroniiapi.Services
             }
         }
 
+        private string processPasswordAndSendEmail(string email)
+        {
+            string password = AutoGeneratorPassword.passwordGenerator(15,5,5,5);
+
+            EmailContent emailContent = new EmailContent();
+            emailContent.IsBodyHtml = true;
+            emailContent.ToEmail = email;
+            emailContent.Subject = "Your Password";
+            emailContent.Body = password;
+
+            _emailService.SendEmailAsync(emailContent);
+
+            password = BCrypt.Net.BCrypt.HashPassword(password);
+            return password;
+        }
+
         /// <summary>
         /// Insert new account method
         /// </summary>
@@ -278,21 +297,25 @@ namespace kroniiapi.Services
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
+                    adminToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _adminService.InsertNewAdmin(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
+                    trainerToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _trainerService.InsertNewTrainer(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
+                    traineeToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _traineeService.InsertNewTrainee(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
+                    companyToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     rowInserted = await _companyService.InsertNewCompany(companyToAdd);
                     break;
                 default:
