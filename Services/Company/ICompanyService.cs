@@ -12,7 +12,7 @@ namespace kroniiapi.Services
         Task<Company> GetCompanyByUsername(string username);
         Task<Company> GetCompanyByEmail(string email);
         Task<int> InsertNewCompany(Company company);
-        Task<bool> InsertNewCompanyNoSaveChange(Company company);
+        bool InsertNewCompanyNoSaveChange(Company company);
         Task<int> UpdateCompany(int id, Company company);
         Task<int> DeleteCompany(int id);
     }
