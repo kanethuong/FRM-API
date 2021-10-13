@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
@@ -8,22 +10,14 @@ namespace kroniiapi.Requirements
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AccessRequirement requirement)
         {
-            var user = context.User;
+            var principal = context.User;
 
-            // Get username to validate
-            var username = context.User.FindFirst("username");
+            // Get email and role from access token
+            var claims = principal.Identities.First().Claims.ToList();
+            var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var role = claims?.FirstOrDefault(c => c.Type.EndsWith("role", StringComparison.CurrentCultureIgnoreCase))?.Value;
 
-            // Check if user claim matching all requirements
-            bool claimCheck = true;
-
-            var claim = context.User.FindFirst(requirement.Role);
-            if (!(claim != null && claim.Value.Equals(requirement.Role, StringComparison.OrdinalIgnoreCase)))
-            {
-                claimCheck = false;
-            }
-
-            // True 
-            if (claimCheck == true)
+            if (!(role != null && role.Equals(requirement.Role, StringComparison.OrdinalIgnoreCase)))
             {
                 context.Succeed(requirement);
             }
