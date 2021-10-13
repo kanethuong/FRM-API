@@ -111,7 +111,15 @@ namespace kroniiapi.Services
         /// <returns>true: insert done / false: dupplicate data</returns>
         public bool InsertNewAdminNoSaveChange(Admin admin)
         {
-            throw new NotImplementedException();
+            if (_dataContext.Admins.Any(a =>
+                a.Username.Equals(admin.Username) ||
+                a.Email.Equals(admin.Email)
+            ))
+            {
+                return false;
+            }
+            _dataContext.Admins.Add(admin);
+            return true;
         }
     }
 }
