@@ -124,7 +124,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="confirmDeleteClassInput"></param>
         /// <returns>True if Success to Change & False if false to change</returns>
-        public async Task<bool> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
+        public async Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             if (confirmDeleteClassInput.IsDeactivate == true)
             {
@@ -132,24 +132,24 @@ namespace kroniiapi.Services
                 var existedClass = await _dataContext.Classes.Where(i => i.ClassId == confirmDeleteClassInput.ClassId).FirstOrDefaultAsync();
                 if (existedClass == null)
                 {
-                    return false;
+                    return -1;
                 }
                 existedClass.IsDeactivated = true;
                 // get Request in Input
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 if (existedRequest == null)
                 {
-                    return false;
+                    return -1;
                 }
                 existedRequest.IsAccepted = true;
                 // Save Change 
                 var rs = await _dataContext.SaveChangesAsync();
                 if (rs == 1)
                 {
-                    return true;
+                    return 1;
                 }
             }
-            return false;
+            return 0;
         }
         /// <summary>
         ///  Get Deleted Class List
