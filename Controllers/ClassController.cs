@@ -33,7 +33,11 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
-            return Ok();
+            (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
+            if(totalRecord == 0){
+                return NotFound(new ResponseDTO(404,"Classes not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<Class>>(totalRecord,classList));
         }
 
         /// <summary>
@@ -60,7 +64,14 @@ namespace kroniiapi.Controllers
         [HttpPost("request")]
         public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
         {
-            return Ok();
+            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
+            if(status == -1){
+                return NotFound (new ResponseDTO(404,"Class or request not found"));
+            }else if(status == 1){
+                return Ok(new ResponseDTO(200,"Update done"));
+            }else{
+                return Ok(new ResponseDTO(409,"Class or request deactivated"));
+            }
         }
 
         /// <summary>

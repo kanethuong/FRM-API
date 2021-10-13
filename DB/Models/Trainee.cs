@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,8 +18,12 @@ namespace kroniiapi.DB.Models
         public DateTime DOB { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool? IsDeactivated { get; set; }
+        [Column(TypeName = "money")]
+        public decimal TuitionFee { get; set; }
+        [Column(TypeName = "money")]
+        public decimal Wage { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsDeactivated { get; set; } = false;
         public DateTime DeactivatedAt { get; set; }
 
         // One-Many role
@@ -26,7 +31,7 @@ namespace kroniiapi.DB.Models
         public Role Role { get; set; }
 
         // One-Many class
-        public int ClassId { get; set; }
+        public int? ClassId { get; set; }
         public Class Class { get; set; }
 
         // Many-Many module by mark

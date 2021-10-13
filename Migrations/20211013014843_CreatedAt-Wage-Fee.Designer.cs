@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using kroniiapi.DB;
@@ -9,9 +10,10 @@ using kroniiapi.DB;
 namespace kroniiapi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20211013014843_CreatedAt-Wage-Fee")]
+    partial class CreatedAtWageFee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -704,7 +706,7 @@ namespace kroniiapi.Migrations
                     b.Property<string>("AvatarURL")
                         .HasColumnType("text");
 
-                    b.Property<int?>("ClassId")
+                    b.Property<int>("ClassId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1152,7 +1154,8 @@ namespace kroniiapi.Migrations
                     b.HasOne("kroniiapi.DB.Models.Class", "Class")
                         .WithMany("Trainees")
                         .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("kroniiapi.DB.Models.Role", "Role")
                         .WithMany("Trainees")

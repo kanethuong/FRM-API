@@ -12,7 +12,7 @@ namespace kroniiapi.DB.Models
         public string Content { get; set; }
         [Column(TypeName = "money")]
         public decimal Amount { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // One-Many cost type
         public int CostTypeId { get; set; }

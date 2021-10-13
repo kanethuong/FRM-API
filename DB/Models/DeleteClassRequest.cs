@@ -9,7 +9,7 @@ namespace kroniiapi.DB.Models
     {
         public int DeleteClassRequestId { get; set; }
         public string Reason { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool? IsAccepted { get; set; }
         public DateTime AcceptedAt { get; set; }
 
