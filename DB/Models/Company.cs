@@ -16,8 +16,8 @@ namespace kroniiapi.DB.Models
         public string Phone { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool? IsDeactivated { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsDeactivated { get; set; } = false;
         public DateTime DeactivatedAt { get; set; }
 
         // One-Many role

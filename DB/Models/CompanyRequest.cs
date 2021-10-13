@@ -9,7 +9,7 @@ namespace kroniiapi.DB.Models
     {
         public int CompanyRequestId { get; set; }
         public string Content { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string ReportURL { get; set; }
         public bool? IsAccepted { get; set; }
         public int CompanyId { get; set; }

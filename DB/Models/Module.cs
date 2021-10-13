@@ -11,8 +11,9 @@ namespace kroniiapi.DB.Models
         public string ModuleName { get; set; }
         public string Description { get; set; }
         public int NoOfSlot { get; set; }
+        public string IconURL { get; set; }
         public string SyllabusURL { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // Many-Many class
         public ICollection<Class> Classes { get; set; }
@@ -39,6 +40,6 @@ namespace kroniiapi.DB.Models
         public Class Class { get; set; }
         public int ModuleId { get; set; }
         public Module Module { get; set; }
-        public DateTime AssignedAt { get; set; }
+        public DateTime AssignedAt { get; set; } = DateTime.Now;
     }
 }
