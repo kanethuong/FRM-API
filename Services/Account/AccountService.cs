@@ -362,8 +362,51 @@ namespace kroniiapi.Services
         }
 
         public async Task<int> UpdateAccountPassword(string email, string password)
-        {     
-            return 0;
+        {
+            Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
+            if(tupleResponse == null || password == null || password == "")
+            {
+                return 0;
+            }
+
+            EmailContent emailContent = new EmailContent();
+            emailContent.IsBodyHtml = true;
+            emailContent.ToEmail = email;
+            emailContent.Subject = "Your New Password";
+            emailContent.Body = password;
+
+            await _emailService.SendEmailAsync(emailContent);
+
+            password = BCrypt.Net.BCrypt.HashPassword(password);
+
+            AccountResponse account = tupleResponse.Item1;
+            int rowInserted = 0;
+            switch (account.Role.ToLower())
+            {
+                case "admin":
+                    var admin = await _adminService.GetAdminByEmail(email);
+                    admin.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                case "trainer":
+                    var trainer = await _trainerService.GetTrainerByEmail(email);
+                    trainer.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                case "trainee":
+                    var trainee = await _traineeService.GetTraineeByEmail(email);
+                    trainee.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                case "company":
+                    var company = await _companyService.GetCompanyByEmail(email);
+                    company.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                default:
+                    return 0;
+            }
+            return rowInserted;
         }
     }
 }
