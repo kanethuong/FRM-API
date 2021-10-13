@@ -10,7 +10,7 @@ namespace kroniiapi.DB.Models
         public int ApplicationId { get; set; }
         public string Description { get; set; }
         public string ApplicationURL { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool? IsAccepted { get; set; }
         public DateTime AcceptedAt { get; set; }
 
