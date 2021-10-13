@@ -364,7 +364,7 @@ namespace kroniiapi.Services
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
-            if(tupleResponse == null || password == null || password == "")
+            if (tupleResponse == null || password == null || password == "")
             {
                 return 0;
             }
