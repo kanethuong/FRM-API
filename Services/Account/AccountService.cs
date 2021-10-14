@@ -335,7 +335,7 @@ namespace kroniiapi.Services
                     break;
             }
 
-            if(insertedStatus)
+            if (insertedStatus)
             {
                 return 1;
             }
@@ -344,22 +344,22 @@ namespace kroniiapi.Services
                 return -1;
             }
         }
-        
         /// <summary>
         /// save change to database
         /// </summary>
         /// <returns>number of row effeted</returns>
         public async Task<int> SaveChange()
-        { 
+        {
             return await _dataContext.SaveChangesAsync();
+            //_dataContext.ChangeTracker.Clear();
         }
 
         /// <summary>
-        /// Discard change to database
+        /// discard all change
         /// </summary>
-        /// <returns>the task</returns>
-        public async Task DiscardChanges() {
-
+        public void DiscardChanges()
+        {
+            _dataContext.ChangeTracker.Clear();
         }
 
         /// <summary>
