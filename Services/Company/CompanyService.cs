@@ -54,7 +54,7 @@ namespace kroniiapi.Services
         /// <returns>-1: existed / 0: fail / 1: done</returns>
         public async Task<int> InsertNewCompany(Company company)
         {
-            if (_dataContext.Companies.Any(c => c.Username == company.Username && c.Email == company.Email))
+            if (_dataContext.Companies.Any(c => c.Username == company.Username || c.Email == company.Email))
             {
                 return -1;
             }
@@ -65,6 +65,23 @@ namespace kroniiapi.Services
             rowInserted = await _dataContext.SaveChangesAsync();
 
             return rowInserted;
+        }
+        
+        /// <summary>
+        /// Insert new (company) account to DbContext without save change to DB
+        /// </summary>
+        /// <param name="company">Company data</param>
+        /// <returns>true: insert done / false: dupplicate data</returns>
+        public bool InsertNewCompanyNoSaveChange(Company company)
+        {
+            if (_dataContext.Companies.Any(c => c.Username == company.Username || c.Email == company.Email))
+            {
+                return false;
+            }
+
+            _dataContext.Companies.Add(company);
+
+            return true;
         }
 
         /// <summary>
@@ -113,16 +130,6 @@ namespace kroniiapi.Services
             int rowDeleted = 0;
             rowDeleted = await _dataContext.SaveChangesAsync();
             return rowDeleted;
-        }
-
-        /// <summary>
-        /// Insert new (company) account to DbContext without save change to DB
-        /// </summary>
-        /// <param name="company">Company data</param>
-        /// <returns>true: insert done / false: dupplicate data</returns>
-        public bool InsertNewCompanyNoSaveChange(Company company)
-        {
-            throw new NotImplementedException();
         }
     }
 }

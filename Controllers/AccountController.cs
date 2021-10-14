@@ -140,18 +140,16 @@ namespace kroniiapi.Controllers
                 // Try to insert the account
                 int result = await _accountService.InsertNewAccount(accountInput);
 
-                // Return if failed to insert
-                if (result <= 0) {
-                    if (result < 0) {
-                        return Conflict(new ResponseDTO(409, "The account on row " + row + " existed"));
-                    } else {
-                        return Conflict(new ResponseDTO(409, "Cannot insert the account on row " + row));
-                    }
+                // Return if existed
+                if (result < 0) {
+                    await _accountService.DiscardChanges();
+                    return Conflict(new ResponseDTO(409, "The account on row " + row + " existed"));
                 }
             }
 
             // All successful
-            return Ok(new ResponseDTO(201,"Created!"));
+            int rows = await _accountService.SaveChange();
+            return Ok(new ResponseDTO(201, rows + " accounts were inserted"));
         }
 
         /// <summary>

@@ -355,6 +355,14 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Discard change to database
+        /// </summary>
+        /// <returns>the task</returns>
+        public async Task DiscardChanges() {
+
+        }
+
+        /// <summary>
         /// get all account which is deactivated in 5 role
         /// </summary>
         /// <param name="paginationParameter"></param>
