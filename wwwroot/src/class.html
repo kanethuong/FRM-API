@@ -1,55 +1,227 @@
 <div class="mb-5">
-    <h3>Class</h3>
-    <p>Malnipulate class information</p>
+    <h2 class="fw-bold">Class</h2>
+    <p>
+        Malnipulate class information
+    </p>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Method</th>
-                <th scope="col">Endpoint path</th>
-                <th scope="col">Body</th>
-                <th scope="col">Return</th>
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row" id="register">1</th>
-                <td>POST</td>
-                <td>/api/Auth/register</td>
-                <td>
-                    <pre><code>{ 
-    &quot;username&quot;: &quot;string&quot;, 
-    &quot;password&quot;: &quot;string&quot;, 
-    &quot;fullname&quot;:&quot;string&quot; 
-}</code></pre>
-                </td>
-                <td></td>
-                <td>201 400 409</td>
-            </tr>
-            <tr>
-                <th scope="row" id="login">2</th>
-                <td>POST</td>
-                <td>/api/Auth/login</td>
-                <td>
-                    <pre><code>{
-    &quot;username&quot;: &quot;string&quot;,
-    &quot;password&quot;: &quot;string&quot; 
-}</code></pre>
-                </td>
-                <td>
-                    <pre><code>{
-    &quot;userId&quot;: 0,
-    &quot;username&quot;: &quot;string&quot;,
-    &quot;fullname&quot;: &quot;string&quot;,
-    &quot;avatarURL&quot;: &quot;string&quot;,
-    &quot;roles&quot;: [ &quot;string&quot; ],
-    &quot;accessToken&quot;: &quot;string&quot;
-}</code></pre>
-                </td>
-                <td>200 400 404</td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="getClassList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Class List</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api​/class​/page</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Class name field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "classId": int,
+        "className": "string",
+        "description": "String",
+        "createdAt": "DateTime",
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="getDeleteClassRequest">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Delete Class Request</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/request</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Class name field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "classId": int,
+        "className": "string",
+        "description": "String",
+        "createdAt": "DateTime",
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmDeleteClassRequest">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Confirm Delete Class Request</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/request</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "classId": int,
+    "deleteClassRequestId": int,
+    "isDeactivate": boolean
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Repsonse</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="getDeletedClass">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Deleted Class</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class/deleted</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Class name field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "classId": int,
+        "className": "string",
+        "description": "String",
+        "createdAt": "DateTime",
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
 </div>
