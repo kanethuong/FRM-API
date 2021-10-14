@@ -59,8 +59,8 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewTrainee(Trainee trainee)
         {
             if (_dataContext.Trainees.Any(t =>
-                 t.TraineeId == trainee.TraineeId &&
-                 t.Username == trainee.Username &&
+                 t.TraineeId == trainee.TraineeId ||
+                 t.Username == trainee.Username ||
                  t.Email == trainee.Email
             ))
             {
@@ -124,8 +124,8 @@ namespace kroniiapi.Services
         public bool InsertNewTraineeNoSaveChange(Trainee trainee)
         {
             if (_dataContext.Trainees.Any(t =>
-                 t.TraineeId == trainee.TraineeId &&
-                 t.Username == trainee.Username &&
+                 t.TraineeId == trainee.TraineeId ||
+                 t.Username == trainee.Username ||
                  t.Email == trainee.Email
             ))
             {
