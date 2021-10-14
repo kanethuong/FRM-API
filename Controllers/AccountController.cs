@@ -75,10 +75,14 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
-            int result = await _accountService.InsertNewAccount(accountInput);
-            if (result == 0) {
+            int isDuplicated = await _accountService.InsertNewAccount(accountInput);
+            if (isDuplicated == -1) {
                 return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
-            }     
+            }
+            int result = await _accountService.SaveChange();
+            if (result == 0) {     
+                return BadRequest(new ResponseDTO(400,"Insert failed!"));
+            }
             return Ok(new ResponseDTO(201,"Created!"));
         }
 
