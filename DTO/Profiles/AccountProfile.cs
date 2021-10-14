@@ -16,7 +16,10 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<AccountInput, Trainer>().ForMember(t => t.Role, act => act.Ignore());
             CreateMap<AccountInput, Trainee>().ForMember(t => t.Role, act => act.Ignore());
             CreateMap<AccountInput, Company>().ForMember(c => c.Role, act => act.Ignore());
+            CreateMap<AccountInput, Administrator>().ForMember(c => c.Role, act => act.Ignore());
 
+            CreateMap<Administrator, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+                .ForMember(ac => ac.Role, a => a.MapFrom(s => s.Role.RoleName));
             CreateMap<Admin, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, a => a.MapFrom(s => s.Role.RoleName));
             CreateMap<Trainer, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
@@ -24,6 +27,8 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Trainee, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, t => t.MapFrom(s => s.Role.RoleName));
             CreateMap<Company, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+                .ForMember(ac => ac.Role, c => c.MapFrom(s => s.Role.RoleName));
+            CreateMap<Administrator, AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, c => c.MapFrom(s => s.Role.RoleName));
 
             CreateMap<Admin, DeletedAccountResponse>();

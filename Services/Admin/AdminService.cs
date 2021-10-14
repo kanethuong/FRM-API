@@ -103,5 +103,23 @@ namespace kroniiapi.Services
             rowUpdated = await _dataContext.SaveChangesAsync();
             return rowUpdated;
         }
+
+        /// <summary>
+        /// Insert new (admin) account to DbContext without save change to DB
+        /// </summary>
+        /// <param name="admin">Admin data</param>
+        /// <returns>true: insert done / false: dupplicate data</returns>
+        public bool InsertNewAdminNoSaveChange(Admin admin)
+        {
+            if (_dataContext.Admins.Any(a =>
+                a.Username.Equals(admin.Username) ||
+                a.Email.Equals(admin.Email)
+            ))
+            {
+                return false;
+            }
+            _dataContext.Admins.Add(admin);
+            return true;
+        }
     }
 }

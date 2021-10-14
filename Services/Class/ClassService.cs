@@ -25,25 +25,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes
-                                    .Where(c => c.IsDeactivated == false)
-                                    .Select(c => new Class
-                                    {
-                                        ClassId = c.ClassId,
-                                        ClassName = c.ClassName,
-                                        Description = c.Description,
-                                        CreatedAt = c.CreatedAt,
-                                        IsDeactivated = c.IsDeactivated,
-                                        DeactivatedAt = c.DeactivatedAt,
-                                        Trainees = c.Trainees,
-                                        AdminId = c.AdminId,
-                                        Admin = c.Admin,
-                                        TrainerId = c.TrainerId,
-                                        Trainer = c.Trainer,
-                                        RoomId = c.RoomId,
-                                        Room = c.Room,
-                                        Modules = c.Modules,
-                                    }).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false).ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -60,23 +42,7 @@ namespace kroniiapi.Services
         /// <returns> Class </returns>
         public async Task<Class> GetClassByClassName(string className)
         {
-            var classGet = await (
-                from c in _dataContext.Classes
-                where c.ClassName == className
-                select new Class
-                {
-                    ClassId = c.ClassId,
-                    ClassName = className,
-                    Description = c.Description,
-                    CreatedAt = c.CreatedAt,
-                    IsDeactivated = c.IsDeactivated,
-                    DeactivatedAt = c.DeactivatedAt,
-                    Trainees = c.Trainees,
-                    Room = c.Room,
-                    Modules = c.Modules,
-                    Calendars = c.Calendars,
-                }).FirstOrDefaultAsync();
-            return classGet;
+            return await _dataContext.Classes.Where(c => c.ClassName == className).FirstOrDefaultAsync();
         }
         /// <summary>
         /// Get Request Deleted Class List
@@ -124,7 +90,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="confirmDeleteClassInput"></param>
         /// <returns>True if Success to Change & False if false to change</returns>
-        public async Task<bool> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
+        public async Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             if (confirmDeleteClassInput.IsDeactivate == true)
             {
@@ -132,24 +98,24 @@ namespace kroniiapi.Services
                 var existedClass = await _dataContext.Classes.Where(i => i.ClassId == confirmDeleteClassInput.ClassId).FirstOrDefaultAsync();
                 if (existedClass == null)
                 {
-                    return false;
+                    return -1;
                 }
                 existedClass.IsDeactivated = true;
                 // get Request in Input
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 if (existedRequest == null)
                 {
-                    return false;
+                    return -1;
                 }
                 existedRequest.IsAccepted = true;
                 // Save Change 
                 var rs = await _dataContext.SaveChangesAsync();
                 if (rs == 1)
                 {
-                    return true;
+                    return 1;
                 }
             }
-            return false;
+            return 0;
         }
         /// <summary>
         ///  Get Deleted Class List
@@ -158,25 +124,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes
-                                    .Where(c => c.IsDeactivated == true)
-                                    .Select(c => new Class
-                                    {
-                                        ClassId = c.ClassId,
-                                        ClassName = c.ClassName,
-                                        Description = c.Description,
-                                        CreatedAt = c.CreatedAt,
-                                        IsDeactivated = c.IsDeactivated,
-                                        DeactivatedAt = c.DeactivatedAt,
-                                        Trainees = c.Trainees,
-                                        AdminId = c.AdminId,
-                                        Admin = c.Admin,
-                                        TrainerId = c.TrainerId,
-                                        Trainer = c.Trainer,
-                                        RoomId = c.RoomId,
-                                        Room = c.Room,
-                                        Modules = c.Modules,
-                                    }).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true).ToListAsync();
 
             int totalRecords = listClass.Count();
 

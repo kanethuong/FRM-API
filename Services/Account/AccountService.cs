@@ -43,18 +43,10 @@ namespace kroniiapi.Services
             return role.RoleName;
         }
 
-        private async Task<IEnumerable<AccountResponse>> addAccountToTotalList(IEnumerable<Administrator> administrators,
+        private async Task<IEnumerable<AccountResponse>> addAccountToTotalList(
         IEnumerable<Admin> admins, IEnumerable<Trainer> trainers, IEnumerable<Trainee> trainees, IEnumerable<Company> companies)
         {
             List<AccountResponse> totalAccount = new List<AccountResponse>();
-
-            foreach (var item in administrators)
-            {
-                var itemToResponse = _mapper.Map<AccountResponse>(item);
-                itemToResponse.Role = await getRoleName(item.RoleId);
-                itemToResponse.AccountId = item.AdministratorId;
-                totalAccount.Add(itemToResponse);
-            }
 
             foreach (var item in admins)
             {
@@ -98,8 +90,6 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
                  => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
@@ -109,7 +99,7 @@ namespace kroniiapi.Services
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
                  => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
 
-            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
+            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
 
             return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
@@ -265,9 +255,9 @@ namespace kroniiapi.Services
             }
         }
 
-        private string processPasswordAndSendEmail(string email)
+        async private Task<string> processPasswordAndSendEmail(string email)
         {
-            string password = AutoGeneratorPassword.passwordGenerator(15,5,5,5);
+            string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
@@ -275,54 +265,93 @@ namespace kroniiapi.Services
             emailContent.Subject = "Your Password";
             emailContent.Body = password;
 
-            _emailService.SendEmailAsync(emailContent);
+            await _emailService.SendEmailAsync(emailContent);
 
             password = BCrypt.Net.BCrypt.HashPassword(password);
             return password;
         }
 
         /// <summary>
-        /// Insert new account method
+        /// Insert new account method (remember to call SaveChange to insert to database)
         /// </summary>
         /// <param name="accountInput"></param>
-        /// <returns>-1:existed / 0:fail / 1:success</returns>
+        /// <returns>-1:existed  / 1:success</returns>
         public async Task<int> InsertNewAccount(AccountInput accountInput)
         {
+            if (await GetAccountByEmail(accountInput.Email) != null)
+            {
+                return -1;
+            }
+
+            if (await GetAccountByUsername(accountInput.Username) != null)
+            {
+                return -1;
+            }
+
             accountInput.Role = accountInput.Role.ToLower();
-            int rowInserted = 0;
+            bool insertedStatus = false;                             // true if success, false if duplicate
             switch (accountInput.Role)
             {
                 case "administrator":
+                    var adminstratorToAdd = _mapper.Map<Administrator>(accountInput);
+                    adminstratorToAdd.RoleId = 1;
+
+                    adminstratorToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+
+                    if (_dataContext.Administrators.Any(a =>
+                        a.Username.Equals(adminstratorToAdd.Username) ||
+                        a.Email.Equals(adminstratorToAdd.Email)
+                    ))
+                    {
+                        return -1;
+                    }
+                    _dataContext.Administrators.Add(adminstratorToAdd);
                     break;
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
-                    adminToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _adminService.InsertNewAdmin(adminToAdd);
+                    adminToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    insertedStatus = _adminService.InsertNewAdminNoSaveChange(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
-                    trainerToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _trainerService.InsertNewTrainer(trainerToAdd);
+                    trainerToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    insertedStatus = _trainerService.InsertNewTrainerNoSaveChange(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
-                    traineeToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _traineeService.InsertNewTrainee(traineeToAdd);
+                    traineeToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    insertedStatus = _traineeService.InsertNewTraineeNoSaveChange(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
-                    companyToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _companyService.InsertNewCompany(companyToAdd);
+                    companyToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    insertedStatus = _companyService.InsertNewCompanyNoSaveChange(companyToAdd);
                     break;
                 default:
                     break;
             }
 
-            return rowInserted;
+            if(insertedStatus)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        
+        /// <summary>
+        /// save change to database
+        /// </summary>
+        /// <returns>number of row effeted</returns>
+        public async Task<int> SaveChange()
+        { 
+            return await _dataContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -332,8 +361,6 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Administrator> administrators = _dataContext.Administrators.ToList().Where(t =>
-                 t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));;
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
@@ -343,7 +370,7 @@ namespace kroniiapi.Services
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
 
-            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(administrators, admins, trainers, trainees, companies);
+            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
             return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
@@ -351,7 +378,50 @@ namespace kroniiapi.Services
 
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
-            return 0;
+            Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
+            if(tupleResponse == null || password == null || password == "")
+            {
+                return 0;
+            }
+
+            EmailContent emailContent = new EmailContent();
+            emailContent.IsBodyHtml = true;
+            emailContent.ToEmail = email;
+            emailContent.Subject = "Your New Password";
+            emailContent.Body = password;
+
+            await _emailService.SendEmailAsync(emailContent);
+
+            password = BCrypt.Net.BCrypt.HashPassword(password);
+
+            AccountResponse account = tupleResponse.Item1;
+            int rowInserted = 0;
+            switch (account.Role.ToLower())
+            {
+                case "admin":
+                    var admin = await _adminService.GetAdminByEmail(email);
+                    admin.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                case "trainer":
+                    var trainer = await _trainerService.GetTrainerByEmail(email);
+                    trainer.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                case "trainee":
+                    var trainee = await _traineeService.GetTraineeByEmail(email);
+                    trainee.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                case "company":
+                    var company = await _companyService.GetCompanyByEmail(email);
+                    company.Password = password;
+                    rowInserted = await _dataContext.SaveChangesAsync();
+                    break;
+                default:
+                    return 0;
+            }
+            return rowInserted;
         }
     }
 }

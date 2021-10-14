@@ -9,6 +9,7 @@ using kroniiapi.Helper;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace kroniiapi.Controllers
 {
@@ -36,10 +37,13 @@ namespace kroniiapi.Controllers
         /// token is expired, 
         /// payload in access token and refresh token not the same</returns>
         [HttpPost("refresh")]
-        public async Task<ActionResult> RefreshAccessToken([FromBody] Token token)
+        public async Task<ActionResult> RefreshAccessToken()
         {
+            // Get bearer token from Header
+            var _bearer_token = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+
             // Get payload data in access token
-            var principal = _jwtGenerator.GetPrincipalFromExpiredToken(token.AccessToken);
+            var principal = _jwtGenerator.GetPrincipalFromExpiredToken(_bearer_token);
 
             // Get email, role claim in user access token (payload)
             var claims = principal.Identities.First().Claims.ToList();

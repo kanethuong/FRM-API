@@ -24,21 +24,7 @@ namespace kroniiapi.Services
         /// <returns> Administrator </returns>
         public async Task<Administrator> GetAdministratorById(int id)
         {
-            var administrator = await _dataContext.Administrators
-                                        .Where(a => a.AdministratorId == id)
-                                        .Select(
-                                        a => new Administrator
-                                        {
-                                            AdministratorId = a.AdministratorId,
-                                            Username = a.Username,
-                                            Password = a.Password,
-                                            Fullname = a.Fullname,
-                                            AvatarURL = a.AvatarURL,
-                                            Email = a.Email,
-                                            Phone = a.Phone,
-                                            RoleId = a.RoleId,
-                                        }).FirstOrDefaultAsync(); 
-            return administrator;
+            return await _dataContext.Administrators.Where(a => a.AdministratorId == id).FirstOrDefaultAsync(); 
         }
 
         /// <summary>
@@ -48,21 +34,7 @@ namespace kroniiapi.Services
         /// <returns> Administrator </returns>
         public async Task<Administrator> GetAdministratorByUsername(string username)
         {
-            var administrator = await _dataContext.Administrators
-                                        .Where(a => a.Username == username)
-                                        .Select(
-                                        a => new Administrator
-                                        {
-                                            AdministratorId = a.AdministratorId,
-                                            Username = a.Username,
-                                            Password = a.Password,
-                                            Fullname = a.Fullname,
-                                            AvatarURL = a.AvatarURL,
-                                            Email = a.Email,
-                                            Phone = a.Phone,
-                                            RoleId = a.RoleId,
-                                        }).FirstOrDefaultAsync(); 
-            return administrator;
+            return await _dataContext.Administrators.Where(a => a.Username == username).FirstOrDefaultAsync(); 
         }
         /// <summary>
         ///  Get Administrator by Email
@@ -71,21 +43,7 @@ namespace kroniiapi.Services
         /// <returns> Administrator </returns>
         public async Task<Administrator> GetAdministratorByEmail(string email)
         {
-            var administrator = await _dataContext.Administrators
-                                        .Where(a => a.Email == email)
-                                        .Select(
-                                        a => new Administrator
-                                        {
-                                            AdministratorId = a.AdministratorId,
-                                            Username = a.Username,
-                                            Password = a.Password,
-                                            Fullname = a.Fullname,
-                                            AvatarURL = a.AvatarURL,
-                                            Email = a.Email,
-                                            Phone = a.Phone,
-                                            RoleId = a.RoleId,
-                                        }).FirstOrDefaultAsync(); 
-            return administrator;
+            return await _dataContext.Administrators.Where(a => a.Email == email).FirstOrDefaultAsync(); 
         }
     }
 }

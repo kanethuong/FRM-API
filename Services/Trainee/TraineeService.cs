@@ -24,7 +24,7 @@ namespace kroniiapi.Services
         /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeById(int id)
         {
-            return await _dataContext.Trainees.Where(t => t.TraineeId == id && 
+            return await _dataContext.Trainees.Where(t => t.TraineeId == id &&
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
@@ -35,7 +35,7 @@ namespace kroniiapi.Services
         /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeByUsername(string username)
         {
-            return await _dataContext.Trainees.Where(t => t.Username == username && 
+            return await _dataContext.Trainees.Where(t => t.Username == username &&
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
@@ -46,7 +46,7 @@ namespace kroniiapi.Services
         /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeByEmail(string email)
         {
-            return await _dataContext.Trainees.Where(t => t.Email == email && 
+            return await _dataContext.Trainees.Where(t => t.Email == email &&
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
@@ -58,10 +58,10 @@ namespace kroniiapi.Services
         /// <returns>-1:existed / 0:fail / 1:success</returns>
         public async Task<int> InsertNewTrainee(Trainee trainee)
         {
-            if(_dataContext.Trainees.Any(t => 
-                t.TraineeId == trainee.TraineeId &&
-                t.Username == trainee.Username &&
-                t.Email == trainee.Email
+            if (_dataContext.Trainees.Any(t =>
+                 t.TraineeId == trainee.TraineeId &&
+                 t.Username == trainee.Username &&
+                 t.Email == trainee.Email
             ))
             {
                 return -1;
@@ -83,7 +83,7 @@ namespace kroniiapi.Services
         public async Task<int> UpdateTrainee(int id, Trainee trainee)
         {
             var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
-            if(existedTrainee == null)
+            if (existedTrainee == null)
             {
                 return -1;
             }
@@ -106,7 +106,7 @@ namespace kroniiapi.Services
         public async Task<int> DeleteTrainee(int id)
         {
             var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
-            if(existedTrainee == null)
+            if (existedTrainee == null)
             {
                 return -1;
             }
@@ -114,6 +114,27 @@ namespace kroniiapi.Services
             var rowDeleted = await _dataContext.SaveChangesAsync();
 
             return rowDeleted;
+        }
+
+        /// <summary>
+        /// Insert new (trainee) account to DbContext without save change to DB
+        /// </summary>
+        /// <param name="trainee">Trainee data</param>
+        /// <returns>true: insert done / false: dupplicate data</returns>
+        public bool InsertNewTraineeNoSaveChange(Trainee trainee)
+        {
+            if (_dataContext.Trainees.Any(t =>
+                 t.TraineeId == trainee.TraineeId &&
+                 t.Username == trainee.Username &&
+                 t.Email == trainee.Email
+            ))
+            {
+                return false;
+            }
+
+            _dataContext.Trainees.Add(trainee);
+
+            return true;
         }
     }
 }
