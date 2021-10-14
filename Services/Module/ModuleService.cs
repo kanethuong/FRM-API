@@ -49,7 +49,5 @@ namespace kroniiapi.Services
             rowUpdated = await _dataContext.SaveChangesAsync();
             return rowUpdated;
         }
-
-
     }
 }
