@@ -58,9 +58,9 @@ namespace kroniiapi.Controllers
 
             if (result == 0)
             {
-                return NotFound(new ResponseDTO(409,"Id not found!"));
+                return NotFound(new ResponseDTO(404,"Id not found!"));
             }
-            return Ok(new ResponseDTO(201,"Created!"));
+            return Ok(new ResponseDTO(200,"Deleted!"));
         }
 
         /// <summary>
