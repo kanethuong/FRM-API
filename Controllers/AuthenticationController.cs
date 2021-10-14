@@ -99,15 +99,21 @@ namespace kroniiapi.Controllers
         /// <param name="token">Access token</param>
         /// <returns>200: Logout success</returns>
         [HttpPost("logout")]
-        public ActionResult Logout()
-        {
+        public async Task<ActionResult> Logout([FromBody] Token token)
+        {   
             if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
             {
                 return BadRequest(new ResponseDTO(400, "Invalid token request"));
             }
             var tokenEmail = _refreshToken.GetEmailByToken(refreshToken);
+            try {
             _refreshToken.RemoveTokenByEmail(tokenEmail);
-            return Ok(new ResponseDTO(200, "Logout Success!"));
+            }
+            catch {
+                return BadRequest(new ResponseDTO(400, "Invalid token request"));
+            }
+            return Ok(new ResponseDTO(200,"Logout Success!"));
+
         }
     }
 }
