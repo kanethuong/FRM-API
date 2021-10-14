@@ -60,11 +60,11 @@ namespace kroniiapi.Controllers
         {
             int result = await _accountService.DeactivateAccount(id, role);
 
-            if (result == 0)
+            if (result == -1)
             {
-                return NotFound(new ResponseDTO(409,"Id not found!"));
+                return NotFound(new ResponseDTO(404,"Id not found!"));
             }
-            return Ok(new ResponseDTO(201,"Created!"));
+            return Ok(new ResponseDTO(200,"Deleted!"));
         }
 
         /// <summary>
@@ -75,10 +75,14 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
-            int result = await _accountService.InsertNewAccount(accountInput);
-            if (result == 0) {
+            int isDuplicated = await _accountService.InsertNewAccount(accountInput);
+            if (isDuplicated == -1) {
                 return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
-            }     
+            }
+            int result = await _accountService.SaveChange();
+            if (result == 0) {     
+                return BadRequest(new ResponseDTO(400,"Insert failed!"));
+            }
             return Ok(new ResponseDTO(201,"Created!"));
         }
 
@@ -138,14 +142,14 @@ namespace kroniiapi.Controllers
 
                 // Return if existed
                 if (result < 0) {
-                    await _accountService.DiscardChanges();
+                    _accountService.DiscardChanges();
                     return Conflict(new ResponseDTO(409, "The account on row " + row + " existed"));
                 }
             }
 
             // All successful
             int rows = await _accountService.SaveChange();
-            return Ok(new ResponseDTO(201, rows + " accounts were inserted"));
+            return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, rows + " accounts were inserted"));
         }
 
         /// <summary>
