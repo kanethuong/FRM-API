@@ -24,7 +24,7 @@ namespace kroniiapi.Services
         /// <returns>Company data</returns>
         public async Task<Company> GetCompanyById(int id)
         {
-            return await _dataContext.Companies.Where(c => c.CompanyId == id && c.IsDeactivated==false).FirstOrDefaultAsync();
+            return await _dataContext.Companies.Where(c => c.CompanyId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace kroniiapi.Services
         /// <returns>Company data</returns>
         public async Task<Company> GetCompanyByUsername(string username)
         {
-            return await _dataContext.Companies.Where(c => c.Username.Equals(username) && c.IsDeactivated==false).FirstOrDefaultAsync();
+            return await _dataContext.Companies.Where(c => c.Username.Equals(username) && c.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace kroniiapi.Services
         /// <returns>Company data</returns>
         public async Task<Company> GetCompanyByEmail(string email)
         {
-            return await _dataContext.Companies.Where(c => c.Email.Equals(email) && c.IsDeactivated==false).FirstOrDefaultAsync();
+            return await _dataContext.Companies.Where(c => c.Email.Equals(email) && c.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace kroniiapi.Services
         /// <returns>-1: existed / 0: fail / 1: done</returns>
         public async Task<int> InsertNewCompany(Company company)
         {
-            if (_dataContext.Companies.Any(c => c.Username == company.Username && c.Email == company.Email))
+            if (_dataContext.Companies.Any(c => c.Username == company.Username || c.Email == company.Email))
             {
                 return -1;
             }
@@ -66,6 +66,23 @@ namespace kroniiapi.Services
 
             return rowInserted;
         }
+        
+        /// <summary>
+        /// Insert new (company) account to DbContext without save change to DB
+        /// </summary>
+        /// <param name="company">Company data</param>
+        /// <returns>true: insert done / false: dupplicate data</returns>
+        public bool InsertNewCompanyNoSaveChange(Company company)
+        {
+            if (_dataContext.Companies.Any(c => c.Username == company.Username || c.Email == company.Email))
+            {
+                return false;
+            }
+
+            _dataContext.Companies.Add(company);
+
+            return true;
+        }
 
         /// <summary>
         /// Update a company with new input data
@@ -75,7 +92,7 @@ namespace kroniiapi.Services
         /// <returns>-1: not found / 0: fail / 1: done</returns>
         public async Task<int> UpdateCompany(int id, Company company)
         {
-            var existedCompany = await _dataContext.Companies.Where(c => c.CompanyId == id && c.IsDeactivated==false).FirstOrDefaultAsync();
+            var existedCompany = await _dataContext.Companies.Where(c => c.CompanyId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
 
             if (existedCompany == null)
             {
@@ -100,15 +117,15 @@ namespace kroniiapi.Services
         /// <returns>-1: not found / 0: fail / 1: done</returns>
         public async Task<int> DeleteCompany(int id)
         {
-            var existedCompany = await _dataContext.Companies.Where(c => c.CompanyId == id && c.IsDeactivated==false).FirstOrDefaultAsync();
+            var existedCompany = await _dataContext.Companies.Where(c => c.CompanyId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
 
             if (existedCompany == null)
             {
                 return -1;
             }
 
-            existedCompany.IsDeactivated=true;
-            existedCompany.DeactivatedAt=DateTime.Now;
+            existedCompany.IsDeactivated = true;
+            existedCompany.DeactivatedAt = DateTime.Now;
 
             int rowDeleted = 0;
             rowDeleted = await _dataContext.SaveChangesAsync();
