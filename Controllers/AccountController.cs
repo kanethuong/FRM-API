@@ -142,14 +142,14 @@ namespace kroniiapi.Controllers
 
                 // Return if existed
                 if (result < 0) {
-                    await _accountService.DiscardChanges();
+                    _accountService.DiscardChanges();
                     return Conflict(new ResponseDTO(409, "The account on row " + row + " existed"));
                 }
             }
 
             // All successful
             int rows = await _accountService.SaveChange();
-            return Ok(new ResponseDTO(201, rows + " accounts were inserted"));
+            return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, rows + " accounts were inserted"));
         }
 
         /// <summary>
