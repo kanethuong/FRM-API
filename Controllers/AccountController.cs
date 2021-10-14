@@ -60,7 +60,7 @@ namespace kroniiapi.Controllers
         {
             int result = await _accountService.DeactivateAccount(id, role);
 
-            if (result == 0)
+            if (result == -1)
             {
                 return NotFound(new ResponseDTO(404,"Id not found!"));
             }
