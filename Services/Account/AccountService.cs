@@ -272,10 +272,10 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
-        /// Insert new account method
+        /// Insert new account method (remember to call SaveChange to insert to database)
         /// </summary>
         /// <param name="accountInput"></param>
-        /// <returns>-1:existed / 0:fail / 1:success</returns>
+        /// <returns>-1:existed  / 1:success</returns>
         public async Task<int> InsertNewAccount(AccountInput accountInput)
         {
             if (await GetAccountByEmail(accountInput.Email) != null)
@@ -289,7 +289,7 @@ namespace kroniiapi.Services
             }
 
             accountInput.Role = accountInput.Role.ToLower();
-            int rowInserted = 0;
+            bool insertedStatus = false;                             // true if success, false if duplicate
             switch (accountInput.Role)
             {
                 case "administrator":
@@ -306,37 +306,77 @@ namespace kroniiapi.Services
                         return -1;
                     }
                     _dataContext.Administrators.Add(adminstratorToAdd);
-                    rowInserted = await _dataContext.SaveChangesAsync();
                     break;
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
                     adminToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _adminService.InsertNewAdmin(adminToAdd);
+                    insertedStatus = _adminService.InsertNewAdminNoSaveChange(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
                     trainerToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _trainerService.InsertNewTrainer(trainerToAdd);
+                    insertedStatus = _trainerService.InsertNewTrainerNoSaveChange(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
                     traineeToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _traineeService.InsertNewTrainee(traineeToAdd);
+                    insertedStatus = _traineeService.InsertNewTraineeNoSaveChange(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
                     companyToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
-                    rowInserted = await _companyService.InsertNewCompany(companyToAdd);
+                    insertedStatus = _companyService.InsertNewCompanyNoSaveChange(companyToAdd);
                     break;
                 default:
                     break;
             }
 
-            return rowInserted;
+            if (insertedStatus)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// Insert a list of accounts to the database
+        /// 1. Generate the password for each account and store in a dictionary
+        /// 2. Call the insert method for each account (Hash the password and put it in the model)
+        /// 3. If it fails (existing account or fail to add to the database), discard all changes and return the index of the failed account in the list
+        /// 4. If it succeeds, save the changes and send password mail to all accounts in the list
+        /// </summary>
+        /// <param name="accountInputs">the list of accounts</param>
+        /// <returns>
+        /// A tuple contains a boolean value indicating whether the insertion was successful, 
+        /// and a integer given the index of the account if the insertion was failed, or -1 if the insertion was successful
+        /// </returns>
+        public async Task<Tuple<bool, int>> InsertNewAccount(IList<AccountInput> accountInputs) {
+            return null;
+        }
+
+        /// <summary>
+        /// save change to database
+        /// </summary>
+        /// <returns>number of row effeted</returns>
+        public async Task<int> SaveChange()
+        {
+            return await _dataContext.SaveChangesAsync();
+            //_dataContext.ChangeTracker.Clear();
+        }
+
+        /// <summary>
+        /// discard all change
+        /// </summary>
+        public void DiscardChanges()
+        {
+            _dataContext.ChangeTracker.Clear();
         }
 
         /// <summary>
