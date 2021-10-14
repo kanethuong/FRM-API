@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DTO;
 using kroniiapi.DTO.AccountDTO;
+using kroniiapi.DTO.Email;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
@@ -22,10 +23,13 @@ namespace kroniiapi.Controllers
         private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
 
-        public AccountController(IAccountService accountService, IMapper mapper)
+        private IEmailService _emailService;
+
+        public AccountController(IAccountService accountService, IMapper mapper, IEmailService emailService)
         {
             _accountService = accountService;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -71,10 +75,14 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
-            int result = await _accountService.InsertNewAccount(accountInput);
-            if (result == 0) {
+            int isDuplicated = await _accountService.InsertNewAccount(accountInput);
+            if (isDuplicated == -1) {
                 return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
-            }     
+            }
+            int result = await _accountService.SaveChange();
+            if (result == 0) {     
+                return BadRequest(new ResponseDTO(400,"Insert failed!"));
+            }
             return Ok(new ResponseDTO(201,"Created!"));
         }
 
@@ -170,23 +178,21 @@ namespace kroniiapi.Controllers
         [HttpPost("forgot")]
         public async Task<ActionResult> ForgotPassword([FromBody] EmailInput emailInput)
         {
-            //check email exist
+            if(emailInput == null || emailInput.Email == "")
+            {
+                return NotFound(new ResponseDTO(404, "Email not found"));
+            }
+            string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
-            //generate password
 
-            //send email
-            return Ok();
+            if(await _accountService.UpdateAccountPassword(emailInput.Email,password ) == 1)
+            {
+                return Ok(new ResponseDTO(200,"Sent"));
+            }
+            else
+            {
+                return NotFound(new ResponseDTO(404, "Email not found"));
+            }
         }
-        // Delete before commit
-        // [HttpPost("test")]
-        // public async Task<ActionResult> Test([FromBody] AccountInput accountInput)
-        // {
-        //     //check email exist
-
-        //     //generate password
-        //     await _accountService.InsertNewAccount(accountInput);
-        //     //send email
-        //     return Ok();
-        // }
     }
 }
