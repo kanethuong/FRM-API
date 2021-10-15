@@ -1,55 +1,313 @@
 <div class="mb-5">
-    <h3>Account</h3>
-    <p>Support get account data from db</p>
+    <h2 class="fw-bold">Account</h2>
+    <p>
+        Get account data
+    </p>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Method</th>
-                <th scope="col">Endpoint path</th>
-                <th scope="col">Body</th>
-                <th scope="col">Return</th>
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row" id="register">1</th>
-                <td>POST</td>
-                <td>/api/Auth/register</td>
-                <td>
-                    <pre><code>{ 
-    &quot;username&quot;: &quot;string&quot;, 
-    &quot;password&quot;: &quot;string&quot;, 
-    &quot;fullname&quot;:&quot;string&quot; 
-}</code></pre>
-                </td>
-                <td></td>
-                <td>201 400 409</td>
-            </tr>
-            <tr>
-                <th scope="row" id="login">2</th>
-                <td>POST</td>
-                <td>/api/Auth/login</td>
-                <td>
-                    <pre><code>{
-    &quot;username&quot;: &quot;string&quot;,
-    &quot;password&quot;: &quot;string&quot; 
-}</code></pre>
-                </td>
-                <td>
-                    <pre><code>{
-    &quot;userId&quot;: 0,
-    &quot;username&quot;: &quot;string&quot;,
-    &quot;fullname&quot;: &quot;string&quot;,
-    &quot;avatarURL&quot;: &quot;string&quot;,
-    &quot;roles&quot;: [ &quot;string&quot; ],
-    &quot;accessToken&quot;: &quot;string&quot;
-}</code></pre>
-                </td>
-                <td>200 400 404</td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="getAccountList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Account List</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/account/page</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Email field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "accountId": int,
+        "username": "string",
+        "fullname": "string",
+        "email": "string",
+        "role": "string"
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="deactivateAccount">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Deactivate Account</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/account/{id}/{role}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>DELETE</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: account id</p>
+                <p>role: account role</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="createAccount">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create account</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/account</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "username": "string",
+    "fullname": "string",
+    "email": "user@example.com",
+    "role": "string"
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="createAccountExcel">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create account by excel</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/account/excel</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 400 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Form file</h5>
+                <p>File: <a href="excel/create-account-template.xlsx" download="">Download Template</a></p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="getDeactivatedAccount">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get deactivated account</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/account/deleted</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Email field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "accountId": int,
+        "username": "string",
+        "fullname": "string",
+        "email": "string",
+        "role": "string"
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="forgotPassword">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Forgot password</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/account/forgot</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Anonymous</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "email": "user@example.com"
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+
+    
 </div>

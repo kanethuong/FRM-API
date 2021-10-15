@@ -13,16 +13,16 @@ namespace kroniiapi.DTO.Profiles
     {
         public AuthProfile()
         {
-            CreateMap<Admin, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Admin, AuthResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, a => a.MapFrom(s => s.Role.RoleName));
-            CreateMap<Trainer, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Trainer, AuthResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, t => t.MapFrom(s => s.Role.RoleName));
-            CreateMap<Trainee, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Trainee, AuthResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, t => t.MapFrom(s => s.Role.RoleName));
-            CreateMap<Company, AuthDTO.AccountResponse>().ForMember(ac => ac.Role, act => act.Ignore())
+            CreateMap<Company, AuthResponse>().ForMember(ac => ac.Role, act => act.Ignore())
                 .ForMember(ac => ac.Role, c => c.MapFrom(s => s.Role.RoleName));
 
-            CreateMap<AccountDTO.AccountResponse, AuthDTO.AccountResponse>();
+            CreateMap<AccountResponse, AuthResponse>();
         }
     }
 }
