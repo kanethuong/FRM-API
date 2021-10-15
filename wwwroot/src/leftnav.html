@@ -1,6 +1,6 @@
 <div class="flex-shrink-0 p-3 bg-white" style="width: max-content">
     <a
-        href="/"
+        href="#"
         class="
             d-flex
             align-items-center
@@ -14,53 +14,163 @@
         <span class="fs-5 fw-semibold">Method support</span>
     </a>
     <ul class="list-unstyled ps-0">
+        <!-- Introduction -->
         <li class="mb-1">
             <button
                 class="btn btn-toggle align-items-center rounded collapsed"
                 data-bs-toggle="collapse"
-                data-bs-target="#dashboard-collapse"
+                data-bs-target="#intro-collapse"
                 aria-expanded="false"
             >
-                Auth
+                Introduction
             </button>
-            <div class="collapse" id="dashboard-collapse">
+            <div class="collapse" id="intro-collapse">
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                     <li>
-                        <a href="#register" class="link-dark rounded"
-                            >Register</a
+                        <a href="#status" class="link-dark rounded"
+                            >Status Code Reponse</a
                         >
                     </li>
                     <li>
-                        <a href="#login" class="link-dark rounded">Login</a>
+                        <a href="#error" class="link-dark rounded"
+                            >Error Response</a
+                        >
                     </li>
                 </ul>
             </div>
         </li>
+
+        <!-- Authentication -->
         <li class="mb-1">
             <button
                 class="btn btn-toggle align-items-center rounded collapsed"
                 data-bs-toggle="collapse"
-                data-bs-target="#orders-collapse"
+                data-bs-target="#auth-collapse"
                 aria-expanded="false"
             >
-                Idol
+                Authentication
             </button>
-            <div class="collapse" id="orders-collapse">
+            <div class="collapse" id="auth-collapse">
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                     <li>
-                        <a href="#" class="link-dark rounded">List all</a>
+                        <a href="#login" class="link-dark rounded">Login</a>
                     </li>
                     <li>
-                        <a href="#" class="link-dark rounded">Get</a>
+                        <a href="#logout" class="link-dark rounded">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Token -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#token-collapse"
+                aria-expanded="false"
+            >
+                Token
+            </button>
+            <div class="collapse" id="token-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <li>
+                        <a href="#refreshToken" class="link-dark rounded"
+                            >Refresh token</a
+                        >
                     </li>
                     <li>
-                        <a href="#" class="link-dark rounded">Create</a>
+                        <a href="#tokenAccountData" class="link-dark rounded"
+                            >Re-get account data</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Account -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#account-collapse"
+                aria-expanded="false"
+            >
+                Account
+            </button>
+            <div class="collapse" id="account-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <li>
+                        <a href="#getAccountList" class="link-dark rounded"
+                            >Get Account List</a
+                        >
                     </li>
                     <li>
-                        <a href="#" class="link-dark rounded">Update</a>
+                        <a href="#deactivateAccount" class="link-dark rounded"
+                            >Deactivate Account</a
+                        >
                     </li>
                     <li>
-                        <a href="#" class="link-dark rounded">Delete</a>
+                        <a href="#createAccount" class="link-dark rounded"
+                            >Create Account</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#createAccountExcel" class="link-dark rounded"
+                            >Create Account by Excel</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#getDeactivatedAccount"
+                            class="link-dark rounded"
+                            >Get Deactivated Account</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#forgotPassword" class="link-dark rounded"
+                            >Forgot Password</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Class -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#class-collapse"
+                aria-expanded="false"
+            >
+                Class
+            </button>
+            <div class="collapse" id="class-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <li>
+                        <a href="#getClassList" class="link-dark rounded"
+                            >Get Class List</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#getDeleteClassRequest"
+                            class="link-dark rounded"
+                            >Get Delete Class Request</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#confirmDeleteClassRequest"
+                            class="link-dark rounded"
+                            >Confirm Delete Request</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#getDeletedClass" class="link-dark rounded"
+                            >Get Deleted Class</a
+                        >
                     </li>
                 </ul>
             </div>
