@@ -105,7 +105,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Invalid token request"));
             }
-            var tokenEmail = _refreshToken.GetEmailByToken(refreshToken);
+            var tokenEmail =  _refreshToken.GetEmailByToken(refreshToken);
             try {
             _refreshToken.RemoveTokenByEmail(tokenEmail);
             }
