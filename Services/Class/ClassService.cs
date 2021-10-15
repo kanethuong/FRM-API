@@ -113,12 +113,12 @@ namespace kroniiapi.Services
                 existedRequest.AcceptedAt = DateTime.Now;
                 // Save Change 
                 var rs = await _dataContext.SaveChangesAsync();
-                if (rs == 1)
+                if (rs == 0)
                 {
-                    return 1;
+                    return 0;
                 }
             }
-            return 0;
+            return 1;
         }
         /// <summary>
         ///  Get Deleted Class List

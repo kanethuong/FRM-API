@@ -14,6 +14,7 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<Class, ClassResponse>();
             CreateMap<Class, DeleteClassResponse>();
+            CreateMap<List<Class>,List<ClassResponse>>();
         }
     }
 }
