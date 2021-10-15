@@ -335,7 +335,7 @@ namespace kroniiapi.Services
                     break;
             }
 
-            if(insertedStatus)
+            if (insertedStatus)
             {
                 return 1;
             }
@@ -344,14 +344,39 @@ namespace kroniiapi.Services
                 return -1;
             }
         }
-        
+
+        /// <summary>
+        /// Insert a list of accounts to the database
+        /// 1. Generate the password for each account and store in a dictionary
+        /// 2. Call the insert method for each account (Hash the password and put it in the model)
+        /// 3. If it fails (existing account or fail to add to the database), discard all changes and return the index of the failed account in the list
+        /// 4. If it succeeds, save the changes and send password mail to all accounts in the list
+        /// </summary>
+        /// <param name="accountInputs">the list of accounts</param>
+        /// <returns>
+        /// A tuple contains a boolean value indicating whether the insertion was successful, 
+        /// and a integer given the index of the account if the insertion was failed, or -1 if the insertion was successful
+        /// </returns>
+        public async Task<Tuple<bool, int>> InsertNewAccount(IList<AccountInput> accountInputs) {
+            return null;
+        }
+
         /// <summary>
         /// save change to database
         /// </summary>
         /// <returns>number of row effeted</returns>
         public async Task<int> SaveChange()
-        { 
+        {
             return await _dataContext.SaveChangesAsync();
+            //_dataContext.ChangeTracker.Clear();
+        }
+
+        /// <summary>
+        /// discard all change
+        /// </summary>
+        public void DiscardChanges()
+        {
+            _dataContext.ChangeTracker.Clear();
         }
 
         /// <summary>

@@ -38,7 +38,7 @@ namespace kroniiapi.Controllers
         /// <param name="loginInput">Login data</param>
         /// <returns>200: Account detail with access token / 404: Login fail</returns>
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] LoginInput loginInput)
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginInput loginInput)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace kroniiapi.Controllers
                 Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
 
                 // Add access token to account response
-                var authResponse = _mapper.Map<DTO.AuthDTO.AccountResponse>(account);
+                var authResponse = _mapper.Map<AuthResponse>(account);
 
                 authResponse.AccessToken = accessToken;
 
@@ -99,15 +99,23 @@ namespace kroniiapi.Controllers
         /// <param name="token">Access token</param>
         /// <returns>200: Logout success</returns>
         [HttpPost("logout")]
-        public ActionResult Logout()
+        public async Task<ActionResult> Logout([FromBody] Token token)
         {
             if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
             {
                 return BadRequest(new ResponseDTO(400, "Invalid token request"));
             }
             var tokenEmail = _refreshToken.GetEmailByToken(refreshToken);
-            _refreshToken.RemoveTokenByEmail(tokenEmail);
+            try
+            {
+                _refreshToken.RemoveTokenByEmail(tokenEmail);
+            }
+            catch
+            {
+                return BadRequest(new ResponseDTO(400, "Invalid token request"));
+            }
             return Ok(new ResponseDTO(200, "Logout Success!"));
+
         }
     }
 }
