@@ -1,0 +1,48 @@
+<div class="mb-5">
+    <h2 class="fw-bold">Introduction</h2>
+    <p>
+        Kronii REST API
+    </p>
+
+    <div id="status">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Status code Response</h3>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <ul class="ps-5">
+                <li>200 - "Request has succceeded"</li>
+                <li>201 - "Resource has been created"</li>
+                <li>204 - "Server has fulfilled the request"</li>
+                <li>400 - "Request could not be understood by the server due to incorrect syntax"</li>
+                <li>401 - "Request requires user authentication information"</li>
+                <li>403 - "Client does not have access rights to the content"</li>
+                <li>404 - "Resource not found"</li>
+                <li>409 - "Conflict with the current state of resource"</li>
+                <li>415 - "Mediatype is not supported by the server"</li>
+                <li>500 - "Something is not working on our end"</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="error">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-2">
+            <h3>Error Response</h3>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row">
+            <p>This is a error return pattern</p>
+            <p>
+                <pre><code>{
+    "status": int,
+    "message": "string",
+    "errors": [array],
+}</code></pre>
+            </p>
+        </div>
+    </div>
+</div>

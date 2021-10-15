@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace kroniiapi.DTO.AuthDTO
 {
-    public class AccountResponse
+    public class AuthResponse
     {
         public int AccountId { get; set; }
         public string Username { get; set; }

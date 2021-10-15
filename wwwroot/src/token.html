@@ -1,31 +1,92 @@
 <div class="mb-5">
-    <h3>Refresh</h3>
-    <p>Refresh accessToken</p>
+    <h2 class="fw-bold">Token</h2>
+    <p>Refresh accessToken & get account data from access token</p>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Method</th>
-                <th scope="col">Endpoint path</th>
-                <th scope="col">Body</th>
-                <th scope="col">Return</th>
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row" id="register">1</th>
-                <td>POST</td>
-                <td>/api/token/refresh</td>
-                <td>
-                    <pre><code>{
+    <div id="refreshToken">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Refresh token</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/token/refresh</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Anonymous</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
     "accessToken": "string"
-}</code></pre>
-                </td>
-                <td></td>
-                <td>200 400</td>
-            </tr>
-        </tbody>
-    </table>
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tokenAccountData">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Re-get account data</h3>
+        </div>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/token/account</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Authorize</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "accountId": int,
+    "username": "string",
+    "fullname": "string",
+    "email": "string",
+    "avatarURL": "string",
+    "role": "string",
+    "accessToken": "string"
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
 </div>
