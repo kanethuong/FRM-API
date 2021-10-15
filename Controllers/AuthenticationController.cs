@@ -78,7 +78,7 @@ namespace kroniiapi.Controllers
                 }
 
                 // Add cookie with refresh token
-                Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
+                Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.None, Secure = true });
 
                 // Add access token to account response
                 var authResponse = _mapper.Map<AuthResponse>(account);
