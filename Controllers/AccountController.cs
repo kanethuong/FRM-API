@@ -92,7 +92,7 @@ namespace kroniiapi.Controllers
         /// <param name="file">Excel file to store account data</param>
         /// <returns>201: Created / 400: File content inapproriate / 409: Username || email || phone is existed</returns>
         [HttpPost("excel")]
-        public async Task<ActionResult> CreateNewAccountByExcel([FromForm] IFormFile file)
+        public async Task<ActionResult<ResponseDTO>> CreateNewAccountByExcel([FromForm] IFormFile file)
         {
             bool success;
             string message;
