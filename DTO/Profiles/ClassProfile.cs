@@ -14,6 +14,16 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<Class, ClassResponse>();
             CreateMap<Class, DeleteClassResponse>();
+            CreateMap<Admin,CreatorDTO>();
+            /*
+            Mapping from model to DTO, using ForMember to specify which field is selected
+            */
+            CreateMap<DeleteClassRequest,RequestDeleteClassResponse>()
+            /*
+            get ClassName MapFrom class Class set to ClassName in DTO 
+            */
+                .ForMember(rs => rs.ClassName, m => m.MapFrom(d => d.Class.ClassName));
+
         }
     }
 }
