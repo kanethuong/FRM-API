@@ -22,7 +22,7 @@ namespace kroniiapi.Helper
             }
 
             // Check file extension
-            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase) && !Path.GetExtension(file.FileName).Equals(".xls", StringComparison.OrdinalIgnoreCase))
+            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase) || !Path.GetExtension(file.FileName).Equals(".xls", StringComparison.OrdinalIgnoreCase))
             {
                 return Tuple.Create(false, "Not support file extension");
             }
@@ -34,7 +34,7 @@ namespace kroniiapi.Helper
 
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
-            if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && !mimeType.Equals("application/vnd.ms-excel"))
+            if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") || !mimeType.Equals("application/vnd.ms-excel"))
             {
                 return Tuple.Create(false, "Not support fake extension");
             }
@@ -55,7 +55,7 @@ namespace kroniiapi.Helper
             }
 
             // Check file extension
-            if ((!Path.GetExtension(file.FileName).Equals(".doc", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".docx", StringComparison.OrdinalIgnoreCase)) )
+            if ((!Path.GetExtension(file.FileName).Equals(".doc", StringComparison.OrdinalIgnoreCase)) || (!Path.GetExtension(file.FileName).Equals(".docx", StringComparison.OrdinalIgnoreCase)) )
             {
                 return Tuple.Create(false, "Not support file extension");
             }
@@ -93,7 +93,7 @@ namespace kroniiapi.Helper
             }
 
             // Check file extension
-            if ((!Path.GetExtension(file.FileName).Equals(".jpeg", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".jpg", StringComparison.OrdinalIgnoreCase)) )
+            if ((!Path.GetExtension(file.FileName).Equals(".jpeg", StringComparison.OrdinalIgnoreCase)) || (!Path.GetExtension(file.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase)) || (!Path.GetExtension(file.FileName).Equals(".jpg", StringComparison.OrdinalIgnoreCase)) )
             {
                 return Tuple.Create(false, "Not support file extension");
             }
@@ -103,7 +103,7 @@ namespace kroniiapi.Helper
             
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
-            if ((!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/png")) )
+            if ((!mimeType.Equals("image/jpeg")) || (!mimeType.Equals("image/jpeg")) || (!mimeType.Equals("image/png")) )
             {
                 return Tuple.Create(false, "Not support fake extension");
             }
