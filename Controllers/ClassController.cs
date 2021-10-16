@@ -31,13 +31,14 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List with pagination / 404: class name not found</returns>
         [HttpGet("page")]
-        public async Task<ActionResult> GetClassList([FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
+            IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if(totalRecord == 0){
                 return NotFound(new ResponseDTO(404,"Classes not found"));
             }
-            return Ok(new PaginationResponse<IEnumerable<Class>>(totalRecord,classList));
+            return Ok(new PaginationResponse<IEnumerable<ClassResponse>>(totalRecord,classListDto));
         }
 
         /// <summary>
@@ -68,11 +69,11 @@ namespace kroniiapi.Controllers
             int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
             if(status == -1){
                 return NotFound (new ResponseDTO(404,"Class or request not found"));
-            }else if(status == 1){
-                return Ok(new ResponseDTO(200,"Update done"));
-            }else{
-                return Ok(new ResponseDTO(409,"Class or request deactivated"));
             }
+            if(status ==0){
+                return BadRequest(new ResponseDTO(409,"Class or request deactivated"));
+            }
+            return Ok(new ResponseDTO(200,"Update done"));
         }
 
         /// <summary>
