@@ -34,8 +34,7 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
-            IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<Class>,IEnumerable<ClassResponse>>(classList);
-
+            IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if(totalRecord == 0){
                 return NotFound(new ResponseDTO(404,"Classes not found"));
             }
