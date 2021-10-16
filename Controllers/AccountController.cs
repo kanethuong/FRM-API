@@ -136,20 +136,20 @@ namespace kroniiapi.Controllers
                         Errors = errors
                     });
                 }
-
-                // Try to insert the account
-                int result = await _accountService.InsertNewAccount(accountInput);
-
-                // Return if existed
-                if (result < 0) {
-                    _accountService.DiscardChanges();
-                    return Conflict(new ResponseDTO(409, "The account on row " + row + " existed"));
-                }
             }
 
-            // All successful
-            int rows = await _accountService.SaveChange();
-            return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, rows + " accounts were inserted"));
+            try {
+                (bool state, int failIndex) = await _accountService.InsertNewAccount(list);
+                if (state == true) {
+                    return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, "Successfully inserted"));
+                } else {
+                    return Conflict(new ResponseDTO(409, "The account at row " + (failIndex + 2) + " existed"));
+                }
+            } catch (Exception e) {
+                return BadRequest(new ResponseDTO(400, "Error when saving the insertion") {
+                    Errors = e
+                });
+            }
         }
 
         /// <summary>
