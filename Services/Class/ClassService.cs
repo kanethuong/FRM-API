@@ -60,6 +60,7 @@ namespace kroniiapi.Services
                                         CreatedAt = c.CreatedAt,
                                         IsAccepted = c.IsAccepted,
                                         AcceptedAt = c.AcceptedAt,
+                                        ClassId = c.ClassId,
                                         Class = new Class
                                         {
                                             ClassId = c.ClassId,
