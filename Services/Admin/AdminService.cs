@@ -121,5 +121,8 @@ namespace kroniiapi.Services
             _dataContext.Admins.Add(admin);
             return true;
         }
+        public async Task<Admin> getAdminByClassId(int id){
+            return null;
+        }
     }
 }
