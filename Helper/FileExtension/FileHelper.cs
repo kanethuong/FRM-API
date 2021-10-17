@@ -16,7 +16,7 @@ namespace kroniiapi.Helper
         public static Tuple<bool, string> CheckExcelExtension(IFormFile file)
         {
             // Check file length
-            if (file == null && file.Length <= 0)
+            if (file == null || file.Length <= 0)
             {
                 return Tuple.Create(false, "No upload file");
             }
@@ -49,7 +49,7 @@ namespace kroniiapi.Helper
         public static Tuple<bool, string> CheckDocExtension(IFormFile file)
         {
             // Check file length
-            if (file == null && file.Length <= 0)
+            if (file == null || file.Length <= 0)
             {
                 return Tuple.Create(false, "No upload file");
             }
@@ -87,7 +87,7 @@ namespace kroniiapi.Helper
         public static Tuple<bool, string> CheckImageExtension(IFormFile file)
         {
             // Check file length
-            if (file == null && file.Length <= 0)
+            if (file == null || file.Length <= 0)
             {
                 return Tuple.Create(false, "No upload file");
             }
@@ -117,7 +117,7 @@ namespace kroniiapi.Helper
         /// <returns></returns>
         public static Tuple<bool, string> CheckPDFExtension (IFormFile file)
         {
-            if (file == null && file.Length <= 0)
+            if (file == null || file.Length <= 0)
             {
                 return Tuple.Create(false, "No upload file");
             }
