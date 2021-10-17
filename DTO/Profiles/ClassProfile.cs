@@ -12,7 +12,10 @@ namespace kroniiapi.DTO.Profiles
     {
         public ClassProfile()
         {
-            CreateMap<Class, ClassResponse>();
+            CreateMap<Class, ClassResponse>()
+                .ForMember(cs=>cs.Fullname,m=>m.MapFrom(a=>a.Admin.Fullname)); //map fullname of admin in class model to fullname of classresponse
+            
+            CreateMap<Trainer,TrainerInClassResponse>();
             CreateMap<Class, DeleteClassResponse>();
             CreateMap<Admin,CreatorDTO>();
             /*
@@ -23,7 +26,8 @@ namespace kroniiapi.DTO.Profiles
             get ClassName MapFrom class Class set to ClassName in DTO 
             */
                 .ForMember(rs => rs.ClassName, m => m.MapFrom(d => d.Class.ClassName));
-
+            CreateMap<NewClassInput,Class>();
+            CreateMap<RequestDeleteClassInput,DeleteClassRequest>();
         }
     }
 }
