@@ -12,7 +12,8 @@ namespace kroniiapi.DB.Models
         public string ApplicationURL { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool? IsAccepted { get; set; }
-        public DateTime AcceptedAt { get; set; }
+        public DateTime? AcceptedAt { get; set; }
+        public string Response { get; set; }
 
         // One-Many trainee
         public int TraineeId { get; set; }

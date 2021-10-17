@@ -8,9 +8,11 @@ namespace kroniiapi.DB.Models
         public int ClassId { get; set; }
         public string ClassName { get; set; }
         public string Description { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool? IsDeactivated { get; set; }
-        public DateTime DeactivatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime StartDay { get; set; } = DateTime.Now;
+        public DateTime EndDay { get; set; }
+        public bool IsDeactivated { get; set; } = false;
+        public DateTime? DeactivatedAt { get; set; }
 
         // Many-One trainee
         public ICollection<Trainee> Trainees { get; set; }
