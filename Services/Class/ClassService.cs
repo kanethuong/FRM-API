@@ -52,7 +52,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == false)
+                                    .Where(c => c.IsAccepted == null)
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
@@ -90,7 +90,7 @@ namespace kroniiapi.Services
         /// Update Deleted Class
         /// </summary>
         /// <param name="confirmDeleteClassInput"></param>
-        /// <returns>True if Success to Change & False if false to change</returns>
+        /// <returns>1 if Success to Change & 0 if false to change & -1 if invalid & 2 if is rejected</returns>
         public async Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             if (confirmDeleteClassInput.IsDeactivate == true)
@@ -119,6 +119,12 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
+            } else if (confirmDeleteClassInput.IsDeactivate == false)
+            {
+                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
+                existedRequest.IsAccepted = false;
+                await _dataContext.SaveChangesAsync();
+                return 2;
             }
             return -1;
         }
