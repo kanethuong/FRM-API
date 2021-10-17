@@ -25,7 +25,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.MyProperty.ToUpper())).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -52,7 +52,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == false )
+                                    .Where(c => c.IsAccepted == false)
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
