@@ -144,6 +144,8 @@ namespace kroniiapi.Services
 
             return true;
         }
-
+        public async Task<Trainer> getTrainerByClassId(int id){
+            return null;
+        }
     }
 }
