@@ -91,13 +91,13 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
@@ -255,19 +255,22 @@ namespace kroniiapi.Services
             }
         }
 
-        async private Task<string> processPasswordAndSendEmail(string email)
+        private void sendEmail(string email, string password)
         {
-            string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
-
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
             emailContent.ToEmail = email;
             emailContent.Subject = "Your Password";
             emailContent.Body = password;
+            _emailService.SendEmailAsync(emailContent);
+        }
 
-            await _emailService.SendEmailAsync(emailContent);
+        private string processPasswordAndSendEmail(string email)
+        {
+            string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
             password = BCrypt.Net.BCrypt.HashPassword(password);
+            sendEmail(email, password);
             return password;
         }
 
@@ -296,7 +299,7 @@ namespace kroniiapi.Services
                     var adminstratorToAdd = _mapper.Map<Administrator>(accountInput);
                     adminstratorToAdd.RoleId = 1;
 
-                    adminstratorToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    adminstratorToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
 
                     if (_dataContext.Administrators.Any(a =>
                         a.Username.Equals(adminstratorToAdd.Username) ||
@@ -310,25 +313,25 @@ namespace kroniiapi.Services
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
-                    adminToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    adminToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     insertedStatus = _adminService.InsertNewAdminNoSaveChange(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
-                    trainerToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    trainerToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     insertedStatus = _trainerService.InsertNewTrainerNoSaveChange(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
-                    traineeToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    traineeToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     insertedStatus = _traineeService.InsertNewTraineeNoSaveChange(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
-                    companyToAdd.Password = await processPasswordAndSendEmail(accountInput.Email);
+                    companyToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
                     insertedStatus = _companyService.InsertNewCompanyNoSaveChange(companyToAdd);
                     break;
                 default:
@@ -347,18 +350,153 @@ namespace kroniiapi.Services
 
         /// <summary>
         /// Insert a list of accounts to the database
-        /// 1. Generate the password for each account and store in a dictionary
-        /// 2. Call the insert method for each account (Hash the password and put it in the model)
-        /// 3. If it fails (existing account or fail to add to the database), discard all changes and return the index of the failed account in the list
-        /// 4. If it succeeds, save the changes and send password mail to all accounts in the list
         /// </summary>
         /// <param name="accountInputs">the list of accounts</param>
         /// <returns>
         /// A tuple contains a boolean value indicating whether the insertion was successful, 
         /// and a integer given the index of the account if the insertion was failed, or -1 if the insertion was successful
         /// </returns>
-        public async Task<Tuple<bool, int>> InsertNewAccount(IList<AccountInput> accountInputs) {
-            return null;
+        /// <exception cref="System.Data.DataException">If there is an error when saving data</exception>
+        public async Task<Tuple<bool, int>> InsertNewAccount(IList<AccountInput> accountInputs)
+        {
+
+            Dictionary<string, string> passwordByEmail = new Dictionary<string, string>(); // email key, password value\
+            string passwordBeforeHash;
+
+            for (int processingIndex = 0; processingIndex < accountInputs.Count; processingIndex++)
+            {
+                var account = accountInputs[processingIndex];
+                //switch and add to context (noSaveChange) base on role
+                switch (account.Role.ToLower())
+                {
+                    case "administrator":
+                        var adminstratorToAdd = _mapper.Map<Administrator>(account);
+                        adminstratorToAdd.RoleId = 1;
+
+                        passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
+                        try
+                        {
+                            passwordByEmail.Add(account.Email, passwordBeforeHash);
+                        }
+                        catch (ArgumentException)
+                        {
+                            return Tuple.Create(false, processingIndex);
+                        }
+
+                        adminstratorToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
+
+                        if (_dataContext.Administrators.Any(a =>
+                            a.Username.Equals(adminstratorToAdd.Username) ||
+                            a.Email.Equals(adminstratorToAdd.Email)
+                        ))
+                        {
+                            DiscardChanges();
+                            return Tuple.Create(false, processingIndex);
+                        }
+                        _dataContext.Administrators.Add(adminstratorToAdd);
+                        break;
+                    case "admin":
+                        var adminToAdd = _mapper.Map<Admin>(account);
+                        adminToAdd.RoleId = 2;
+
+                        passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
+                        try
+                        {
+                            passwordByEmail.Add(account.Email, passwordBeforeHash);
+                        }
+                        catch (ArgumentException)
+                        {
+                            return Tuple.Create(false, processingIndex);
+                        }
+
+                        adminToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
+                        if (!_adminService.InsertNewAdminNoSaveChange(adminToAdd))
+                        {
+                            DiscardChanges();
+                            return Tuple.Create(false, processingIndex);
+                        }
+                        break;
+                    case "trainer":
+                        var trainerToAdd = _mapper.Map<Trainer>(account);
+                        trainerToAdd.RoleId = 3;
+
+                        passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
+                        try
+                        {
+                            passwordByEmail.Add(account.Email, passwordBeforeHash);
+                        }
+                        catch (ArgumentException)
+                        {
+                            return Tuple.Create(false, processingIndex);
+                        }
+
+                        trainerToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
+
+                        if (!_trainerService.InsertNewTrainerNoSaveChange(trainerToAdd))
+                        {
+                            DiscardChanges();
+                            return Tuple.Create(false, processingIndex);
+                        }
+                        break;
+                    case "trainee":
+                        var traineeToAdd = _mapper.Map<Trainee>(account);
+                        traineeToAdd.RoleId = 4;
+
+                        passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
+                        try
+                        {
+                            passwordByEmail.Add(account.Email, passwordBeforeHash);
+                        }
+                        catch (ArgumentException)
+                        {
+                            return Tuple.Create(false, processingIndex);
+                        }
+
+                        traineeToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
+
+                        if (!_traineeService.InsertNewTraineeNoSaveChange(traineeToAdd))
+                        {
+                            DiscardChanges();
+                            return Tuple.Create(false, processingIndex);
+                        }
+                        break;
+                    case "company":
+                        var companyToAdd = _mapper.Map<Company>(account);
+                        companyToAdd.RoleId = 5;
+
+                        passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
+                        try
+                        {
+                            passwordByEmail.Add(account.Email, passwordBeforeHash);
+                        }
+                        catch (ArgumentException)
+                        {
+                            return Tuple.Create(false, processingIndex);
+                        }
+
+                        companyToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
+
+                        if (!_companyService.InsertNewCompanyNoSaveChange(companyToAdd))
+                        {
+                            DiscardChanges();
+                            return Tuple.Create(false, processingIndex);
+                        }
+                        break;
+                    default:
+                        DiscardChanges();
+                        return Tuple.Create(false, processingIndex);
+                }
+            }
+
+            // Can throw exception, catch in Controller
+            int rowInserted = await _dataContext.SaveChangesAsync();
+
+            foreach (var account in passwordByEmail)
+            {
+                sendEmail(account.Key, account.Value);
+            }
+
+            return Tuple.Create(true, -1);
         }
 
         /// <summary>
@@ -387,13 +525,13 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
@@ -404,7 +542,7 @@ namespace kroniiapi.Services
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
-            if(tupleResponse == null || password == null || password == "")
+            if (tupleResponse == null || password == null || password == "")
             {
                 return 0;
             }

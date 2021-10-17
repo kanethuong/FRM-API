@@ -25,7 +25,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.MyProperty.ToUpper())).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -52,7 +52,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == false )
+                                    .Where(c => c.IsAccepted == false)
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
@@ -95,20 +95,22 @@ namespace kroniiapi.Services
         {
             if (confirmDeleteClassInput.IsDeactivate == true)
             {
-                // get Class in Input
                 var existedClass = await _dataContext.Classes.Where(i => i.ClassId == confirmDeleteClassInput.ClassId).FirstOrDefaultAsync();
                 if (existedClass == null)
                 {
                     return -1;
                 }
-                existedClass.IsDeactivated = true;
-                existedClass.DeactivatedAt = DateTime.Now;
-                // get Request in Input
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 if (existedRequest == null)
                 {
                     return -1;
                 }
+                if (existedClass.IsDeactivated == true || existedRequest.IsAccepted == true)
+                {
+                    return 0;
+                }
+                existedClass.IsDeactivated = true;
+                existedClass.DeactivatedAt = DateTime.Now;
                 existedRequest.IsAccepted = true;
                 existedRequest.AcceptedAt = DateTime.Now;
                 // Save Change 
@@ -118,7 +120,7 @@ namespace kroniiapi.Services
                     return 1;
                 }
             }
-            return 0;
+            return -1;
         }
         /// <summary>
         ///  Get Deleted Class List
