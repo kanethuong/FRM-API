@@ -25,7 +25,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.MyProperty.ToUpper())).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -52,7 +52,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == false)
+                                    .Where(c => c.IsAccepted == null)
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
@@ -60,6 +60,7 @@ namespace kroniiapi.Services
                                         CreatedAt = c.CreatedAt,
                                         IsAccepted = c.IsAccepted,
                                         AcceptedAt = c.AcceptedAt,
+                                        ClassId = c.ClassId,
                                         Class = new Class
                                         {
                                             ClassId = c.ClassId,
@@ -90,7 +91,7 @@ namespace kroniiapi.Services
         /// Update Deleted Class
         /// </summary>
         /// <param name="confirmDeleteClassInput"></param>
-        /// <returns>True if Success to Change & False if false to change</returns>
+        /// <returns>1 if Success to Change & 0 if false to change & -1 if invalid & 2 if is rejected</returns>
         public async Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             if (confirmDeleteClassInput.IsDeactivate == true)
@@ -119,6 +120,13 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
+            }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
+            {
+                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
+                existedRequest.IsAccepted = false;
+                await _dataContext.SaveChangesAsync();
+                return 2;
             }
             return -1;
         }

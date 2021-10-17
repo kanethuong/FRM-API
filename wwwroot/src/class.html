@@ -9,6 +9,7 @@
         <div class="w-75 border-bottom mb-3">
             <h3>Get Class List</h3>
         </div>
+        <p>By DatLT</p>
         <div>
             <h5>Endpoint</h5>
             <p>/api​/class​/page</p>
@@ -48,7 +49,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "totalRecords": int,
     "payload": [
         {
@@ -58,7 +60,8 @@
         "createdAt": "DateTime",
         }
     ]
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
@@ -68,6 +71,7 @@
         <div class="w-75 border-bottom mb-3">
             <h3>Get Delete Class Request</h3>
         </div>
+        <p>By HoangNN</p>
         <div>
             <h5>Endpoint</h5>
             <p>/api/class/request</p>
@@ -107,17 +111,24 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "totalRecords": int,
     "payload": [
         {
+        "deleteClassRequestId": int,
         "classId": int,
         "className": "string",
-        "description": "String",
+        "admin": {
+            "fullname": "string",
+            "avatarURL": "string"
+            },
         "createdAt": "DateTime",
+        "reason": "string"
         }
     ]
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
@@ -127,6 +138,7 @@
         <div class="w-75 border-bottom mb-3">
             <h3>Confirm Delete Class Request</h3>
         </div>
+        <p>By DatLT</p>
         <div>
             <h5>Endpoint</h5>
             <p>/api/class/request</p>
@@ -152,11 +164,13 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "classId": int,
     "deleteClassRequestId": int,
     "isDeactivate": boolean
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
@@ -170,6 +184,7 @@
         <div class="w-75 border-bottom mb-3">
             <h3>Get Deleted Class</h3>
         </div>
+        <p>By DanhLPT</p>
         <div>
             <h5>Endpoint</h5>
             <p>/api/Class/deleted</p>
@@ -209,7 +224,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "totalRecords": int,
     "payload": [
         {
@@ -219,7 +235,8 @@
         "createdAt": "DateTime",
         }
     ]
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
