@@ -91,13 +91,13 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
-                 => t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
@@ -362,13 +362,13 @@ namespace kroniiapi.Services
 
             Dictionary<string, string> passwordByEmail = new Dictionary<string, string>(); // email key, password value\
             string passwordBeforeHash;
-            
+
             for (int processingIndex = 0; processingIndex < accountInputs.Count; processingIndex++)
             {
                 var account = accountInputs[processingIndex];
                 //switch and add to context (noSaveChange) base on role
-                switch (account.Role.ToLower())   
-                { 
+                switch (account.Role.ToLower())
+                {
                     case "administrator":
                         var adminstratorToAdd = _mapper.Map<Administrator>(account);
                         adminstratorToAdd.RoleId = 1;
@@ -525,13 +525,13 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
-                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.MyProperty.ToUpper()));
+                 t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
