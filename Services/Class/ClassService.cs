@@ -60,6 +60,7 @@ namespace kroniiapi.Services
                                         CreatedAt = c.CreatedAt,
                                         IsAccepted = c.IsAccepted,
                                         AcceptedAt = c.AcceptedAt,
+                                        ClassId = c.ClassId,
                                         Class = new Class
                                         {
                                             ClassId = c.ClassId,
@@ -119,7 +120,8 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
-            } else if (confirmDeleteClassInput.IsDeactivate == false)
+            }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
             {
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 existedRequest.IsAccepted = false;
