@@ -120,6 +120,10 @@ namespace kroniiapi
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IClassService, ClassService>();
             services.AddScoped<IModuleService, ModuleService>();
+            services.AddScoped<IApplicationService, ApplicationService>();
+            services.AddScoped<IMarkService, MarkService>();
+            services.AddScoped<IExamService, ExamService>();
+            services.AddScoped<IFeedbackService, FeedbackService>();
 
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
@@ -128,10 +132,16 @@ namespace kroniiapi
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
 
-            // Custome Model State response object
-            services.Configure<ApiBehaviorOptions>(c =>
+            // Add signalR
+            services.AddSignalR();
+
+            // Default service config
+            services.AddControllers().AddJsonOptions(options =>
             {
-                c.InvalidModelStateResponseFactory = actionContext =>
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            }).ConfigureApiBehaviorOptions(opt => // Custome Model State response object
+            {
+                opt.InvalidModelStateResponseFactory = actionContext =>
                     new BadRequestObjectResult(new ResponseDTO
                     {
                         Status = 400,
@@ -142,15 +152,6 @@ namespace kroniiapi
                                     kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
                                 )
                     });
-            });
-
-            // Add signalR
-            services.AddSignalR();
-
-            // Default service config
-            services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             });
 
             services.AddSwaggerGen(c =>

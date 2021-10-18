@@ -78,7 +78,7 @@ namespace kroniiapi.Controllers
                 }
 
                 // Add cookie with refresh token
-                Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
+                Response.Cookies.Append("X-Refresh-Token", refreshToken, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.None, Secure = true });
 
                 // Add access token to account response
                 var authResponse = _mapper.Map<AuthResponse>(account);
@@ -99,7 +99,7 @@ namespace kroniiapi.Controllers
         /// <param name="token">Access token</param>
         /// <returns>200: Logout success</returns>
         [HttpPost("logout")]
-        public async Task<ActionResult> Logout([FromBody] Token token)
+        public ActionResult Logout()
         {
             if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
             {

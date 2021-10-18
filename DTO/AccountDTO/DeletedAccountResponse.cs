@@ -10,7 +10,6 @@ namespace kroniiapi.DTO.AccountDTO
         public string Username { get; set; }
         public string Role { get; set; }
         public DateTime DeactivatedAt { get; set; }
-        // public string DeletedBy { get; set; }
-        // public string AvatarURL { get; set; }
+        public DeleteBy DeleteBy { get; set; }
     }
 }
