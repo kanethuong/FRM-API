@@ -79,14 +79,14 @@ namespace kroniiapi.Controllers
             int isDuplicated = await _accountService.InsertNewAccount(accountInput);
             if (isDuplicated == -1)
             {
-                return NotFound(new ResponseDTO(409, "User name or Email or Phone is existed!"));
+                return Conflict(new ResponseDTO(409, "The account is existed"));
             }
             int result = await _accountService.SaveChange();
             if (result == 0)
             {
-                return BadRequest(new ResponseDTO(400, "Insert failed!"));
+                return BadRequest(new ResponseDTO(400, "Error when saving the insertion"));
             }
-            return Ok(new ResponseDTO(201, "Created!"));
+            return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, "Successfully inserted"));
         }
 
         /// <summary>
