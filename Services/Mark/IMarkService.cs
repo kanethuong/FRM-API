@@ -14,9 +14,9 @@ namespace kroniiapi.Services
         Task<ICollection<Mark>> GetMarkByModuleId(int id, DateTime? startDate, DateTime? endDate);
         
     
-        Task<int> InsertNewMark(int moduleId, int traineeId);
+        Task<int> InsertNewMark(Mark mark);
         
-        Task<int> UpdateMark(int moduleId, int traineeId, Mark mark);
+        Task<int> UpdateMark(Mark mark);
         
     }
 }
