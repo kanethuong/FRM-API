@@ -10,7 +10,7 @@ namespace kroniiapi.DTO.PaginationDTO
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         private string _searchName = "";
-        public string MyProperty
+        public string SearchName
         {
             get { return _searchName; }
             set

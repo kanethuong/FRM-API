@@ -40,13 +40,14 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<AccountResponse>>>> GetAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecord,IEnumerable<AccountResponse> listAccount) = await _accountService.GetAccountList(paginationParameter);
+            (int totalRecord, IEnumerable<AccountResponse> listAccount) = await _accountService.GetAccountList(paginationParameter);
 
-            if(totalRecord==0){
-                return NotFound(new ResponseDTO(404,"Search username not found"));
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search email not found"));
             }
 
-            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord,listAccount));
+            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord, listAccount));
         }
 
         /// <summary>
@@ -62,9 +63,9 @@ namespace kroniiapi.Controllers
 
             if (result == -1)
             {
-                return NotFound(new ResponseDTO(404,"Id not found!"));
+                return NotFound(new ResponseDTO(404, "Id not found!"));
             }
-            return Ok(new ResponseDTO(200,"Deleted!"));
+            return Ok(new ResponseDTO(200, "Deleted!"));
         }
 
         /// <summary>
@@ -76,14 +77,16 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> CreateNewAccount([FromBody] AccountInput accountInput)
         {
             int isDuplicated = await _accountService.InsertNewAccount(accountInput);
-            if (isDuplicated == -1) {
-                return NotFound(new ResponseDTO(409,"User name or Email or Phone is existed!"));
+            if (isDuplicated == -1)
+            {
+                return Conflict(new ResponseDTO(409, "The account is existed"));
             }
             int result = await _accountService.SaveChange();
-            if (result == 0) {     
-                return BadRequest(new ResponseDTO(400,"Insert failed!"));
+            if (result == 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Error when saving the insertion"));
             }
-            return Ok(new ResponseDTO(201,"Created!"));
+            return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, "Successfully inserted"));
         }
 
         /// <summary>
@@ -99,13 +102,15 @@ namespace kroniiapi.Controllers
 
             // Check the file extension
             (success, message) = FileHelper.CheckExcelExtension(file);
-            if (!success) {
+            if (!success)
+            {
                 return BadRequest(new ResponseDTO(400, message));
             }
 
             // Arrange the checker and the converter
             Predicate<List<string>> checker = list => list.Contains("username") && list.Contains("fullname") && list.Contains("email") && list.Contains("role");
-            Func<Dictionary<string, object>, AccountInput> converter = dict => new AccountInput() {
+            Func<Dictionary<string, object>, AccountInput> converter = dict => new AccountInput()
+            {
                 Username = dict["username"]?.ToString().Trim(),
                 Fullname = dict["fullname"]?.ToString().Trim(),
                 Email = dict["email"]?.ToString().Trim(),
@@ -114,39 +119,51 @@ namespace kroniiapi.Controllers
 
             // Try to export data from the file
             List<AccountInput> list;
-            using (var stream = new MemoryStream()) {
+            using (var stream = new MemoryStream())
+            {
                 await file.CopyToAsync(stream);
                 list = FileHelper.ExportDataFromExcel<AccountInput>(stream, converter, checker, out success, out message);
             }
 
             // Return if the attempt is failed
-            if (!success) {
+            if (!success)
+            {
                 return BadRequest(new ResponseDTO(400, message));
             }
 
             // Loop through each data
-            for (int i = 0; i < list.Count; i++) {
+            for (int i = 0; i < list.Count; i++)
+            {
                 int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
                 AccountInput accountInput = list[i];
 
                 // Validate the account
                 List<ValidationResult> errors;
-                if (!ValidationHelper.Validate(accountInput, out errors)) {
-                    return BadRequest(new ResponseDTO(400, "Failed to validate the account on row " + row) {
+                if (!ValidationHelper.Validate(accountInput, out errors))
+                {
+                    return BadRequest(new ResponseDTO(400, "Failed to validate the account on row " + row)
+                    {
                         Errors = errors
                     });
                 }
             }
 
-            try {
+            try
+            {
                 (bool state, int failIndex) = await _accountService.InsertNewAccount(list);
-                if (state == true) {
+                if (state == true)
+                {
                     return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, "Successfully inserted"));
-                } else {
+                }
+                else
+                {
                     return Conflict(new ResponseDTO(409, "The account at row " + (failIndex + 2) + " existed"));
                 }
-            } catch (Exception e) {
-                return BadRequest(new ResponseDTO(400, "Error when saving the insertion") {
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new ResponseDTO(400, "Error when saving the insertion")
+                {
                     Errors = e
                 });
             }
@@ -165,7 +182,7 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404));
             }
-            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord,deletedAccount));
+            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord, deletedAccount));
         }
 
         /// <summary>
@@ -176,16 +193,16 @@ namespace kroniiapi.Controllers
         [HttpPost("forgot")]
         public async Task<ActionResult> ForgotPassword([FromBody] EmailInput emailInput)
         {
-            if(emailInput == null || emailInput.Email == "")
+            if (emailInput == null || emailInput.Email == "")
             {
                 return NotFound(new ResponseDTO(404, "Email not found"));
             }
             string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
 
-            if(await _accountService.UpdateAccountPassword(emailInput.Email,password ) == 1)
+            if (await _accountService.UpdateAccountPassword(emailInput.Email, password) == 1)
             {
-                return Ok(new ResponseDTO(200,"Sent"));
+                return Ok(new ResponseDTO(200, "Sent"));
             }
             else
             {
