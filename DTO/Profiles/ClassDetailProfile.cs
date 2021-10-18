@@ -17,6 +17,7 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Admin,AdminInClassDetail>();
             CreateMap<Trainer,TrainerFeedback>();
             CreateMap<Module,ModuleInClassDetail>();
+            CreateMap<Trainer,TrainerInClassDetail>();
 
         }
     }
