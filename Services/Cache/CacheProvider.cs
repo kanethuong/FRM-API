@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using StackExchange.Redis.Extensions.Core.Abstractions;
 
@@ -29,6 +31,25 @@ namespace kroniiapi.Services
         public async Task SetCache<T>(string key, T value) where T : class
         {
             bool added = await _cache.Db0.AddAsync(key, value);
+        }
+
+        /// <summary>
+        /// Add value to existing key
+        /// </summary>
+        /// <typeparam name="T">A class</typeparam>
+        public async Task AddValueToKey<T>(string key, T value) 
+        {
+            LinkedList<T> valueList = new LinkedList<T>();
+            try
+            {
+                valueList = await GetFromCache<LinkedList<T>>(key);
+                valueList.AddLast(value);
+            }catch(Exception e)
+            {
+                valueList = new LinkedList<T>();
+                valueList.AddLast(value);
+            }
+            await SetCache<LinkedList<T>>(key,valueList);
         }
 
         /// <summary>

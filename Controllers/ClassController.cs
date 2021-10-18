@@ -24,14 +24,25 @@ namespace kroniiapi.Controllers
     public class ClassController : ControllerBase
     {
         private readonly IClassService _classService;
+        private readonly ITrainerService _trainerService;
+        private readonly IAdminService _adminService;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
 
+<<<<<<< HEAD
         public ClassController(IClassService classService, IMapper mapper, ITraineeService traineeService)
+=======
+        public ClassController(IClassService classService,ITrainerService trainerService,IAdminService adminService , IMapper mapper)
+>>>>>>> a531fd03ca448d1589fb7679225702b878ad2b36
         {
             _classService = classService;
+            _trainerService = trainerService;
             _mapper = mapper;
+<<<<<<< HEAD
             _traineeService = traineeService;
+=======
+            _adminService = adminService;
+>>>>>>> a531fd03ca448d1589fb7679225702b878ad2b36
         }
 
         /// <summary>
@@ -43,6 +54,11 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
+            
+            foreach(Class c in classList){
+                c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
+                c.Admin = await _adminService.GetAdminById(c.AdminId);
+            }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if (totalRecord == 0)
             {

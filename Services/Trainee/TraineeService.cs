@@ -140,7 +140,7 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
-        ///Get trainee list by class id
+        ///Get trainee list by class id with pagination
         /// </summary>
         /// <param name="id"></param>
         /// <param name="paginationParameter"></param>
@@ -156,6 +156,16 @@ namespace kroniiapi.Services
                      .Take(paginationParameter.PageSize);
 
             return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
+        /// Get Trainee by class id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>List of trainee</returns>
+        public async Task<ICollection<Trainee>> GetTraineeByClassId(int id)
+        {
+            return await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false).ToListAsync();
         }
     }
 }

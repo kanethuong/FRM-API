@@ -26,7 +26,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-
+    
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
@@ -161,6 +161,7 @@ namespace kroniiapi.Services
         /// <returns>if found return class and if not return 0</returns>
         public async Task<Class> GetClassDetail(int id)
         {
+<<<<<<< HEAD
             Class c = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
             c.Admin = await _dataContext.Admins.Where(a => a.AdminId == c.AdminId).FirstOrDefaultAsync();
             c.Trainer = await _dataContext.Trainers.Where(a => a.TrainerId == c.TrainerId).FirstOrDefaultAsync();
@@ -170,6 +171,46 @@ namespace kroniiapi.Services
             c.Calendars = await _dataContext.Calendars.Where(a => a.ClassId == c.ClassId).ToListAsync();
             c.Trainees = await _dataContext.Trainees.Where(a => a.ClassId == c.ClassId).ToListAsync();
             return c;
+=======
+            var classGet = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false)
+            .Select(c => new Class{
+                ClassId = c.ClassId,
+                ClassName = c.ClassName,
+                Description = c.Description,
+                CreatedAt = c.CreatedAt,
+                StartDay = c.StartDay,
+                EndDay = c.EndDay,
+                IsDeactivated = c.IsDeactivated,
+                DeactivatedAt = c.DeactivatedAt,
+                Trainees = c.Trainees,
+                AdminId = c.AdminId,
+                Admin = new Admin{
+                    AdminId = c.AdminId,
+                    Fullname = c.Admin.Fullname,
+                    AvatarURL = c.Admin.AvatarURL,
+                    Email = c.Admin.Email,
+                },
+                TrainerId = c.TrainerId,
+                Trainer = new Trainer{
+                    Fullname = c.Trainer.Fullname,
+                    AvatarURL = c.Trainer.AvatarURL,
+                    Email = c.Trainer.Email,
+                },
+                RoomId = c.RoomId,
+                Room = new Room{
+                    RoomId = c.Room.RoomId,
+                    RoomName = c.Room.RoomName,
+                    Classes = c.Room.Classes,
+                },
+                ClassModules = c.ClassModules,
+                Modules = c.Modules,
+                DeleteClassRequest = c.DeleteClassRequest,
+                Calendars = c.Calendars,
+            })
+            .FirstOrDefaultAsync();
+            
+            return classGet;
+>>>>>>> a531fd03ca448d1589fb7679225702b878ad2b36
         }
 
         /// <summary>
