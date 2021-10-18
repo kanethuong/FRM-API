@@ -50,9 +50,7 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-        Task<Tuple<int, IEnumerable<Exam>>> IApplicationService.GetApplicationList(PaginationParameter paginationParameter)
-        {
-            throw new NotImplementedException();
-        }
+        
+       
     }
 }
