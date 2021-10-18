@@ -9,7 +9,8 @@ namespace kroniiapi.DTO.ClassDTO
     {
         public int ClassId { get; set; }
         public string ClassName { get; set; }
-        public string Description { get; set; }
+        public TrainerInClassResponse Trainer { get; set; }
+        public string Fullname { get; set; }//admin fullname
         public DateTime CreatedAt { get; set; }
     }
 }
