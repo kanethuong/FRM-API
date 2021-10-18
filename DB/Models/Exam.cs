@@ -13,6 +13,8 @@ namespace kroniiapi.DB.Models
         public DateTime ExamDay { get; set; }
         public int DurationInMinute { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsCancelled { get; set; } = false;
+        public DateTime? CancalledAt { get; set; }
 
         // One-Many module
         public int ModuleId { get; set; }

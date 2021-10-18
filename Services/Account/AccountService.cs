@@ -309,6 +309,7 @@ namespace kroniiapi.Services
                         return -1;
                     }
                     _dataContext.Administrators.Add(adminstratorToAdd);
+                    insertedStatus = true;
                     break;
                 case "admin":
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
