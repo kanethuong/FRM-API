@@ -25,11 +25,13 @@ namespace kroniiapi.Controllers
     {
         private readonly IClassService _classService;
         private readonly IMapper _mapper;
+        private readonly ITraineeService _traineeService;
 
-        public ClassController(IClassService classService, IMapper mapper)
+        public ClassController(IClassService classService, IMapper mapper, ITraineeService traineeService)
         {
             _classService = classService;
             _mapper = mapper;
+            _traineeService = traineeService;
         }
 
         /// <summary>
@@ -42,10 +44,11 @@ namespace kroniiapi.Controllers
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
-            if(totalRecord == 0){
-                return NotFound(new ResponseDTO(404,"Classes not found"));
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Classes not found"));
             }
-            return Ok(new PaginationResponse<IEnumerable<ClassResponse>>(totalRecord,classListDto));
+            return Ok(new PaginationResponse<IEnumerable<ClassResponse>>(totalRecord, classListDto));
         }
 
         /// <summary>
@@ -74,13 +77,15 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
-            if(status == -1){
-                return NotFound (new ResponseDTO(404,"Class or request not found"));
+            if (status == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Class or request not found"));
             }
-            if(status ==0){
-                return BadRequest(new ResponseDTO(409,"Class or request deactivated"));
+            if (status == 0)
+            {
+                return BadRequest(new ResponseDTO(409, "Class or request deactivated"));
             }
-            return Ok(new ResponseDTO(200,"Update done"));
+            return Ok(new ResponseDTO(200, "Update done"));
         }
 
         /// <summary>
@@ -108,11 +113,12 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
-            Class s = await _classService.GetClassDetail(id); 
-            if(s == null){
+            Class s = await _classService.GetClassDetail(id);
+            if (s == null)
+            {
                 return NotFound(new ResponseDTO(404, "Class not found"));
             }
-            
+
             var cdr = _mapper.Map<ClassDetailResponse>(s);
             return Ok(cdr);
         }
@@ -124,14 +130,15 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id,paginationParameter);
+            (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
             IEnumerable<TraineeInClassDetail> traineeDTO = _mapper.Map<IEnumerable<TraineeInClassDetail>>(trainees);
-            if(totalRecord ==0){
+            if (totalRecord == 0)
+            {
                 return NotFound(new ResponseDTO(404, "Search trainee name not found"));
             }
             return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, traineeDTO));
         }
-        
+
         /// <summary>
         /// Insert the request delete class to db
         /// </summary>
@@ -165,18 +172,38 @@ namespace kroniiapi.Controllers
         {
             return null;
         }
-        
+
         /// <summary>
         /// Insert new class to db
         /// </summary>
         /// <param name="newClassInput">Detail of new class</param>
         /// <returns>201: Class is created / 409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost]
-        public async Task<ActionResult> CreateNewClass(NewClassInput newClassInput)
+        public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
-            return null;
+            var traineeListId = newClassInput.TraineeIdList;
+            // Check if trainee input already have class
+            foreach (var traineeId in traineeListId)
+            {
+                var trainee = await _traineeService.GetTraineeById(traineeId);
+                if (trainee.ClassId is not null)
+                {
+                    return BadRequest(new ResponseDTO(409, "One or more trainees already have class "));
+                }
+            }
+            var newClass = _mapper.Map<Class>(newClassInput);
+            var rs = await _classService.InsertNewClass(newClass);
+            if (rs == -1)
+            {
+                return Conflict(new ResponseDTO
+                {
+                    Status = 409,
+                    Message = "Class is already exist"
+                });
+            }
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
         }
-        
+
         /// <summary>
         /// Insert a list class to db using excel file
         /// </summary>
@@ -188,15 +215,19 @@ namespace kroniiapi.Controllers
             bool success;
             string message;
             (success, message) = FileHelper.CheckExcelExtension(file);
-            if (!success) {
+            if (!success)
+            {
                 return BadRequest(new ResponseDTO(400, message));
             }
-            using (var stream = new MemoryStream()) {
+            using (var stream = new MemoryStream())
+            {
                 await file.CopyToAsync(stream);
-                using (var package = new ExcelPackage(stream)) {
+                using (var package = new ExcelPackage(stream))
+                {
                     ExcelWorkbook workbook = package.Workbook;
                     ExcelNamedRangeCollection names = workbook.Names;
-                    if (!names.ContainsKey("Class")) {
+                    if (!names.ContainsKey("Class"))
+                    {
                         return BadRequest(new ResponseDTO(400, "Missing required sheets"));
                     }
                     // TODO: Logic Here

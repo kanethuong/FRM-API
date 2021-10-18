@@ -16,6 +16,14 @@ namespace kroniiapi.DTO.ClassDTO
         [Required]
         public int TrainerId { get; set; }
         [Required]
+        public int AdminId { get; set; }
+        [Required]
+        public int RoomId { get; set; }
+        [Required]
+        public DateTime StartDay { get; set; } 
+        [Required]
+        public DateTime EndDay { get; set; }
+        [Required]
         public ICollection<int> TraineeIdList { get; set; }
         [Required]
         public ICollection<int> ModuleIdList { get; set; }

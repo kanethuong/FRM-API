@@ -120,7 +120,8 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
-            } else if (confirmDeleteClassInput.IsDeactivate == false)
+            }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
             {
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 existedRequest.IsAccepted = false;
@@ -161,13 +162,13 @@ namespace kroniiapi.Services
         public async Task<Class> GetClassDetail(int id)
         {
             Class c = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
-             c.Admin = await _dataContext.Admins.Where(a => a.AdminId == c.AdminId).FirstOrDefaultAsync();
-             c.Trainer = await _dataContext.Trainers.Where(a => a.TrainerId == c.TrainerId).FirstOrDefaultAsync();
-             c.Modules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).Select(a => a.Module).ToListAsync();
-             c.ClassModules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).ToListAsync();
-             c.Room = await _dataContext.Rooms.Where(a => a.RoomId == c.RoomId).FirstOrDefaultAsync();
-             c.Calendars = await _dataContext.Calendars.Where(a => a.ClassId == c.ClassId).ToListAsync();
-             c.Trainees = await _dataContext.Trainees.Where( a => a.ClassId == c.ClassId).ToListAsync();
+            c.Admin = await _dataContext.Admins.Where(a => a.AdminId == c.AdminId).FirstOrDefaultAsync();
+            c.Trainer = await _dataContext.Trainers.Where(a => a.TrainerId == c.TrainerId).FirstOrDefaultAsync();
+            c.Modules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).Select(a => a.Module).ToListAsync();
+            c.ClassModules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).ToListAsync();
+            c.Room = await _dataContext.Rooms.Where(a => a.RoomId == c.RoomId).FirstOrDefaultAsync();
+            c.Calendars = await _dataContext.Calendars.Where(a => a.ClassId == c.ClassId).ToListAsync();
+            c.Trainees = await _dataContext.Trainees.Where(a => a.ClassId == c.ClassId).ToListAsync();
             return c;
         }
 
@@ -180,7 +181,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
 
-            var traineeList = await _dataContext.Trainees.Where( t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
             int totalRecords = traineeList.Count();
             var rs = traineeList.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
@@ -196,6 +197,19 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             return 0;
+        }
+
+        public async Task<int> InsertNewClass(Class newClass)
+        {
+
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            {
+                return -1;
+            }
+            int rowInserted = 0;
+            _dataContext.Classes.Add(newClass);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
         }
     }
 }
