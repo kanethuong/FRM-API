@@ -105,12 +105,13 @@ namespace kroniiapi.Services
         /// <returns>-1:not existed / 0:fail / 1:success</returns>
         public async Task<int> DeleteTrainee(int id)
         {
-            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
             if (existedTrainee == null)
             {
                 return -1;
             }
             existedTrainee.IsDeactivated = true;
+            existedTrainee.DeactivatedAt = DateTime.Now;
             var rowDeleted = await _dataContext.SaveChangesAsync();
 
             return rowDeleted;

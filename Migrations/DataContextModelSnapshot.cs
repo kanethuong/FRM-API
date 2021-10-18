@@ -38,7 +38,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("DOB")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -148,7 +148,7 @@ namespace kroniiapi.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<DateTime>("AcceptedAt")
+                    b.Property<DateTime?>("AcceptedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("AdminId")
@@ -168,6 +168,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<bool?>("IsAccepted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Response")
+                        .HasColumnType("text");
 
                     b.Property<int>("TraineeId")
                         .HasColumnType("integer");
@@ -290,17 +293,23 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeactivated")
+                    b.Property<DateTime>("EndDay")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
                     b.Property<int>("RoomId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDay")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("TrainerId")
                         .HasColumnType("integer");
@@ -350,7 +359,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -481,7 +490,7 @@ namespace kroniiapi.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<DateTime>("AcceptedAt")
+                    b.Property<DateTime?>("AcceptedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("AdminId")
@@ -519,6 +528,9 @@ namespace kroniiapi.Migrations
                     b.Property<int>("AdminId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("CancalledAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -533,6 +545,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<string>("ExamName")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("ModuleId")
                         .HasColumnType("integer");
@@ -713,7 +728,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("DOB")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -792,7 +807,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("DOB")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
