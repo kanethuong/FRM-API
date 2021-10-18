@@ -200,7 +200,7 @@ namespace kroniiapi.Helper
             List<string> colNames = new List<string>();
             for (int col = 1; col <= colCount; col++)
             {
-                colNames.Add(worksheet.Cells[1, col].Value.ToString().Trim());
+                colNames.Add(worksheet.Cells[1, col].Value?.ToString().Trim());
             }
 
             // Verify the column names
@@ -208,12 +208,9 @@ namespace kroniiapi.Helper
             {
                 success = false;
                 message = "Column names do not match";
+                return;
             }
-            else
-            {
-                success = true;
-            }
-
+            
             // Create the cells dictionary
             Dictionary<string, object> cellsDict = new Dictionary<string, object>();
 
@@ -238,7 +235,7 @@ namespace kroniiapi.Helper
                 {
                     message = "Fail to convert value on row " + row;
                     success = false;
-                    break;
+                    return;
                 }
 
                 // Consume the dictionary
@@ -250,6 +247,7 @@ namespace kroniiapi.Helper
 
             // All successful
             message = "Success";
+            success = true;
         }
     }
 }

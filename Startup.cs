@@ -27,6 +27,7 @@ using kroniiapi.Helper;
 using Microsoft.AspNetCore.Authorization;
 using kroniiapi.Services;
 using kroniiapi.DTO.Email;
+using OfficeOpenXml;
 
 namespace kroniiapi
 {
@@ -165,6 +166,7 @@ namespace kroniiapi
         {
             if (env.IsDevelopment())
             {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "kroniiapi v1"));
