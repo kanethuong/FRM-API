@@ -60,6 +60,7 @@ namespace kroniiapi.Services
                                         CreatedAt = c.CreatedAt,
                                         IsAccepted = c.IsAccepted,
                                         AcceptedAt = c.AcceptedAt,
+                                        ClassId = c.ClassId,
                                         Class = new Class
                                         {
                                             ClassId = c.ClassId,
@@ -126,6 +127,13 @@ namespace kroniiapi.Services
                 await _dataContext.SaveChangesAsync();
                 return 2;
             }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
+            {
+                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
+                existedRequest.IsAccepted = false;
+                await _dataContext.SaveChangesAsync();
+                return 2;
+            }
             return -1;
         }
         /// <summary>
@@ -144,6 +152,38 @@ namespace kroniiapi.Services
                      .Take(paginationParameter.PageSize);
 
             return Tuple.Create(totalRecords, rs);
+        }
+        /// <summary>
+        /// Get detail of a class 
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <returns></returns>
+        /// Note for DatLT: dùng hàm GetTraineesByClassId ở dưới để get pagination cho trainee 
+        /// rồi gán vào TraineeList ở ClassDetailResponse trong controller
+        public async Task<Class> GetClassDetail(int id)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get Trainee List in a class with pagination
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, ICollection<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Insert New Request Delete Class to db
+        /// </summary>
+        /// <param name="requestDeleteClassInput"></param>
+        /// <returns>1: done / tu suy nghi tiep nhe KhangTD </returns>
+        public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
+        {
+            return 0;
         }
     }
 }
