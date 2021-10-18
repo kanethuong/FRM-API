@@ -143,9 +143,7 @@ namespace kroniiapi.Helper
         }
 
         /// <summary>
-        /// Export the data from the excel file.
-        /// This convenient method will first convert the rows of the file to a dictionary called "cells dictionary".
-        /// Then, It calls the converter to convert the dictionary to the final data.
+        /// Export the data from the fisrt worksheet of the excel file
         /// </summary>
         /// <param name="dataStream">The file stream of the excel file</param>
         /// <param name="rowConverter">The converter, convert the cells dictionary to the final data</param>
@@ -156,75 +154,90 @@ namespace kroniiapi.Helper
         /// <returns>A list of the converted data</returns>
         public static List<TData> ExportDataFromExcel<TData>(Stream dataStream, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
-            // Create the final list
-            List<TData> list = new List<TData>();
-
             // Start the excel package wrapper
             using (var package = new ExcelPackage(dataStream))
             {
                 // Only use the first worksheet of the excel file
                 ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
 
-                // Get the dimension
-                var rowCount = worksheet.Dimension.Rows;
-                var colCount = worksheet.Dimension.Columns;
+                return ExportDataFromExcel<TData>(worksheet, rowConverter, colNamesVerifier, out success, out message);
+            }
+        }
 
-                // Get the column names
-                List<string> colNames = new List<string>();
+        /// <summary>
+        /// Export the data from the excel worksheet
+        /// </summary>
+        /// <param name="worksheet">The excel worksheet</param>
+        /// <param name="rowConverter">The converter, convert the cells dictionary to the final data</param>
+        /// <param name="colNamesVerifier">The column names verifier, checking if the column names match user requirement</param>
+        /// <param name="success">Whether the exporting process is successful</param>
+        /// <param name="message">The output message</param>
+        /// <typeparam name="TData">The final data the converter is trying to convert to</typeparam>
+        /// <returns>A list of the converted data</returns>
+        public static List<TData> ExportDataFromExcel<TData>(ExcelWorksheet worksheet, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
+        {
+            // Create the final list
+            List<TData> list = new List<TData>();
+
+            // Get the dimension
+            var rowCount = worksheet.Dimension.Rows;
+            var colCount = worksheet.Dimension.Columns;
+
+            // Get the column names
+            List<string> colNames = new List<string>();
+            for (int col = 1; col <= colCount; col++)
+            {
+                colNames.Add(worksheet.Cells[1, col].Value.ToString().Trim());
+            }
+
+            // Verify the column names
+            if (!colNamesVerifier.Invoke(colNames))
+            {
+                success = false;
+                message = "Column names do not match";
+                return list;
+            }
+            else
+            {
+                success = true;
+            }
+
+            // Create the cells dictionary
+            Dictionary<string, object> cellsDict = new Dictionary<string, object>();
+
+            // Loop through each rows from row 2
+            for (int row = 2; row <= rowCount; row++)
+            {
+                // Keep the state if fail to add
+                bool failToAdd = false;
+
+                // Add the cells from the row to the dictionary
                 for (int col = 1; col <= colCount; col++)
                 {
-                    colNames.Add(worksheet.Cells[1, col].Value.ToString().Trim());
-                }
-
-                // Verify the column names
-                if (!colNamesVerifier.Invoke(colNames))
-                {
-                    success = false;
-                    message = "Column names do not match";
-                    return list;
-                }
-                else
-                {
-                    success = true;
-                }
-
-                // Create the cells dictionary
-                Dictionary<string, object> cellsDict = new Dictionary<string, object>();
-
-                // Loop through each rows from row 2
-                for (int row = 2; row <= rowCount; row++)
-                {
-                    // Keep the state if fail to add
-                    bool failToAdd = false;
-
-                    // Add the cells from the row to the dictionary
-                    for (int col = 1; col <= colCount; col++)
+                    if (!cellsDict.TryAdd(colNames[col - 1], worksheet.Cells[row, col].Value))
                     {
-                        if (!cellsDict.TryAdd(colNames[col - 1], worksheet.Cells[row, col].Value))
-                        {
-                            failToAdd = true;
-                            break;
-                        }
-                    }
-
-                    // Check if fail to add
-                    if (failToAdd)
-                    {
-                        message = "Fail to convert value on row " + row;
-                        success = false;
+                        failToAdd = true;
                         break;
                     }
-
-                    // Convert the dictionary and add to the final list
-                    list.Add(rowConverter.Invoke(cellsDict));
-
-                    // Clear the dictionary for next row
-                    cellsDict.Clear();
                 }
 
-                // All successful
-                message = "Success";
+                // Check if fail to add
+                if (failToAdd)
+                {
+                    message = "Fail to convert value on row " + row;
+                    success = false;
+                    break;
+                }
+
+                // Convert the dictionary and add to the final list
+                list.Add(rowConverter.Invoke(cellsDict));
+
+                // Clear the dictionary for next row
+                cellsDict.Clear();
             }
+
+            // All successful
+            message = "Success";
 
             // Return the final list
             return list;
