@@ -101,11 +101,17 @@ namespace kroniiapi.Controllers
         /// Get the detail information of a class and student list with pagination
         /// </summary>
         /// <param name="id"> id of class</param>
-        /// <returns> 200: Detail of class and student list with pagination / 404: class not found </returns>
+        /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
-            return null;
+            Class s = await _classService.GetClassDetail(id); 
+            if(s == null){
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+            
+            var cdr = _mapper.Map<ClassDetailResponse>(s);
+            return Ok(cdr);
         }
         /// <summary>
         /// Get trainee list with pagination
@@ -115,7 +121,12 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id,paginationParameter);
+            IEnumerable<TraineeInClassDetail> traineeDTO = _mapper.Map<IEnumerable<TraineeInClassDetail>>(trainees);
+            if(totalRecord ==0){
+                return NotFound(new ResponseDTO(404, "Search trainee name not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, traineeDTO));
         }
         
         /// <summary>
