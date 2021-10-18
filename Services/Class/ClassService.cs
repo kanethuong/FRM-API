@@ -161,17 +161,6 @@ namespace kroniiapi.Services
         /// <returns>if found return class and if not return 0</returns>
         public async Task<Class> GetClassDetail(int id)
         {
-<<<<<<< HEAD
-            Class c = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
-            c.Admin = await _dataContext.Admins.Where(a => a.AdminId == c.AdminId).FirstOrDefaultAsync();
-            c.Trainer = await _dataContext.Trainers.Where(a => a.TrainerId == c.TrainerId).FirstOrDefaultAsync();
-            c.Modules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).Select(a => a.Module).ToListAsync();
-            c.ClassModules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).ToListAsync();
-            c.Room = await _dataContext.Rooms.Where(a => a.RoomId == c.RoomId).FirstOrDefaultAsync();
-            c.Calendars = await _dataContext.Calendars.Where(a => a.ClassId == c.ClassId).ToListAsync();
-            c.Trainees = await _dataContext.Trainees.Where(a => a.ClassId == c.ClassId).ToListAsync();
-            return c;
-=======
             var classGet = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false)
             .Select(c => new Class{
                 ClassId = c.ClassId,
@@ -210,7 +199,6 @@ namespace kroniiapi.Services
             .FirstOrDefaultAsync();
             
             return classGet;
->>>>>>> a531fd03ca448d1589fb7679225702b878ad2b36
         }
 
         /// <summary>

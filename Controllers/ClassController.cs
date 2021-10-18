@@ -29,20 +29,13 @@ namespace kroniiapi.Controllers
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
 
-<<<<<<< HEAD
-        public ClassController(IClassService classService, IMapper mapper, ITraineeService traineeService)
-=======
-        public ClassController(IClassService classService,ITrainerService trainerService,IAdminService adminService , IMapper mapper)
->>>>>>> a531fd03ca448d1589fb7679225702b878ad2b36
+        public ClassController(IClassService classService,ITrainerService trainerService,IAdminService adminService,ITraineeService traineeService, IMapper mapper)
         {
             _classService = classService;
             _trainerService = trainerService;
             _mapper = mapper;
-<<<<<<< HEAD
-            _traineeService = traineeService;
-=======
             _adminService = adminService;
->>>>>>> a531fd03ca448d1589fb7679225702b878ad2b36
+            _traineeService = traineeService;
         }
 
         /// <summary>
