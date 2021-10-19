@@ -146,7 +146,26 @@ namespace kroniiapi.Services
             return true;
         }
         public async Task<Trainer> getTrainerByClassId(int id){
-            return null;
+            Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).Select(c => new Class{
+                TrainerId = c.TrainerId, 
+                Trainer = new Trainer {
+                    TrainerId = c.TrainerId,
+                    Username = c.Trainer.Username,
+                    Password = c.Trainer.Password,
+                    Fullname = c.Trainer.Fullname,
+                    AvatarURL = c.Trainer.AvatarURL,
+                    Email = c.Trainer.Email,
+                    Phone = c.Trainer.Phone,
+                    DOB = c.Trainer.DOB,
+                    Address = c.Trainer.Address, 
+                    Gender = c.Trainer.Gender,
+                    Wage = c.Trainer.Wage,
+                    CreatedAt = c.Trainer.CreatedAt,
+                    IsDeactivated = c.Trainer.IsDeactivated,
+                    DeactivatedAt = c.Trainer.DeactivatedAt,
+                }
+            }).FirstOrDefaultAsync();
+        return class1.Trainer;
         }
     }
 }

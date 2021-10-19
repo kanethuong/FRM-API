@@ -35,6 +35,9 @@ namespace kroniiapi.DB
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Auto increase Identity column
+            modelBuilder.UseSerialColumns();
+
             // Role table to other account entities
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.Administrators)
