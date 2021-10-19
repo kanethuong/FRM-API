@@ -43,6 +43,14 @@ namespace kroniiapi.Services
         /// <returns>list of marks</returns>
         public async Task<ICollection<Mark>> GetMarkByModuleId(int id, DateTime? startDate, DateTime? endDate)
         {
+            if (startDate == null)
+            {
+                startDate = DateTime.MinValue;
+            }
+            if (endDate == null)
+            {
+                startDate = DateTime.MinValue;
+            }
             return await _dataContext.Marks.Where(m => m.ModuleId == id && m.PublishedAt > startDate && m.PublishedAt < endDate).ToListAsync();
         }
         /// <summary>
