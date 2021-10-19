@@ -152,12 +152,11 @@ namespace kroniiapi.Helper
         /// <param name="message">The output message</param>
         /// <typeparam name="TData">The final data the converter is trying to convert to</typeparam>
         /// <returns>A list of the converted data</returns>
-        public static List<TData> ExportDataFromExcel<TData>(Stream dataStream, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
+        public static List<TData> ExportDataFromExcel<TData>(this Stream dataStream, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
             using (var package = new ExcelPackage(dataStream))
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
-                return ExportDataFromExcel<TData>(worksheet, rowConverter, colNamesVerifier, out success, out message);
+                return package.Workbook.Worksheets[0].ExportDataFromExcel<TData>(rowConverter, colNamesVerifier, out success, out message);
             }
         }
 
@@ -171,10 +170,10 @@ namespace kroniiapi.Helper
         /// <param name="message">The output message</param>
         /// <typeparam name="TData">The final data the converter is trying to convert to</typeparam>
         /// <returns>A list of the converted data</returns>
-        public static List<TData> ExportDataFromExcel<TData>(ExcelWorksheet worksheet, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
+        public static List<TData> ExportDataFromExcel<TData>(this ExcelWorksheet worksheet, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
             List<TData> list = new List<TData>();
-            ExportDataFromExcel(worksheet, dict => {
+            worksheet.ExportDataFromExcel(dict => {
                 var data = rowConverter.Invoke(dict);
                 if (data is not null) {
                     list.Add(data);
@@ -191,7 +190,7 @@ namespace kroniiapi.Helper
         /// <param name="colNamesVerifier">The column names verifier, checking if the column names match user requirement</param>
         /// <param name="success">Whether the exporting process is successful</param>
         /// <param name="message">The output message</param>
-        public static void ExportDataFromExcel(ExcelWorksheet worksheet, Action<Dictionary<string, object>> rowConsumer, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
+        public static void ExportDataFromExcel(this ExcelWorksheet worksheet, Action<Dictionary<string, object>> rowConsumer, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
             // Get the dimension
             var rowCount = worksheet.Dimension.Rows;
@@ -201,7 +200,7 @@ namespace kroniiapi.Helper
             List<string> colNames = new List<string>();
             for (int col = 1; col <= colCount; col++)
             {
-                colNames.Add(worksheet.Cells[1, col].Value.ToString().Trim());
+                colNames.Add(worksheet.Cells[1, col].Value?.ToString().Trim());
             }
 
             // Verify the column names
@@ -209,12 +208,9 @@ namespace kroniiapi.Helper
             {
                 success = false;
                 message = "Column names do not match";
+                return;
             }
-            else
-            {
-                success = true;
-            }
-
+            
             // Create the cells dictionary
             Dictionary<string, object> cellsDict = new Dictionary<string, object>();
 
@@ -239,7 +235,7 @@ namespace kroniiapi.Helper
                 {
                     message = "Fail to convert value on row " + row;
                     success = false;
-                    break;
+                    return;
                 }
 
                 // Consume the dictionary
@@ -251,6 +247,7 @@ namespace kroniiapi.Helper
 
             // All successful
             message = "Success";
+            success = true;
         }
     }
 }
