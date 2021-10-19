@@ -26,7 +26,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-
+    
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
@@ -157,12 +157,47 @@ namespace kroniiapi.Services
         /// Get detail of a class 
         /// </summary>
         /// <param name="id">id of the class</param>
-        /// <returns></returns>
-        /// Note for DatLT: dùng hàm GetTraineesByClassId ở dưới để get pagination cho trainee 
-        /// rồi gán vào TraineeList ở ClassDetailResponse trong controller
+        /// <returns>if found return class and if not return 0</returns>
         public async Task<Class> GetClassDetail(int id)
         {
-            return null;
+            var classGet = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false)
+            .Select(c => new Class{
+                ClassId = c.ClassId,
+                ClassName = c.ClassName,
+                Description = c.Description,
+                CreatedAt = c.CreatedAt,
+                StartDay = c.StartDay,
+                EndDay = c.EndDay,
+                IsDeactivated = c.IsDeactivated,
+                DeactivatedAt = c.DeactivatedAt,
+                Trainees = c.Trainees,
+                AdminId = c.AdminId,
+                Admin = new Admin{
+                    AdminId = c.AdminId,
+                    Fullname = c.Admin.Fullname,
+                    AvatarURL = c.Admin.AvatarURL,
+                    Email = c.Admin.Email,
+                },
+                TrainerId = c.TrainerId,
+                Trainer = new Trainer{
+                    Fullname = c.Trainer.Fullname,
+                    AvatarURL = c.Trainer.AvatarURL,
+                    Email = c.Trainer.Email,
+                },
+                RoomId = c.RoomId,
+                Room = new Room{
+                    RoomId = c.Room.RoomId,
+                    RoomName = c.Room.RoomName,
+                    Classes = c.Room.Classes,
+                },
+                ClassModules = c.ClassModules,
+                Modules = c.Modules,
+                DeleteClassRequest = c.DeleteClassRequest,
+                Calendars = c.Calendars,
+            })
+            .FirstOrDefaultAsync();
+            
+            return classGet;
         }
 
         /// <summary>
@@ -171,9 +206,15 @@ namespace kroniiapi.Services
         /// <param name="id">id of the class</param>
         /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
         /// <returns>tuple list of trainee</returns>
-        public async Task<Tuple<int, ICollection<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
-            return null;
+
+            var traineeList = await _dataContext.Trainees.Where( t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            int totalRecords = traineeList.Count();
+            var rs = traineeList.OrderBy(c => c.TraineeId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
         }
 
         /// <summary>

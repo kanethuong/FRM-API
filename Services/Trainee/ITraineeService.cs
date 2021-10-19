@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 
 namespace kroniiapi.Services
 {
@@ -15,5 +16,7 @@ namespace kroniiapi.Services
         bool InsertNewTraineeNoSaveChange(Trainee trainee);
         Task<int> UpdateTrainee(int id, Trainee trainee);
         Task<int> DeleteTrainee(int id);
+        Task<Tuple<int, IEnumerable<Trainee>>> GetTraineeListByClassId(int id, PaginationParameter paginationParameter);
+        Task<ICollection<Trainee>> GetTraineeByClassId(int id);
     }
 }
