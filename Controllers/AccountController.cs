@@ -122,7 +122,7 @@ namespace kroniiapi.Controllers
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
-                list = FileHelper.ExportDataFromExcel<AccountInput>(stream, converter, checker, out success, out message);
+                list = stream.ExportDataFromExcel<AccountInput>(converter, checker, out success, out message);
             }
 
             // Return if the attempt is failed
@@ -139,7 +139,7 @@ namespace kroniiapi.Controllers
 
                 // Validate the account
                 List<ValidationResult> errors;
-                if (!ValidationHelper.Validate(accountInput, out errors))
+                if (!accountInput.Validate(out errors))
                 {
                     return BadRequest(new ResponseDTO(400, "Failed to validate the account on row " + row)
                     {

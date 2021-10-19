@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -136,6 +137,35 @@ namespace kroniiapi.Services
             _dataContext.Trainees.Add(trainee);            
 
             return true;
+        }
+
+        /// <summary>
+        ///Get trainee list by class id with pagination
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Tuple of trainee list</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineeListByClassId(int id, PaginationParameter paginationParameter)
+        {
+            var listTrainee = await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false && t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+
+            int totalRecords = listTrainee.Count();
+
+            var rs = listTrainee.OrderBy(c => c.ClassId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+
+            return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
+        /// Get Trainee by class id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>List of trainee</returns>
+        public async Task<ICollection<Trainee>> GetTraineeByClassId(int id)
+        {
+            return await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false).ToListAsync();
         }
     }
 }
