@@ -24,15 +24,22 @@ namespace kroniiapi.Controllers
     public class ClassController : ControllerBase
     {
         private readonly IClassService _classService;
-        private readonly ITrainerService _trainerService;
         private readonly IAdminService _adminService;
+        private readonly ITrainerService _trainerService;
+        private readonly IMarkService _markService;
+        private readonly IModuleService _moduleService;
+        private readonly IFeedbackService _feedbackService;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
 
-        public ClassController(IClassService classService,ITrainerService trainerService,IAdminService adminService,ITraineeService traineeService, IMapper mapper)
+        public ClassController(IClassService classService,ITraineeService traineeService, IMarkService markService, IAdminService adminService, IModuleService moduleService, ITrainerService trainerService, IFeedbackService feedbackService, IMapper mapper)
         {
             _classService = classService;
+            _adminService = adminService;
             _trainerService = trainerService;
+            _feedbackService = feedbackService;
+            _markService = markService;
+            _moduleService = moduleService;
             _mapper = mapper;
             _adminService = adminService;
             _traineeService = traineeService;
@@ -168,7 +175,23 @@ namespace kroniiapi.Controllers
         [HttpGet("score/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id,paginationParameter);
+            List<MarkResponse> markResponses = new List<MarkResponse>(); 
+            foreach (Trainee trainee in trainees) {
+                    MarkResponse markResponse = new MarkResponse();
+                    markResponse.TraineeName = trainee.Fullname;
+                    IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, new DateTime(2021,2,5),new DateTime(2021,7,11));
+                    foreach (Mark m in markList) {
+                        m.Module = await _moduleService.GetModuleById(m.ModuleId);
+                    }
+                    markResponse.ScoreList = _mapper.Map<IEnumerable<ModuleMark>>(markList);
+                    markResponses.Add(markResponse);
+            }
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search student name not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
         }
 
         /// <summary>
@@ -179,7 +202,30 @@ namespace kroniiapi.Controllers
         [HttpGet("feedback/{id:int}")]
         public async Task<ActionResult<FeedbackResponse>> ViewClassFeedback(int id)
         {
-            return null;
+            Admin admin1 = await _adminService.getAdminByClassId(id);
+            Trainer trainer1 = await _trainerService.getTrainerByClassId(id);
+            FeedbackResponse feedbackResponses = new FeedbackResponse();
+
+            IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByAdminId(trainer1.TrainerId);
+            IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByAdminId(admin1.AdminId);
+            
+            IEnumerable<FeedbackContent> TrainerfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(trainerFeedbacks);
+            IEnumerable<FeedbackContent> AdminfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
+            
+            
+            TrainerFeedbackResponse trainerFeedbackResponse = new ();
+            trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer1);
+            trainerFeedbackResponse.Feedbacks = TrainerfeedbackContents;
+
+            AdminFeedbackResponse adminFeedbackResponse = new();
+            adminFeedbackResponse.Admin = _mapper.Map<AdminInFeedbackResponse>(admin1);
+            adminFeedbackResponse.Feedbacks = AdminfeedbackContents;
+
+            feedbackResponses.TrainerFeedback = trainerFeedbackResponse;
+            feedbackResponses.AdminFeedback = adminFeedbackResponse;
+
+            return feedbackResponses;
+
         }
 
         /// <summary>
