@@ -24,12 +24,16 @@ namespace kroniiapi.Controllers
     public class ClassController : ControllerBase
     {
         private readonly IClassService _classService;
+        private readonly ITrainerService _trainerService;
+        private readonly IAdminService _adminService;
         private readonly IMapper _mapper;
 
-        public ClassController(IClassService classService, IMapper mapper)
+        public ClassController(IClassService classService,ITrainerService trainerService,IAdminService adminService , IMapper mapper)
         {
             _classService = classService;
+            _trainerService = trainerService;
             _mapper = mapper;
+            _adminService = adminService;
         }
 
         /// <summary>
@@ -41,6 +45,11 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
+            
+            foreach(Class c in classList){
+                c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
+                c.Admin = await _adminService.GetAdminById(c.AdminId);
+            }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if(totalRecord == 0){
                 return NotFound(new ResponseDTO(404,"Classes not found"));
