@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -10,9 +11,11 @@ using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 
 namespace kroniiapi.Controllers
 {
@@ -37,6 +40,7 @@ namespace kroniiapi.Controllers
             _markService = markService;
             _moduleService = moduleService;
             _mapper = mapper;
+            _adminService = adminService;
         }
 
         /// <summary>
@@ -48,6 +52,11 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
+            
+            foreach(Class c in classList){
+                c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
+                c.Admin = await _adminService.GetAdminById(c.AdminId);
+            }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if(totalRecord == 0){
                 return NotFound(new ResponseDTO(404,"Classes not found"));
@@ -229,9 +238,26 @@ namespace kroniiapi.Controllers
         /// <param name="file">Excel file to stores class data</param>
         /// <returns>201: Class is created /400: File content inapproriate /409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost("excel")]
-        public async Task<ActionResult> CreateNewClassByExcel([FromForm] IFormFile file)
+        public async Task<ActionResult<ResponseDTO>> CreateNewClassByExcel([FromForm] IFormFile file)
         {
-            return null;
+            bool success;
+            string message;
+            (success, message) = FileHelper.CheckExcelExtension(file);
+            if (!success) {
+                return BadRequest(new ResponseDTO(400, message));
+            }
+            using (var stream = new MemoryStream()) {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream)) {
+                    ExcelWorkbook workbook = package.Workbook;
+                    ExcelNamedRangeCollection names = workbook.Names;
+                    if (!names.ContainsKey("Class")) {
+                        return BadRequest(new ResponseDTO(400, "Missing required sheets"));
+                    }
+                    // TODO: Logic Here
+                }
+            }
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created"));
         }
     }
 }

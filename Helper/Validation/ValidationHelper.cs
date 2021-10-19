@@ -14,7 +14,7 @@ namespace kroniiapi.Helper
         /// <param name="obj">the object</param>
         /// <param name="results">the list of error results, if failed to validate</param>
         /// <returns>Whether the object is validated successfully</returns>
-        public static bool Validate(object obj, out List<ValidationResult> results)
+        public static bool Validate(this object obj, out List<ValidationResult> results)
         {
             ValidationContext context = new ValidationContext(obj, null, null);
             results = new List<ValidationResult>();
