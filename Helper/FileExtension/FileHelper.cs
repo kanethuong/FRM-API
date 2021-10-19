@@ -55,7 +55,7 @@ namespace kroniiapi.Helper
             }
 
             // Check file extension
-            if ((!Path.GetExtension(file.FileName).Equals(".doc", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".docx", StringComparison.OrdinalIgnoreCase)) )
+            if ((!Path.GetExtension(file.FileName).Equals(".doc", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".docx", StringComparison.OrdinalIgnoreCase)))
             {
                 return Tuple.Create(false, "Not support file extension");
             }
@@ -63,7 +63,7 @@ namespace kroniiapi.Helper
             Stream fs = file.OpenReadStream();
             BinaryReader br = new BinaryReader(fs);
             byte[] bytes = br.ReadBytes((Int32)fs.Length);
-            
+
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
             // Check MIME type is Docx
@@ -93,17 +93,17 @@ namespace kroniiapi.Helper
             }
 
             // Check file extension
-            if ((!Path.GetExtension(file.FileName).Equals(".jpeg", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".jpg", StringComparison.OrdinalIgnoreCase)) )
+            if ((!Path.GetExtension(file.FileName).Equals(".jpeg", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".png", StringComparison.OrdinalIgnoreCase)) && (!Path.GetExtension(file.FileName).Equals(".jpg", StringComparison.OrdinalIgnoreCase)))
             {
                 return Tuple.Create(false, "Not support file extension");
             }
             Stream fs = file.OpenReadStream();
             BinaryReader br = new BinaryReader(fs);
             byte[] bytes = br.ReadBytes((Int32)fs.Length);
-            
+
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
-            if ((!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/png")) )
+            if ((!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/jpeg")) && (!mimeType.Equals("image/png")))
             {
                 return Tuple.Create(false, "Not support fake extension");
             }
@@ -115,7 +115,7 @@ namespace kroniiapi.Helper
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public static Tuple<bool, string> CheckPDFExtension (IFormFile file)
+        public static Tuple<bool, string> CheckPDFExtension(IFormFile file)
         {
             if (file == null || file.Length <= 0)
             {
@@ -154,12 +154,9 @@ namespace kroniiapi.Helper
         /// <returns>A list of the converted data</returns>
         public static List<TData> ExportDataFromExcel<TData>(Stream dataStream, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
-            // Start the excel package wrapper
             using (var package = new ExcelPackage(dataStream))
             {
-                // Only use the first worksheet of the excel file
                 ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
-
                 return ExportDataFromExcel<TData>(worksheet, rowConverter, colNamesVerifier, out success, out message);
             }
         }
@@ -168,7 +165,7 @@ namespace kroniiapi.Helper
         /// Export the data from the excel worksheet
         /// </summary>
         /// <param name="worksheet">The excel worksheet</param>
-        /// <param name="rowConverter">The converter, convert the cells dictionary to the final data</param>
+        /// <param name="rowConverter">The converter, convert the cells dictionary to the final data. If the final data is null, It will not be added to the final list</param>
         /// <param name="colNamesVerifier">The column names verifier, checking if the column names match user requirement</param>
         /// <param name="success">Whether the exporting process is successful</param>
         /// <param name="message">The output message</param>
@@ -176,9 +173,26 @@ namespace kroniiapi.Helper
         /// <returns>A list of the converted data</returns>
         public static List<TData> ExportDataFromExcel<TData>(ExcelWorksheet worksheet, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
-            // Create the final list
             List<TData> list = new List<TData>();
+            ExportDataFromExcel(worksheet, dict => {
+                var data = rowConverter.Invoke(dict);
+                if (data is not null) {
+                    list.Add(data);
+                }
+            }, colNamesVerifier, out success, out message);
+            return list;
+        }
 
+        /// <summary>
+        /// Export the data from the excel worksheet for consuming
+        /// </summary>
+        /// <param name="worksheet">The excel worksheet</param>
+        /// <param name="rowConsumer">The consumer, do action on the cells dictionary</param>
+        /// <param name="colNamesVerifier">The column names verifier, checking if the column names match user requirement</param>
+        /// <param name="success">Whether the exporting process is successful</param>
+        /// <param name="message">The output message</param>
+        public static void ExportDataFromExcel(ExcelWorksheet worksheet, Action<Dictionary<string, object>> rowConsumer, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
+        {
             // Get the dimension
             var rowCount = worksheet.Dimension.Rows;
             var colCount = worksheet.Dimension.Columns;
@@ -195,7 +209,6 @@ namespace kroniiapi.Helper
             {
                 success = false;
                 message = "Column names do not match";
-                return list;
             }
             else
             {
@@ -229,8 +242,8 @@ namespace kroniiapi.Helper
                     break;
                 }
 
-                // Convert the dictionary and add to the final list
-                list.Add(rowConverter.Invoke(cellsDict));
+                // Consume the dictionary
+                rowConsumer.Invoke(cellsDict);
 
                 // Clear the dictionary for next row
                 cellsDict.Clear();
@@ -238,9 +251,6 @@ namespace kroniiapi.Helper
 
             // All successful
             message = "Success";
-
-            // Return the final list
-            return list;
         }
     }
 }
