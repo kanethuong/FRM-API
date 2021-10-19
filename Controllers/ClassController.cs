@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -10,9 +11,11 @@ using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 
 namespace kroniiapi.Controllers
 {
@@ -101,11 +104,17 @@ namespace kroniiapi.Controllers
         /// Get the detail information of a class and student list with pagination
         /// </summary>
         /// <param name="id"> id of class</param>
-        /// <returns> 200: Detail of class and student list with pagination / 404: class not found </returns>
+        /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
-            return null;
+            Class s = await _classService.GetClassDetail(id); 
+            if(s == null){
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+            
+            var cdr = _mapper.Map<ClassDetailResponse>(s);
+            return Ok(cdr);
         }
         /// <summary>
         /// Get trainee list with pagination
@@ -115,7 +124,12 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id,paginationParameter);
+            IEnumerable<TraineeInClassDetail> traineeDTO = _mapper.Map<IEnumerable<TraineeInClassDetail>>(trainees);
+            if(totalRecord ==0){
+                return NotFound(new ResponseDTO(404, "Search trainee name not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, traineeDTO));
         }
         
         /// <summary>
@@ -169,9 +183,26 @@ namespace kroniiapi.Controllers
         /// <param name="file">Excel file to stores class data</param>
         /// <returns>201: Class is created /400: File content inapproriate /409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost("excel")]
-        public async Task<ActionResult> CreateNewClassByExcel([FromForm] IFormFile file)
+        public async Task<ActionResult<ResponseDTO>> CreateNewClassByExcel([FromForm] IFormFile file)
         {
-            return null;
+            bool success;
+            string message;
+            (success, message) = FileHelper.CheckExcelExtension(file);
+            if (!success) {
+                return BadRequest(new ResponseDTO(400, message));
+            }
+            using (var stream = new MemoryStream()) {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream)) {
+                    ExcelWorkbook workbook = package.Workbook;
+                    ExcelNamedRangeCollection names = workbook.Names;
+                    if (!names.ContainsKey("Class")) {
+                        return BadRequest(new ResponseDTO(400, "Missing required sheets"));
+                    }
+                    // TODO: Logic Here
+                }
+            }
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created"));
         }
     }
 }

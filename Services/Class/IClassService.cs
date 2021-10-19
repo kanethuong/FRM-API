@@ -14,5 +14,8 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter);
         Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput);
         Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter);
+        Task<Class> GetClassByClassName(string className);
+        Task<Class> GetClassDetail(int id);
+        Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter);
     }
 }
