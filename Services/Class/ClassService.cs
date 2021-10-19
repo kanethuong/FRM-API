@@ -120,7 +120,8 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
-            } else if (confirmDeleteClassInput.IsDeactivate == false)
+            }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
             {
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 existedRequest.IsAccepted = false;
@@ -209,7 +210,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
 
-            var traineeList = await _dataContext.Trainees.Where( t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
             int totalRecords = traineeList.Count();
             var rs = traineeList.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
@@ -225,6 +226,19 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             return 0;
+        }
+
+        public async Task<int> InsertNewClass(Class newClass)
+        {
+
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            {
+                return -1;
+            }
+            int rowInserted = 0;
+            _dataContext.Classes.Add(newClass);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
         }
     }
 }

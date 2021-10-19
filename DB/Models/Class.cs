@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace kroniiapi.DB.Models
 {
     public class Class
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ClassId { get; set; }
         public string ClassName { get; set; }
         public string Description { get; set; }
