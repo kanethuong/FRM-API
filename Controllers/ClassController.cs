@@ -140,7 +140,15 @@ namespace kroniiapi.Controllers
         [HttpPost("request")]
         public async Task<ActionResult> CreateRequestDeleteClass(RequestDeleteClassInput requestDeleteClassInput)
         {
-            return null;
+            DeleteClassRequest deleteClassRequest=_mapper.Map<DeleteClassRequest>(requestDeleteClassInput);
+            int rs=await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
+            if(rs==-1){
+                return Conflict(new ResponseDTO(409,"Class is already deactivated"));
+            }else if(rs==0){
+                return StatusCode(StatusCodes.Status500InternalServerError,new ResponseDTO(500,"Fail to request delete class"));
+            }else{
+                return Ok(new ResponseDTO(200,"Request delete class success"));
+            }
         }
 
         /// <summary>

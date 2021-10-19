@@ -120,7 +120,8 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
-            } else if (confirmDeleteClassInput.IsDeactivate == false)
+            }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
             {
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 existedRequest.IsAccepted = false;
@@ -161,13 +162,13 @@ namespace kroniiapi.Services
         public async Task<Class> GetClassDetail(int id)
         {
             Class c = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false).FirstOrDefaultAsync();
-             c.Admin = await _dataContext.Admins.Where(a => a.AdminId == c.AdminId).FirstOrDefaultAsync();
-             c.Trainer = await _dataContext.Trainers.Where(a => a.TrainerId == c.TrainerId).FirstOrDefaultAsync();
-             c.Modules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).Select(a => a.Module).ToListAsync();
-             c.ClassModules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).ToListAsync();
-             c.Room = await _dataContext.Rooms.Where(a => a.RoomId == c.RoomId).FirstOrDefaultAsync();
-             c.Calendars = await _dataContext.Calendars.Where(a => a.ClassId == c.ClassId).ToListAsync();
-             c.Trainees = await _dataContext.Trainees.Where( a => a.ClassId == c.ClassId).ToListAsync();
+            c.Admin = await _dataContext.Admins.Where(a => a.AdminId == c.AdminId).FirstOrDefaultAsync();
+            c.Trainer = await _dataContext.Trainers.Where(a => a.TrainerId == c.TrainerId).FirstOrDefaultAsync();
+            c.Modules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).Select(a => a.Module).ToListAsync();
+            c.ClassModules = await _dataContext.ClassModules.Where(a => a.ClassId == c.ClassId).ToListAsync();
+            c.Room = await _dataContext.Rooms.Where(a => a.RoomId == c.RoomId).FirstOrDefaultAsync();
+            c.Calendars = await _dataContext.Calendars.Where(a => a.ClassId == c.ClassId).ToListAsync();
+            c.Trainees = await _dataContext.Trainees.Where(a => a.ClassId == c.ClassId).ToListAsync();
             return c;
         }
 
@@ -180,7 +181,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
 
-            var traineeList = await _dataContext.Trainees.Where( t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
             int totalRecords = traineeList.Count();
             var rs = traineeList.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
@@ -192,10 +193,30 @@ namespace kroniiapi.Services
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
-        /// <returns>1: done / tu suy nghi tiep nhe KhangTD </returns>
+        /// <returns> -1: Class is already deactivated / 0: Insert fail / 1: Insert success </returns>
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
-            return 0;
+            Class c = await GetClassByClassID(deleteClassRequest.ClassId);
+
+            if (c.IsDeactivated==true)
+            {
+                return -1;
+            }
+
+            int rowInserted = 0;
+            _dataContext.DeleteClassRequests.Add(deleteClassRequest);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+
+        /// <summary>
+        /// Get Class By ClassID
+        /// </summary>
+        /// <param name="classID"></param>
+        /// <returns> Class </returns>
+        public async Task<Class> GetClassByClassID(int classId)
+        {
+            return await _dataContext.Classes.Where(c => c.ClassId == classId).FirstOrDefaultAsync();
         }
     }
 }
