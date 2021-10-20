@@ -222,10 +222,30 @@ namespace kroniiapi.Services
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
-        /// <returns>1: done / tu suy nghi tiep nhe KhangTD </returns>
+        /// <returns> -1: Class is already deactivated / 0: Insert fail / 1: Insert success </returns>
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
-            return 0;
+            Class c = await GetClassByClassID(deleteClassRequest.ClassId);
+
+            if (c.IsDeactivated==true)
+            {
+                return -1;
+            }
+
+            int rowInserted = 0;
+            _dataContext.DeleteClassRequests.Add(deleteClassRequest);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+
+        /// <summary>
+        /// Get Class By ClassID
+        /// </summary>
+        /// <param name="classID"></param>
+        /// <returns> Class </returns>
+        public async Task<Class> GetClassByClassID(int classId)
+        {
+            return await _dataContext.Classes.Where(c => c.ClassId == classId).FirstOrDefaultAsync();
         }
 
         public async Task<int> InsertNewClass(Class newClass)
