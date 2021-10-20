@@ -433,23 +433,55 @@ namespace kroniiapi.Controllers
                         });
                     }
 
-                    // TODO: Waiting to use Insert New Classes from Service
+                    // Insert the classes
                     foreach (var classInput in classInputList) {
-                        var newClass = _mapper.Map<Class>(classInput);
-                        int result = await _classService.InsertNewClass(newClass);
+                        int result = await _classService.InsertNewClassNoSave(classInput);
                         if (result < 0) {
-                            return Conflict(new ResponseDTO(409, "Class existed or Trainee / Trainer already has a class") {
-                                Errors = new {
-                                    value = classInput
-                                }
-                            });
-                        } else if (result == 0) {
-                            return Conflict(new ResponseDTO(400, "Failed to add class") {
-                                Errors = new {
-                                    value = classInput
-                                }
-                            });
+                            _classService.DiscardChanges();
+                            if (result == -1) {
+                                return Conflict(new ResponseDTO(409, "Duplicate class name") {
+                                    Errors = new {
+                                        value = classInput
+                                    }
+                                });
+                            } else if (result == -2) {
+                                return Conflict(new ResponseDTO(409, "Trainee already have class") {
+                                    Errors = new {
+                                        value = classInput
+                                    }
+                                });
+                            }
                         }
+                    }
+                    try {
+                        await _classService.SaveChange();
+                    } catch (Exception e) {
+                        _classService.DiscardChanges();
+                        return BadRequest(new ResponseDTO(400, "Failed to add class") {
+                            Errors = e
+                        });
+                    }
+
+                    // Insert Class-Module and Class-Trainee
+                    foreach(var modulePair in classModulesDict) {
+                        var clazz = await _classService.GetClassByClassName(modulePair.Key);
+                        if (clazz is not null) {
+                            _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
+                        }
+                    }
+                    foreach(var traineePair in classTraineesDict) {
+                        var clazz = await _classService.GetClassByClassName(traineePair.Key);
+                        if (clazz is not null) {
+                            await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
+                        }
+                    }
+                    try {
+                        await _classService.SaveChange();
+                    } catch (Exception e) {
+                        _classService.DiscardChanges();
+                        return BadRequest(new ResponseDTO(400, "Failed to save changes on module or trainee on class") {
+                            Errors = e
+                        });
                     }
                 }
             }
