@@ -55,8 +55,9 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
-            
-            foreach(Class c in classList){
+
+            foreach (Class c in classList)
+            {
                 c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
                 c.Admin = await _adminService.GetAdminById(c.AdminId);
             }
@@ -245,18 +246,7 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
-            var traineeListId = newClassInput.TraineeIdList;
-            // Check if trainee input already have class
-            foreach (var traineeId in traineeListId)
-            {
-                var trainee = await _traineeService.GetTraineeById(traineeId);
-                if (trainee.ClassId is not null)
-                {
-                    return BadRequest(new ResponseDTO(409, "One or more trainees already have class "));
-                }
-            }
-            var newClass = _mapper.Map<Class>(newClassInput);
-            var rs = await _classService.InsertNewClass(newClass);
+            var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
                 return Conflict(new ResponseDTO
@@ -264,6 +254,14 @@ namespace kroniiapi.Controllers
                     Status = 409,
                     Message = "Class is already exist"
                 });
+            }
+            else if (rs == -2)
+            {
+                return BadRequest(new ResponseDTO(409, "One or more trainees already have class "));
+            }
+            else if (rs == 0)
+            {
+                return StatusCode(500);
             }
             return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
         }
