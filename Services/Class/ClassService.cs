@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
@@ -13,10 +14,13 @@ namespace kroniiapi.Services
     public class ClassService : IClassService
     {
         private DataContext _dataContext;
-
-        public ClassService(DataContext dataContext)
+        private readonly IMapper _mapper;
+        private readonly ITraineeService _traineeService;
+        public ClassService(DataContext dataContext, IMapper mapper, ITraineeService traineeService)
         {
             _dataContext = dataContext;
+            _mapper = mapper;
+            _traineeService = traineeService;
         }
         /// <summary>
         /// Get Class List
@@ -263,6 +267,93 @@ namespace kroniiapi.Services
             _dataContext.Classes.Add(newClass);
             rowInserted = await _dataContext.SaveChangesAsync();
             return rowInserted;
+        }
+        /// <summary>
+        /// add Class Id to Trainee model (after add new class)
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="traineeIdList"></param>
+        /// <returns></returns>
+        public async Task AddClassIdToTrainee(int classId, ICollection<int> traineeIdList)
+        {
+            foreach (var traineeId in traineeIdList)
+            {
+                var trainee = await _traineeService.GetTraineeById(traineeId);
+                trainee.ClassId = classId;
+            }
+        }
+        /// <summary>
+        /// add module id and class id to class module model (after add new class)
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="moduleIdList"></param>
+        public void AddDataToClassModule(int classId, ICollection<int> moduleIdList)
+        {
+            foreach (var moduleId in moduleIdList)
+            {
+                ClassModule classModule = new ClassModule()
+                {
+                    ClassId = classId,
+                    ModuleId = moduleId
+                };
+                _dataContext.ClassModules.Add(classModule);
+            }
+        }
+        /// <summary>
+        /// Insert new class and save change
+        /// </summary>
+        /// <param name="newClassInput">detail of class input</param>
+        /// <returns> -1: duplicate class name / -2: trainee already have class / 0: some unpredicted error / 1: insert succesfully </returns>
+        public async Task<int> InsertNewClass(NewClassInput newClassInput)
+        {
+            var classSave = await InsertNewClassNoSave(newClassInput);
+            if (classSave == -1)
+            {
+                return -1;
+            }
+            else if (classSave == -2)
+            {
+                return -2;
+            }
+            int rowInserted = 0;
+            rowInserted = await _dataContext.SaveChangesAsync();
+            var newClass = await GetClassByClassName(newClassInput.ClassName);
+            await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
+            AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
+            await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+
+        /// <summary>
+        /// Insert class but not saving, check if trainee already have class
+        /// </summary>
+        /// <param name="newClassInput"></param>
+        /// <returns>-1: duplicate class name / -2: trainee already have class / 1: insert succesfully</returns>
+        public async Task<int> InsertNewClassNoSave(NewClassInput newClassInput)
+        {
+            var newClass = _mapper.Map<Class>(newClassInput);
+
+            // Check duplicate class name
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            {
+                return -1;
+            }
+
+            // Check if trainee input already have class
+            var traineeListId = newClassInput.TraineeIdList;
+            foreach (var traineeId in traineeListId)
+            {
+                var trainee = await _traineeService.GetTraineeById(traineeId);
+                var traineeClassId = trainee.ClassId;
+                if (traineeClassId is not null)
+                {
+                    return -2;
+                }
+            }
+
+            _dataContext.Classes.Add(newClass);
+
+            return 1;
         }
     }
 }
