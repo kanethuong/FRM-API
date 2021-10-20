@@ -20,5 +20,21 @@ namespace kroniiapi.Helper
             results = new List<ValidationResult>();
             return Validator.TryValidateObject(obj, context, results, true);
         }
+
+        /// <summary>
+        /// Validate if the list contains all the values
+        /// </summary>
+        /// <param name="list">the list</param>
+        /// <param name="values">the values</param>
+        /// <typeparam name="T">the data type</typeparam>
+        /// <returns>Whether the list contains all the values</returns>
+        public static bool ContainsAll<T>(this ICollection<T> list, params T[] values) {
+            foreach (var s in values) {
+                if (!list.Contains(s)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
