@@ -35,8 +35,8 @@ namespace kroniiapi.DB.Models
         public ICollection<Module> Modules { get; set; }
         public ICollection<ClassModule> ClassModules { get; set; }
 
-        // One-One delete class request
-        public DeleteClassRequest DeleteClassRequest { get; set; }
+        // Many-One delete class request
+        public ICollection<DeleteClassRequest> DeleteClassRequests { get; set; }
 
         // Many-One class
         public ICollection<Calendar> Calendars { get; set; }
