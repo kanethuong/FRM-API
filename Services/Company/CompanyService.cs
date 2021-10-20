@@ -44,7 +44,7 @@ namespace kroniiapi.Services
         /// <returns>Company data</returns>
         public async Task<Company> GetCompanyByEmail(string email)
         {
-            return await _dataContext.Companies.Where(c => c.Email.Equals(email) && c.IsDeactivated == false).FirstOrDefaultAsync();
+            return await _dataContext.Companies.Where(c => c.Email.ToLower().Equals(email.ToLower()) && c.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
