@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -277,23 +278,181 @@ namespace kroniiapi.Controllers
         {
             bool success;
             string message;
+            List<string> errors = new List<string>();
+
             (success, message) = FileHelper.CheckExcelExtension(file);
             if (!success)
             {
                 return BadRequest(new ResponseDTO(400, message));
             }
+
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
                 using (var package = new ExcelPackage(stream))
                 {
+                    Dictionary<string, HashSet<int>> classModulesDict = new Dictionary<string, HashSet<int>>();
+                    Dictionary<string, HashSet<int>> classTraineesDict = new Dictionary<string, HashSet<int>>();
+                    List<NewClassInput> classInputList = new List<NewClassInput>();
+
+                    // Check sheets
                     ExcelWorkbook workbook = package.Workbook;
-                    ExcelNamedRangeCollection names = workbook.Names;
-                    if (!names.ContainsKey("Class"))
+                    ExcelWorksheet classSheet = workbook.Worksheets["Class"];
+                    ExcelWorksheet moduleSheet = workbook.Worksheets["Module"];
+                    ExcelWorksheet traineeSheet = workbook.Worksheets["Trainee"];
+                    if (classSheet is null || moduleSheet is null || traineeSheet is null)
                     {
                         return BadRequest(new ResponseDTO(400, "Missing required sheets"));
                     }
-                    // TODO: Logic Here
+
+                    // Export Class-Module dictionary
+                    Predicate<List<string>> moduleChecker = list => list.ContainsAll("class", "module");
+                    List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
+                    if (!success) {
+                        return BadRequest(new ResponseDTO(400, "Error on Module: " + message));
+                    }
+                    foreach (var dict in moduleDictList) {
+                        string className = dict["class"]?.ToString();
+                        string module = dict["module"]?.ToString();
+                        if (className is null || module is null) {
+                            continue;
+                        }
+                        int moduleId;
+                        if (!int.TryParse(module, out moduleId)) {
+                            continue;
+                        }
+                        HashSet<int> list;
+                        if (classModulesDict.ContainsKey(className)) {
+                            list = classModulesDict[className];
+                        } else {
+                            list = new HashSet<int>();
+                            classModulesDict[className] = list;
+                        }
+                        if (await _moduleService.GetModuleById(moduleId) is not null) {
+                            list.Add(moduleId);
+                        } else {
+                            errors.Add("Invalid module: " + module);
+                        }
+                    }
+
+
+                    // Export Class-Trainee dictionary
+                    Predicate<List<string>> traineeChecker = list => list.ContainsAll("class", "email");
+                    List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
+                    if (!success) {
+                        return BadRequest(new ResponseDTO(400, "Error on Trainee: " + message));
+                    }
+                    foreach (var dict in traineeDictList) {
+                        string className = dict["class"]?.ToString();
+                        string email = dict["email"]?.ToString();
+                        if (className is null || email is null) {
+                            continue;
+                        }
+                        int? traineeId = (await _traineeService.GetTraineeByEmail(email))?.TraineeId;
+                        if (!traineeId.HasValue) {
+                            errors.Add("Invalid email: " + email);
+                            continue;
+                        }
+                        HashSet<int> list;
+                        if (classTraineesDict.ContainsKey(className)) {
+                            list = classTraineesDict[className];
+                        } else {
+                            list = new HashSet<int>();
+                            classTraineesDict[className] = list;
+                        }
+                        list.Add(traineeId.Value);
+                    }
+
+                    // Export Class list
+                    Predicate<List<string>> classChecker = list => list.ContainsAll("name", "description", "trainer", "admin", "room", "start", "end");
+                    List<Dictionary<string, object>> classDictList = classSheet.ExportDataFromExcel(classChecker, out success, out message);
+                    if (!success) {
+                        return BadRequest(new ResponseDTO(400, "Error on Class: " + message));
+                    }
+                    foreach (var dict in classDictList) {
+                        NewClassInput classInput = new();
+                        classInput.ClassName = dict["name"]?.ToString();
+                        if (classInput.ClassName is not null) {
+                            if (classModulesDict.ContainsKey(classInput.ClassName)) {
+                                classInput.ModuleIdList = classModulesDict[classInput.ClassName];
+                            }
+                            if (classTraineesDict.ContainsKey(classInput.ClassName)) {
+                                classInput.TraineeIdList = classTraineesDict[classInput.ClassName];
+                            }
+                        }
+                        classInput.Description = dict["description"]?.ToString();
+                        object room = dict["room"];
+                        if (room is not null) {
+                            int roomId = 0;
+                            int.TryParse(room.ToString(), out roomId);
+                            classInput.RoomId = roomId; // TODO: RoomService ?
+                        }
+                        object startTime = dict["start"];
+                        if (startTime is not null && startTime is DateTime) {
+                            classInput.StartDay = (DateTime) startTime;
+                        }
+                        object endTime = dict["end"];
+                        if (endTime is not null && endTime is DateTime) {
+                            classInput.EndDay = (DateTime) endTime;
+                        }
+                        string trainerEmail = dict["trainer"]?.ToString();
+                        if (trainerEmail is not null) {
+                            Trainer trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
+                            if (trainer is null) {
+                                errors.Add("Invalid trainer email: " + trainerEmail);
+                            } else {
+                                classInput.TrainerId = trainer.TrainerId;
+                            }
+                        }
+                        string adminEmail = dict["admin"]?.ToString();
+                        if (adminEmail is not null) {
+                            Admin admin = await _adminService.GetAdminByEmail(adminEmail);
+                            if (admin is null) {
+                                errors.Add("Invalid admin email: " + adminEmail);
+                            } else {
+                                classInput.AdminId = admin.AdminId;
+                            }
+                        }
+                        classInputList.Add(classInput);
+                    }
+
+                    // Validate the class inputs
+                    foreach (var classInput in classInputList) {
+                        if (!classInputList.Validate(out List<ValidationResult> validateResults)) {
+                            return BadRequest(new ResponseDTO(400, "Error when validating class") {
+                                Errors = new {
+                                    value = classInput,
+                                    errors = validateResults
+                                }
+                            });
+                        }
+                    }
+
+                    // Throw remain errors
+                    if (errors.Count > 0) {
+                        return Conflict(new ResponseDTO(409, "Some errors when creating classes") {
+                            Errors = errors
+                        });
+                    }
+
+                    // TODO: Waiting to use Insert New Classes from Service
+                    foreach (var classInput in classInputList) {
+                        var newClass = _mapper.Map<Class>(classInput);
+                        int result = await _classService.InsertNewClass(newClass);
+                        if (result < 0) {
+                            return Conflict(new ResponseDTO(409, "Class existed or Trainee / Trainer already has a class") {
+                                Errors = new {
+                                    value = classInput
+                                }
+                            });
+                        } else if (result == 0) {
+                            return Conflict(new ResponseDTO(400, "Failed to add class") {
+                                Errors = new {
+                                    value = classInput
+                                }
+                            });
+                        }
+                    }
                 }
             }
             return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created"));
