@@ -120,7 +120,7 @@ namespace kroniiapi.Services
                 existedRequest.AcceptedAt = DateTime.Now;
                 // Save Change 
                 var rs = await _dataContext.SaveChangesAsync();
-                if (rs == 1)
+                if (rs == 2)
                 {
                     return 1;
                 }
@@ -316,11 +316,11 @@ namespace kroniiapi.Services
                 return -2;
             }
             int rowInserted = 0;
-            rowInserted = await _dataContext.SaveChangesAsync();
+            rowInserted = await SaveChange();
             var newClass = await GetClassByClassName(newClassInput.ClassName);
             await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
             AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
-            await _dataContext.SaveChangesAsync();
+            await SaveChange();
             return rowInserted;
         }
 
@@ -354,6 +354,23 @@ namespace kroniiapi.Services
             _dataContext.Classes.Add(newClass);
 
             return 1;
+        }
+
+        /// <summary>
+        /// save change to database
+        /// </summary>
+        /// <returns>number of row effeted</returns>
+        public async Task<int> SaveChange()
+        {
+            return await _dataContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// discard all change
+        /// </summary>
+        public void DiscardChanges()
+        {
+            _dataContext.ChangeTracker.Clear();
         }
     }
 }
