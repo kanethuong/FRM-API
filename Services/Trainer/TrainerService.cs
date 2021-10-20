@@ -45,7 +45,7 @@ namespace kroniiapi.Services
         /// <returns>Trainer data</returns>
         public async Task<Trainer> GetTrainerByEmail(string email)
         {
-            return await _dataContext.Trainers.Where(t => t.Email == email &&
+            return await _dataContext.Trainers.Where(t => t.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
