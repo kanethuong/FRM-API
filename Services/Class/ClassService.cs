@@ -120,7 +120,7 @@ namespace kroniiapi.Services
                 existedRequest.AcceptedAt = DateTime.Now;
                 // Save Change 
                 var rs = await _dataContext.SaveChangesAsync();
-                if (rs == 1)
+                if (rs == 2)
                 {
                     return 1;
                 }
