@@ -9,5 +9,6 @@ namespace kroniiapi.Helper.Upload
     public interface IMegaHelper
     {
         Task<Uri> Upload(Stream data, string fileName, string folderName);
+        Task<Stream> Download(Uri uri);
     }
 }
