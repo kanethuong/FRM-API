@@ -183,6 +183,19 @@ namespace kroniiapi.Helper
         }
 
         /// <summary>
+        /// Export the data from the excel worksheet as a list of dictionary
+        /// </summary>
+        /// <param name="worksheet">The excel worksheet</param>
+        /// <param name="colNamesVerifier">The column names verifier, checking if the column names match user requirement</param>
+        /// <param name="success">Whether the exporting process is successful</param>
+        /// <param name="message">The output message</param>
+        /// <returns>A list of dictionary</returns>
+        public static List<Dictionary<string, object>> ExportDataFromExcel(this ExcelWorksheet worksheet, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
+        {
+            return ExportDataFromExcel<Dictionary<string, object>>(worksheet, dict => new Dictionary<string, object>(dict), colNamesVerifier, out success, out message);
+        }
+
+        /// <summary>
         /// Export the data from the excel worksheet for consuming
         /// </summary>
         /// <param name="worksheet">The excel worksheet</param>
@@ -197,7 +210,7 @@ namespace kroniiapi.Helper
             var colCount = worksheet.Dimension.Columns;
 
             // Get the column names
-            List<string> colNames = new List<string>();
+            List<string> colNames = new();
             for (int col = 1; col <= colCount; col++)
             {
                 colNames.Add(worksheet.Cells[1, col].Value?.ToString().Trim());
@@ -210,13 +223,13 @@ namespace kroniiapi.Helper
                 message = "Column names do not match";
                 return;
             }
-            
-            // Create the cells dictionary
-            Dictionary<string, object> cellsDict = new Dictionary<string, object>();
 
             // Loop through each rows from row 2
             for (int row = 2; row <= rowCount; row++)
             {
+                // Create the cells dictionary
+                Dictionary<string, object> cellsDict = new();
+
                 // Keep the state if fail to add
                 bool failToAdd = false;
 
@@ -240,9 +253,6 @@ namespace kroniiapi.Helper
 
                 // Consume the dictionary
                 rowConsumer.Invoke(cellsDict);
-
-                // Clear the dictionary for next row
-                cellsDict.Clear();
             }
 
             // All successful
