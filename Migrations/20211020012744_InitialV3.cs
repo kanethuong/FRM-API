@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace kroniiapi.Migrations
 {
-    public partial class CreatedAtWageFee : Migration
+    public partial class InitialV3 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +13,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     ApplicationCategoryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     CategoryName = table.Column<string>(type: "text", nullable: true),
                     SampleFileURL = table.Column<string>(type: "text", nullable: true)
                 },
@@ -27,7 +27,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     CostTypeId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     CostTypeName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -40,7 +40,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     ModuleId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     ModuleName = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     NoOfSlot = table.Column<int>(type: "integer", nullable: false),
@@ -58,7 +58,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     RoleId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     RoleName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -71,7 +71,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     RoomId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     RoomName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -84,7 +84,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     AdministratorId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Username = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
                     Fullname = table.Column<string>(type: "text", nullable: true),
@@ -109,7 +109,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     AdminId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Username = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
                     Fullname = table.Column<string>(type: "text", nullable: true),
@@ -122,7 +122,7 @@ namespace kroniiapi.Migrations
                     Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
-                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -141,7 +141,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     CompanyId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Username = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
                     Fullname = table.Column<string>(type: "text", nullable: true),
@@ -152,7 +152,7 @@ namespace kroniiapi.Migrations
                     Gender = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
-                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -171,7 +171,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     TrainerId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Username = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
                     Fullname = table.Column<string>(type: "text", nullable: true),
@@ -184,7 +184,7 @@ namespace kroniiapi.Migrations
                     Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
-                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -203,7 +203,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     CostId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Content = table.Column<string>(type: "text", nullable: true),
                     Amount = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -232,12 +232,14 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     ExamId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     ExamName = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     ExamDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     DurationInMinute = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    IsCancelled = table.Column<bool>(type: "boolean", nullable: false),
+                    CancalledAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ModuleId = table.Column<int>(type: "integer", nullable: false),
                     AdminId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -263,7 +265,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     CompanyRequestId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Content = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ReportURL = table.Column<string>(type: "text", nullable: true),
@@ -286,12 +288,14 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     ClassId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     ClassName = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: true),
-                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    StartDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    EndDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
+                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     AdminId = table.Column<int>(type: "integer", nullable: false),
                     TrainerId = table.Column<int>(type: "integer", nullable: false),
                     RoomId = table.Column<int>(type: "integer", nullable: false)
@@ -324,7 +328,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     CalendarId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     SyllabusSlot = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     SlotInDay = table.Column<int>(type: "integer", nullable: false),
@@ -378,11 +382,11 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     DeleteClassRequestId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Reason = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsAccepted = table.Column<bool>(type: "boolean", nullable: true),
-                    AcceptedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    AcceptedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ClassId = table.Column<int>(type: "integer", nullable: false),
                     AdminId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -400,7 +404,7 @@ namespace kroniiapi.Migrations
                         column: x => x.ClassId,
                         principalTable: "Classes",
                         principalColumn: "ClassId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -408,7 +412,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     TraineeId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Username = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
                     Fullname = table.Column<string>(type: "text", nullable: true),
@@ -422,9 +426,9 @@ namespace kroniiapi.Migrations
                     Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
-                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     RoleId = table.Column<int>(type: "integer", nullable: false),
-                    ClassId = table.Column<int>(type: "integer", nullable: false)
+                    ClassId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -448,7 +452,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     AdminFeedbackId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Rate = table.Column<int>(type: "integer", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -477,12 +481,13 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     ApplicationId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Description = table.Column<string>(type: "text", nullable: true),
                     ApplicationURL = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsAccepted = table.Column<bool>(type: "boolean", nullable: true),
-                    AcceptedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    AcceptedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Response = table.Column<string>(type: "text", nullable: true),
                     TraineeId = table.Column<int>(type: "integer", nullable: false),
                     AdminId = table.Column<int>(type: "integer", nullable: true),
                     ApplicationCategoryId = table.Column<int>(type: "integer", nullable: false)
@@ -642,7 +647,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     TrainerFeedbackId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     Rate = table.Column<int>(type: "integer", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -800,8 +805,7 @@ namespace kroniiapi.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_DeleteClassRequests_ClassId",
                 table: "DeleteClassRequests",
-                column: "ClassId",
-                unique: true);
+                column: "ClassId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Exams_AdminId",
