@@ -122,7 +122,8 @@ namespace kroniiapi.Services
             return true;
         }
         public async Task<Admin> getAdminByClassId(int id){
-            return null;
+            Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).FirstOrDefaultAsync();
+            return await _dataContext.Admins.Where(a => a.AdminId == class1.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
         }
     }
 }

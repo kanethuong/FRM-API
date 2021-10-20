@@ -10,8 +10,8 @@ using kroniiapi.DB;
 namespace kroniiapi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20211013042559_UpdateNullClassIdInTrainee")]
-    partial class UpdateNullClassIdInTrainee
+    [Migration("20211020012744_InitialV3")]
+    partial class InitialV3
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -19,14 +19,14 @@ namespace kroniiapi.Migrations
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.10")
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
             modelBuilder.Entity("kroniiapi.DB.Models.Admin", b =>
                 {
                     b.Property<int>("AdminId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
@@ -40,7 +40,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("DOB")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -82,7 +82,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("AdminFeedbackId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<int>("AdminId")
                         .HasColumnType("integer");
@@ -113,7 +113,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("AdministratorId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("AvatarURL")
                         .HasColumnType("text");
@@ -148,9 +148,9 @@ namespace kroniiapi.Migrations
                     b.Property<int>("ApplicationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
-                    b.Property<DateTime>("AcceptedAt")
+                    b.Property<DateTime?>("AcceptedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("AdminId")
@@ -171,6 +171,9 @@ namespace kroniiapi.Migrations
                     b.Property<bool?>("IsAccepted")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Response")
+                        .HasColumnType("text");
+
                     b.Property<int>("TraineeId")
                         .HasColumnType("integer");
 
@@ -190,7 +193,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("ApplicationCategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("CategoryName")
                         .HasColumnType("text");
@@ -229,7 +232,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("CalendarId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<int>("ClassId")
                         .HasColumnType("integer");
@@ -281,7 +284,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("ClassId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<int>("AdminId")
                         .HasColumnType("integer");
@@ -292,17 +295,23 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeactivated")
+                    b.Property<DateTime>("EndDay")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
                     b.Property<int>("RoomId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartDay")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("TrainerId")
                         .HasColumnType("integer");
@@ -341,7 +350,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("CompanyId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
@@ -352,7 +361,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -391,7 +400,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("CompanyRequestId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
@@ -435,7 +444,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("CostId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<int>("AdminId")
                         .HasColumnType("integer");
@@ -466,7 +475,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("CostTypeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("CostTypeName")
                         .HasColumnType("text");
@@ -481,9 +490,9 @@ namespace kroniiapi.Migrations
                     b.Property<int>("DeleteClassRequestId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
-                    b.Property<DateTime>("AcceptedAt")
+                    b.Property<DateTime?>("AcceptedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("AdminId")
@@ -505,8 +514,7 @@ namespace kroniiapi.Migrations
 
                     b.HasIndex("AdminId");
 
-                    b.HasIndex("ClassId")
-                        .IsUnique();
+                    b.HasIndex("ClassId");
 
                     b.ToTable("DeleteClassRequests");
                 });
@@ -516,10 +524,13 @@ namespace kroniiapi.Migrations
                     b.Property<int>("ExamId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<int>("AdminId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CancalledAt")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -535,6 +546,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<string>("ExamName")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("ModuleId")
                         .HasColumnType("integer");
@@ -574,7 +588,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("ModuleId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -604,7 +618,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("RoleId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("RoleName")
                         .HasColumnType("text");
@@ -646,7 +660,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("RoomId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("RoomName")
                         .HasColumnType("text");
@@ -698,7 +712,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("TraineeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
@@ -715,7 +729,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("DOB")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -780,7 +794,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("TrainerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
@@ -794,7 +808,7 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("DOB")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("DeactivatedAt")
+                    b.Property<DateTime?>("DeactivatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
@@ -836,7 +850,7 @@ namespace kroniiapi.Migrations
                     b.Property<int>("TrainerFeedbackId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
@@ -1101,9 +1115,9 @@ namespace kroniiapi.Migrations
                         .IsRequired();
 
                     b.HasOne("kroniiapi.DB.Models.Class", "Class")
-                        .WithOne("DeleteClassRequest")
-                        .HasForeignKey("kroniiapi.DB.Models.DeleteClassRequest", "ClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("DeleteClassRequests")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Admin");
@@ -1247,7 +1261,7 @@ namespace kroniiapi.Migrations
 
                     b.Navigation("ClassModules");
 
-                    b.Navigation("DeleteClassRequest");
+                    b.Navigation("DeleteClassRequests");
 
                     b.Navigation("Trainees");
                 });

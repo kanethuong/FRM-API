@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
@@ -13,10 +14,13 @@ namespace kroniiapi.Services
     public class ClassService : IClassService
     {
         private DataContext _dataContext;
-
-        public ClassService(DataContext dataContext)
+        private readonly IMapper _mapper;
+        private readonly ITraineeService _traineeService;
+        public ClassService(DataContext dataContext, IMapper mapper, ITraineeService traineeService)
         {
             _dataContext = dataContext;
+            _mapper = mapper;
+            _traineeService = traineeService;
         }
         /// <summary>
         /// Get Class List
@@ -26,7 +30,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-    
+
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
@@ -120,7 +124,8 @@ namespace kroniiapi.Services
                 {
                     return 1;
                 }
-            } else if (confirmDeleteClassInput.IsDeactivate == false)
+            }
+            else if (confirmDeleteClassInput.IsDeactivate == false)
             {
                 var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
                 existedRequest.IsAccepted = false;
@@ -161,7 +166,8 @@ namespace kroniiapi.Services
         public async Task<Class> GetClassDetail(int id)
         {
             var classGet = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false)
-            .Select(c => new Class{
+            .Select(c => new Class
+            {
                 ClassId = c.ClassId,
                 ClassName = c.ClassName,
                 Description = c.Description,
@@ -172,31 +178,34 @@ namespace kroniiapi.Services
                 DeactivatedAt = c.DeactivatedAt,
                 Trainees = c.Trainees,
                 AdminId = c.AdminId,
-                Admin = new Admin{
+                Admin = new Admin
+                {
                     AdminId = c.AdminId,
                     Fullname = c.Admin.Fullname,
                     AvatarURL = c.Admin.AvatarURL,
                     Email = c.Admin.Email,
                 },
                 TrainerId = c.TrainerId,
-                Trainer = new Trainer{
+                Trainer = new Trainer
+                {
                     Fullname = c.Trainer.Fullname,
                     AvatarURL = c.Trainer.AvatarURL,
                     Email = c.Trainer.Email,
                 },
                 RoomId = c.RoomId,
-                Room = new Room{
+                Room = new Room
+                {
                     RoomId = c.Room.RoomId,
                     RoomName = c.Room.RoomName,
                     Classes = c.Room.Classes,
                 },
                 ClassModules = c.ClassModules,
                 Modules = c.Modules,
-                DeleteClassRequest = c.DeleteClassRequest,
+                DeleteClassRequests = c.DeleteClassRequests,
                 Calendars = c.Calendars,
             })
             .FirstOrDefaultAsync();
-            
+
             return classGet;
         }
 
@@ -209,7 +218,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
 
-            var traineeList = await _dataContext.Trainees.Where( t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
             int totalRecords = traineeList.Count();
             var rs = traineeList.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
@@ -221,10 +230,147 @@ namespace kroniiapi.Services
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
-        /// <returns>1: done / tu suy nghi tiep nhe KhangTD </returns>
+        /// <returns> -1: Class is already deactivated / 0: Insert fail / 1: Insert success </returns>
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
-            return 0;
+            Class c = await GetClassByClassID(deleteClassRequest.ClassId);
+
+            if (c.IsDeactivated == true)
+            {
+                return -1;
+            }
+
+            int rowInserted = 0;
+            _dataContext.DeleteClassRequests.Add(deleteClassRequest);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+
+        /// <summary>
+        /// Get Class By ClassID
+        /// </summary>
+        /// <param name="classID"></param>
+        /// <returns> Class </returns>
+        public async Task<Class> GetClassByClassID(int classId)
+        {
+            return await _dataContext.Classes.Where(c => c.ClassId == classId).FirstOrDefaultAsync();
+        }
+
+        public async Task<int> InsertNewClass(Class newClass)
+        {
+
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            {
+                return -1;
+            }
+            int rowInserted = 0;
+            _dataContext.Classes.Add(newClass);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+        /// <summary>
+        /// add Class Id to Trainee model (after add new class)
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="traineeIdList"></param>
+        /// <returns></returns>
+        public async Task AddClassIdToTrainee(int classId, ICollection<int> traineeIdList)
+        {
+            foreach (var traineeId in traineeIdList)
+            {
+                var trainee = await _traineeService.GetTraineeById(traineeId);
+                trainee.ClassId = classId;
+            }
+        }
+        /// <summary>
+        /// add module id and class id to class module model (after add new class)
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="moduleIdList"></param>
+        public void AddDataToClassModule(int classId, ICollection<int> moduleIdList)
+        {
+            foreach (var moduleId in moduleIdList)
+            {
+                ClassModule classModule = new ClassModule()
+                {
+                    ClassId = classId,
+                    ModuleId = moduleId
+                };
+                _dataContext.ClassModules.Add(classModule);
+            }
+        }
+        /// <summary>
+        /// Insert new class and save change
+        /// </summary>
+        /// <param name="newClassInput">detail of class input</param>
+        /// <returns> -1: duplicate class name / -2: trainee already have class / 0: some unpredicted error / 1: insert succesfully </returns>
+        public async Task<int> InsertNewClass(NewClassInput newClassInput)
+        {
+            var classSave = await InsertNewClassNoSave(newClassInput);
+            if (classSave == -1)
+            {
+                return -1;
+            }
+            else if (classSave == -2)
+            {
+                return -2;
+            }
+            int rowInserted = 0;
+            rowInserted = await SaveChange();
+            var newClass = await GetClassByClassName(newClassInput.ClassName);
+            await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
+            AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
+            await SaveChange();
+            return rowInserted;
+        }
+
+        /// <summary>
+        /// Insert class but not saving, check if trainee already have class
+        /// </summary>
+        /// <param name="newClassInput"></param>
+        /// <returns>-1: duplicate class name / -2: trainee already have class / 1: insert succesfully</returns>
+        public async Task<int> InsertNewClassNoSave(NewClassInput newClassInput)
+        {
+            var newClass = _mapper.Map<Class>(newClassInput);
+
+            // Check duplicate class name
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            {
+                return -1;
+            }
+
+            // Check if trainee input already have class
+            var traineeListId = newClassInput.TraineeIdList;
+            foreach (var traineeId in traineeListId)
+            {
+                var trainee = await _traineeService.GetTraineeById(traineeId);
+                var traineeClassId = trainee.ClassId;
+                if (traineeClassId is not null)
+                {
+                    return -2;
+                }
+            }
+
+            _dataContext.Classes.Add(newClass);
+
+            return 1;
+        }
+
+        /// <summary>
+        /// save change to database
+        /// </summary>
+        /// <returns>number of row effeted</returns>
+        public async Task<int> SaveChange()
+        {
+            return await _dataContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// discard all change
+        /// </summary>
+        public void DiscardChanges()
+        {
+            _dataContext.ChangeTracker.Clear();
         }
     }
 }
