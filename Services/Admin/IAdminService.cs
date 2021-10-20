@@ -15,5 +15,6 @@ namespace kroniiapi.Services
         bool InsertNewAdminNoSaveChange(Admin admin);
         Task<int> UpdateAdmin(int id, Admin admin);
         Task<int> DeleteAdmin(int id);
+        Task<Admin> getAdminByClassId(int id);
     }
 }
