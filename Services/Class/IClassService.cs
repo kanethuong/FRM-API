@@ -18,7 +18,9 @@ namespace kroniiapi.Services
         Task<Class> GetClassDetail(int id);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter);
         Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest);
+        Task<int> InsertNewClass(NewClassInput newClass);
+        Task<int> InsertNewClassNoSave(NewClassInput newClass);
+        
         Task<Class> GetClassByClassID(int classId);
-        Task<int> InsertNewClass(Class newClass);
     }
 }
