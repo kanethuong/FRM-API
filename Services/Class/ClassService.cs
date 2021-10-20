@@ -26,7 +26,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-    
+
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
@@ -162,7 +162,8 @@ namespace kroniiapi.Services
         public async Task<Class> GetClassDetail(int id)
         {
             var classGet = await _dataContext.Classes.Where(c => c.ClassId == id && c.IsDeactivated == false)
-            .Select(c => new Class{
+            .Select(c => new Class
+            {
                 ClassId = c.ClassId,
                 ClassName = c.ClassName,
                 Description = c.Description,
@@ -173,31 +174,34 @@ namespace kroniiapi.Services
                 DeactivatedAt = c.DeactivatedAt,
                 Trainees = c.Trainees,
                 AdminId = c.AdminId,
-                Admin = new Admin{
+                Admin = new Admin
+                {
                     AdminId = c.AdminId,
                     Fullname = c.Admin.Fullname,
                     AvatarURL = c.Admin.AvatarURL,
                     Email = c.Admin.Email,
                 },
                 TrainerId = c.TrainerId,
-                Trainer = new Trainer{
+                Trainer = new Trainer
+                {
                     Fullname = c.Trainer.Fullname,
                     AvatarURL = c.Trainer.AvatarURL,
                     Email = c.Trainer.Email,
                 },
                 RoomId = c.RoomId,
-                Room = new Room{
+                Room = new Room
+                {
                     RoomId = c.Room.RoomId,
                     RoomName = c.Room.RoomName,
                     Classes = c.Room.Classes,
                 },
                 ClassModules = c.ClassModules,
                 Modules = c.Modules,
-                DeleteClassRequest = c.DeleteClassRequest,
+                DeleteClassRequests = c.DeleteClassRequests,
                 Calendars = c.Calendars,
             })
             .FirstOrDefaultAsync();
-            
+
             return classGet;
         }
 
@@ -227,7 +231,7 @@ namespace kroniiapi.Services
         {
             Class c = await GetClassByClassID(deleteClassRequest.ClassId);
 
-            if (c.IsDeactivated==true)
+            if (c.IsDeactivated == true)
             {
                 return -1;
             }
