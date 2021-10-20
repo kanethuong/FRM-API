@@ -95,9 +95,10 @@ namespace kroniiapi.DB
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Class>()
-                .HasOne<DeleteClassRequest>(c => c.DeleteClassRequest)
+                .HasMany(c => c.DeleteClassRequests)
                 .WithOne(d => d.Class)
-                .HasForeignKey<DeleteClassRequest>(d => d.ClassId);
+                .HasForeignKey(d => d.ClassId)
+                .OnDelete(DeleteBehavior.SetNull); ;
 
             modelBuilder.Entity<Class>()
                 .HasMany(c => c.Calendars)

@@ -15,5 +15,6 @@ namespace kroniiapi.Services
         bool InsertNewTrainerNoSaveChange(Trainer trainer);
         Task<int> UpdateTrainer(int id, Trainer trainer);
         Task<int> DeleteTrainer(int id);
+        Task<Trainer> getTrainerByClassId(int id);
     }
 }

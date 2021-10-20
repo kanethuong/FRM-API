@@ -21,5 +21,6 @@ namespace kroniiapi.Services
         Task<int> InsertNewClass(NewClassInput newClass);
         Task<int> InsertNewClassNoSave(NewClassInput newClass);
         
+        Task<Class> GetClassByClassID(int classId);
     }
 }
