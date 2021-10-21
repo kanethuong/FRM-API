@@ -44,7 +44,7 @@ namespace kroniiapi.Controllers
             history = await _cacheProvider.GetFromCache<List<NotifyMessage>>(email);
             if(history == null)
             {
-                return NotFound(new ResponseDTO(404, "email not found!"));
+                return NotFound(new ResponseDTO(404, "history not found!"));
             }
             else
             {
