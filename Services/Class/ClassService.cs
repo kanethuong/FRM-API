@@ -30,7 +30,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-
+    
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
