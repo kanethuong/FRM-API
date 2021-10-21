@@ -41,7 +41,7 @@ namespace kroniiapi.Services
         /// <returns>Admin data</returns>
         public async Task<Admin> GetAdminByEmail(string email)
         {
-            return await _dataContext.Admins.Where(a => a.Email.Equals(email) && a.IsDeactivated == false).FirstOrDefaultAsync();
+            return await _dataContext.Admins.Where(a => a.Email.ToLower().Equals(email.ToLower()) && a.IsDeactivated == false).FirstOrDefaultAsync();
         }
         /// <summary>
         /// Insert new admin to database

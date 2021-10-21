@@ -47,7 +47,7 @@ namespace kroniiapi.Services
         /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeByEmail(string email)
         {
-            return await _dataContext.Trainees.Where(t => t.Email == email &&
+            return await _dataContext.Trainees.Where(t => t.Email.ToLower().Equals(email.ToLower()) &&
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
@@ -166,6 +166,18 @@ namespace kroniiapi.Services
         public async Task<ICollection<Trainee>> GetTraineeByClassId(int id)
         {
             return await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false).ToListAsync();
+        }
+
+        
+        /// <summary>
+        /// Check if the trainee has a class
+        /// </summary>
+        /// <param name="traineeId">the trainee id</param>
+        /// <returns>whether the trainee has a class</returns>
+        public async Task<bool> IsTraineeHasClass(int traineeId) {
+            var trainee = await GetTraineeById(traineeId);
+            var traineeClassId = trainee?.ClassId;
+            return traineeClassId is not null;
         }
     }
 }

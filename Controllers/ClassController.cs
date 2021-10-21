@@ -370,14 +370,12 @@ namespace kroniiapi.Controllers
                     foreach (var dict in classDictList) {
                         NewClassInput classInput = new();
                         classInput.ClassName = dict["name"]?.ToString();
-                        if (classInput.ClassName is not null) {
-                            if (classModulesDict.ContainsKey(classInput.ClassName)) {
-                                classInput.ModuleIdList = classModulesDict[classInput.ClassName];
-                            }
-                            if (classTraineesDict.ContainsKey(classInput.ClassName)) {
-                                classInput.TraineeIdList = classTraineesDict[classInput.ClassName];
-                            }
-                        }
+                        classInput.ModuleIdList = classInput.ClassName is not null && classModulesDict.ContainsKey(classInput.ClassName) 
+                            ? classModulesDict[classInput.ClassName] 
+                            : new();
+                        classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName) 
+                            ? classTraineesDict[classInput.ClassName] 
+                            : new();
                         classInput.Description = dict["description"]?.ToString();
                         object room = dict["room"];
                         if (room is not null) {
@@ -416,7 +414,7 @@ namespace kroniiapi.Controllers
 
                     // Validate the class inputs
                     foreach (var classInput in classInputList) {
-                        if (!classInputList.Validate(out List<ValidationResult> validateResults)) {
+                        if (!classInput.Validate(out List<ValidationResult> validateResults)) {
                             return BadRequest(new ResponseDTO(400, "Error when validating class") {
                                 Errors = new {
                                     value = classInput,
@@ -466,10 +464,18 @@ namespace kroniiapi.Controllers
                     foreach(var modulePair in classModulesDict) {
                         var clazz = await _classService.GetClassByClassName(modulePair.Key);
                         if (clazz is not null) {
-                            _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
+                            await _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
                         }
                     }
                     foreach(var traineePair in classTraineesDict) {
+                        foreach (var traineeId in traineePair.Value) {
+                            if (await _traineeService.IsTraineeHasClass(traineeId)) {
+                                var trainee = await _traineeService.GetTraineeById(traineeId);
+                                if (trainee is not null) {
+                                    errors.Add("Trainee " + trainee.Username + " (" + trainee.Email + ") has a class");
+                                }
+                            }
+                        }
                         var clazz = await _classService.GetClassByClassName(traineePair.Key);
                         if (clazz is not null) {
                             await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
@@ -485,7 +491,9 @@ namespace kroniiapi.Controllers
                     }
                 }
             }
-            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created"));
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created") {
+                Errors = errors
+            });
         }
     }
 }

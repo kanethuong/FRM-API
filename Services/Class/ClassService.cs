@@ -132,13 +132,6 @@ namespace kroniiapi.Services
                 await _dataContext.SaveChangesAsync();
                 return 2;
             }
-            else if (confirmDeleteClassInput.IsDeactivate == false)
-            {
-                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
-                existedRequest.IsAccepted = false;
-                await _dataContext.SaveChangesAsync();
-                return 2;
-            }
             return -1;
         }
         /// <summary>
@@ -278,6 +271,7 @@ namespace kroniiapi.Services
         {
             foreach (var traineeId in traineeIdList)
             {
+                if (await _traineeService.IsTraineeHasClass(traineeId)) continue;
                 var trainee = await _traineeService.GetTraineeById(traineeId);
                 trainee.ClassId = classId;
             }
@@ -287,11 +281,13 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <param name="moduleIdList"></param>
-        public void AddDataToClassModule(int classId, ICollection<int> moduleIdList)
+        public async Task AddDataToClassModule(int classId, ICollection<int> moduleIdList)
         {
             foreach (var moduleId in moduleIdList)
             {
-                ClassModule classModule = new ClassModule()
+                ClassModule classModule = await _dataContext.ClassModules.Where(cm => cm.ClassId == classId && cm.ModuleId == moduleId).FirstOrDefaultAsync();
+                if (classModule is not null) continue;
+                classModule = new ClassModule()
                 {
                     ClassId = classId,
                     ModuleId = moduleId
@@ -319,7 +315,7 @@ namespace kroniiapi.Services
             rowInserted = await SaveChange();
             var newClass = await GetClassByClassName(newClassInput.ClassName);
             await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
+            await AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
             await SaveChange();
             return rowInserted;
         }
@@ -343,9 +339,7 @@ namespace kroniiapi.Services
             var traineeListId = newClassInput.TraineeIdList;
             foreach (var traineeId in traineeListId)
             {
-                var trainee = await _traineeService.GetTraineeById(traineeId);
-                var traineeClassId = trainee.ClassId;
-                if (traineeClassId is not null)
+                if (await _traineeService.IsTraineeHasClass(traineeId))
                 {
                     return -2;
                 }
