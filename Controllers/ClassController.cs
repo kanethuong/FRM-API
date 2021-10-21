@@ -455,9 +455,7 @@ namespace kroniiapi.Controllers
                         await _classService.SaveChange();
                     } catch (Exception e) {
                         _classService.DiscardChanges();
-                        return BadRequest(new ResponseDTO(400, "Failed to add class") {
-                            Errors = e
-                        });
+                        throw e;
                     }
 
                     // Insert Class-Module and Class-Trainee
@@ -485,9 +483,7 @@ namespace kroniiapi.Controllers
                         await _classService.SaveChange();
                     } catch (Exception e) {
                         _classService.DiscardChanges();
-                        return BadRequest(new ResponseDTO(400, "Failed to save changes on module or trainee on class") {
-                            Errors = e
-                        });
+                        throw e;
                     }
                 }
             }
