@@ -16,13 +16,17 @@ namespace kroniiapi.Services
         private DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
-        private readonly IAdminService _adminService;
-        public ClassService(DataContext dataContext, IMapper mapper, ITraineeService traineeService, IAdminService adminService)
+        // private readonly IAdminService _adminService;
+        public ClassService(DataContext dataContext,
+                            IMapper mapper,
+                            ITraineeService traineeService
+        // IAdminService adminService
+        )
         {
             _dataContext = dataContext;
             _mapper = mapper;
             _traineeService = traineeService;
-            _adminService = adminService;
+            // _adminService = adminService;
         }
         /// <summary>
         /// Get Class List
@@ -32,7 +36,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-    
+
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
@@ -136,11 +140,13 @@ namespace kroniiapi.Services
             }
             return -1;
         }
-        public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId){
+        public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId)
+        {
             int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)
-            .Select( t => t.ClassId).FirstOrDefaultAsync();
+            .Select(t => t.ClassId).FirstOrDefaultAsync();
             var listRequest = await _dataContext.DeleteClassRequests.Where(t => t.ClassId == classId).ToListAsync();
-            foreach(var i in listRequest){
+            foreach (var i in listRequest)
+            {
                 i.IsAccepted = false;
             };
             var currentReq = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId).FirstOrDefaultAsync();
@@ -241,9 +247,10 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             Class c = await GetClassByClassID(deleteClassRequest.ClassId);
-            Admin admin= await _adminService.GetAdminById(deleteClassRequest.AdminId);
+            // Admin admin= await _adminService.GetAdminById(deleteClassRequest.AdminId);
+            var admin = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId);
 
-            if (c == null || admin==null)
+            if (c == null || admin == false)
             {
                 return 0;
             }
