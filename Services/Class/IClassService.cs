@@ -22,7 +22,7 @@ namespace kroniiapi.Services
         Task AddDataToClassModule(int classId, ICollection<int> moduleIdList);
         Task<int> InsertNewClass(NewClassInput newClass);
         Task<int> InsertNewClassNoSave(NewClassInput newClass);
-        
+        Task<int> RejectAllOtherDeleteRequest(int deleteRequestId);
         Task<Class> GetClassByClassID(int classId);
         Task<int> SaveChange();
         void DiscardChanges();

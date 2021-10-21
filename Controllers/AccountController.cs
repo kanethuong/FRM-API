@@ -166,10 +166,8 @@ namespace kroniiapi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(new ResponseDTO(400, "Error when saving the insertion")
-                {
-                    Errors = e
-                });
+                _accountService.DiscardChanges();
+                throw e;
             }
         }
 

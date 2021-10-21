@@ -1,3 +1,5 @@
+using System;
+
 namespace kroniiapi.DTO.AccountDTO
 {
     public class AccountResponse
@@ -7,5 +9,6 @@ namespace kroniiapi.DTO.AccountDTO
         public string Fullname { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
