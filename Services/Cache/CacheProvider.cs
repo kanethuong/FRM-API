@@ -44,7 +44,7 @@ namespace kroniiapi.Services
             {
                 valueList = await GetFromCache<LinkedList<T>>(key);
                 valueList.AddLast(value);
-            }catch(Exception e)
+            }catch(Exception)
             {
                 valueList = new LinkedList<T>();
                 valueList.AddLast(value);
