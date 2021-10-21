@@ -214,6 +214,11 @@ namespace kroniiapi.Controllers
         {
             Admin admin1 = await _adminService.getAdminByClassId(id);
             Trainer trainer1 = await _trainerService.getTrainerByClassId(id);
+
+            if (admin1 == null || trainer1 == null) {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+                
             FeedbackResponse feedbackResponses = new FeedbackResponse();
 
             IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByAdminId(trainer1.TrainerId);
