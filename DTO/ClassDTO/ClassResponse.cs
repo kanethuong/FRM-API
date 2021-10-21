@@ -12,5 +12,6 @@ namespace kroniiapi.DTO.ClassDTO
         public TrainerInClassResponse Trainer { get; set; }
         public string Creator { get; set; }//admin fullname
         public DateTime CreatedAt { get; set; }
+        public string Description {get;set;}
     }
 }

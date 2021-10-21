@@ -134,6 +134,18 @@ namespace kroniiapi.Services
             }
             return -1;
         }
+        public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId){
+            int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)
+            .Select( t => t.ClassId).FirstOrDefaultAsync();
+            var listRequest = await _dataContext.DeleteClassRequests.Where(t => t.ClassId == classId).ToListAsync();
+            foreach(var i in listRequest){
+                i.IsAccepted = false;
+            };
+            var currentReq = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId).FirstOrDefaultAsync();
+            currentReq.IsAccepted = true;
+            int rs = await _dataContext.SaveChangesAsync();
+            return rs;
+        }
         /// <summary>
         ///  Get Deleted Class List
         /// </summary>
