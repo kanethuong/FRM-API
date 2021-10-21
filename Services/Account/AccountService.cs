@@ -79,7 +79,7 @@ namespace kroniiapi.Services
                 itemToResponse.AccountId = item.CompanyId;
                 totalAccount.Add(itemToResponse);
             }
-
+            totalAccount.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
             return totalAccount;
         }
 
