@@ -58,7 +58,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == null)
+                                    .Where(c => c.IsAccepted == null && c.Class.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
