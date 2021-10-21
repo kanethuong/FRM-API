@@ -65,6 +65,10 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Id not found!"));
             }
+            if (result == 0)
+            {
+                return BadRequest(new ResponseDTO(409, "Can't deactivate administrator"));
+            }
             return Ok(new ResponseDTO(200, "Deleted!"));
         }
 

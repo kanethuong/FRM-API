@@ -288,11 +288,13 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <param name="moduleIdList"></param>
-        public void AddDataToClassModule(int classId, ICollection<int> moduleIdList)
+        public async Task AddDataToClassModule(int classId, ICollection<int> moduleIdList)
         {
             foreach (var moduleId in moduleIdList)
             {
-                ClassModule classModule = new ClassModule()
+                ClassModule classModule = await _dataContext.ClassModules.Where(cm => cm.ClassId == classId && cm.ModuleId == moduleId).FirstOrDefaultAsync();
+                if (classModule is not null) continue;
+                classModule = new ClassModule()
                 {
                     ClassId = classId,
                     ModuleId = moduleId
@@ -320,7 +322,7 @@ namespace kroniiapi.Services
             rowInserted = await SaveChange();
             var newClass = await GetClassByClassName(newClassInput.ClassName);
             await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
+            await AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
             await SaveChange();
             return rowInserted;
         }
