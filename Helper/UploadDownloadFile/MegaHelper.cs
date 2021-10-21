@@ -33,5 +33,9 @@ namespace kroniiapi.Helper.Upload
             Uri downloadLink = await client.GetDownloadLinkAsync(myFile);
             return downloadLink;
         }
+        public Task<Stream> Download(Uri uri)
+        {
+            return client.DownloadAsync(uri);
+        }
     }
 }
