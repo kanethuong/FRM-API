@@ -132,13 +132,6 @@ namespace kroniiapi.Services
                 await _dataContext.SaveChangesAsync();
                 return 2;
             }
-            else if (confirmDeleteClassInput.IsDeactivate == false)
-            {
-                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
-                existedRequest.IsAccepted = false;
-                await _dataContext.SaveChangesAsync();
-                return 2;
-            }
             return -1;
         }
         /// <summary>
