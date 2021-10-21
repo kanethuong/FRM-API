@@ -278,6 +278,7 @@ namespace kroniiapi.Services
         {
             foreach (var traineeId in traineeIdList)
             {
+                if (await _traineeService.IsTraineeHasClass(traineeId)) continue;
                 var trainee = await _traineeService.GetTraineeById(traineeId);
                 trainee.ClassId = classId;
             }
@@ -343,9 +344,7 @@ namespace kroniiapi.Services
             var traineeListId = newClassInput.TraineeIdList;
             foreach (var traineeId in traineeListId)
             {
-                var trainee = await _traineeService.GetTraineeById(traineeId);
-                var traineeClassId = trainee.ClassId;
-                if (traineeClassId is not null)
+                if (await _traineeService.IsTraineeHasClass(traineeId))
                 {
                     return -2;
                 }

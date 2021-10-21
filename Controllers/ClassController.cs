@@ -470,6 +470,14 @@ namespace kroniiapi.Controllers
                         }
                     }
                     foreach(var traineePair in classTraineesDict) {
+                        foreach (var traineeId in traineePair.Value) {
+                            if (await _traineeService.IsTraineeHasClass(traineeId)) {
+                                var trainee = await _traineeService.GetTraineeById(traineeId);
+                                if (trainee is not null) {
+                                    errors.Add("Trainee " + trainee.Username + " (" + trainee.Email + ") has a class");
+                                }
+                            }
+                        }
                         var clazz = await _classService.GetClassByClassName(traineePair.Key);
                         if (clazz is not null) {
                             await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
@@ -485,7 +493,9 @@ namespace kroniiapi.Controllers
                     }
                 }
             }
-            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created"));
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created") {
+                Errors = errors
+            });
         }
     }
 }
