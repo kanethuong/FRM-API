@@ -12,10 +12,12 @@ namespace kroniiapi.Services
     {
         private DataContext _dataContext;
 
-        public AdminService(DataContext dataContext)
+        public AdminService(DataContext dataContext, IClassService classService)
         {
             _dataContext = dataContext;
+            _classService = classService;
         }
+        private IClassService _classService;
         /// <summary>
         /// Get admin using id
         /// </summary>
@@ -122,8 +124,12 @@ namespace kroniiapi.Services
             return true;
         }
         public async Task<Admin> getAdminByClassId(int id){
-            Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).FirstOrDefaultAsync();
+            Class class1 = await _classService.GetClassByClassID(id);
+            if (class1 == null) {
+                return null;
+            }
             return await _dataContext.Admins.Where(a => a.AdminId == class1.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
+            
         }
     }
 }
