@@ -466,7 +466,7 @@ namespace kroniiapi.Controllers
                     foreach(var modulePair in classModulesDict) {
                         var clazz = await _classService.GetClassByClassName(modulePair.Key);
                         if (clazz is not null) {
-                            _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
+                            await _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
                         }
                     }
                     foreach(var traineePair in classTraineesDict) {
