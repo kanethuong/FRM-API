@@ -32,7 +32,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
-
+    
             int totalRecords = listClass.Count();
 
             var rs = listClass.OrderBy(c => c.ClassId)
@@ -135,6 +135,18 @@ namespace kroniiapi.Services
                 return 2;
             }
             return -1;
+        }
+        public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId){
+            int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)
+            .Select( t => t.ClassId).FirstOrDefaultAsync();
+            var listRequest = await _dataContext.DeleteClassRequests.Where(t => t.ClassId == classId).ToListAsync();
+            foreach(var i in listRequest){
+                i.IsAccepted = false;
+            };
+            var currentReq = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId).FirstOrDefaultAsync();
+            currentReq.IsAccepted = true;
+            int rs = await _dataContext.SaveChangesAsync();
+            return rs;
         }
         /// <summary>
         ///  Get Deleted Class List
