@@ -269,8 +269,9 @@ namespace kroniiapi.Services
         {
             string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
-            password = BCrypt.Net.BCrypt.HashPassword(password);
             sendEmail(email, password);
+            password = BCrypt.Net.BCrypt.HashPassword(password);
+
             return password;
         }
 
