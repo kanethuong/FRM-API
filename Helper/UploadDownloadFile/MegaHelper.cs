@@ -7,10 +7,10 @@ using CG.Web.MegaApiClient;
 
 namespace kroniiapi.Helper.Upload
 {
-    public class UploadFileHelper
+    public class MegaHelper : IMegaHelper
     {
         private readonly MegaApiClient client;
-        public UploadFileHelper(string username, string password)
+        public MegaHelper(string username, string password)
         {
             client = new MegaApiClient();
             client.Login(username, password);
@@ -32,6 +32,10 @@ namespace kroniiapi.Helper.Upload
             INode myFile = await client.UploadAsync(data, fileName, folder);
             Uri downloadLink = await client.GetDownloadLinkAsync(myFile);
             return downloadLink;
+        }
+        public Task<Stream> Download(Uri uri)
+        {
+            return client.DownloadAsync(uri);
         }
     }
 }

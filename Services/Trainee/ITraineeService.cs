@@ -18,5 +18,6 @@ namespace kroniiapi.Services
         Task<int> DeleteTrainee(int id);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineeListByClassId(int id, PaginationParameter paginationParameter);
         Task<ICollection<Trainee>> GetTraineeByClassId(int id);
+        Task<bool> IsTraineeHasClass(int traineeId);
     }
 }
