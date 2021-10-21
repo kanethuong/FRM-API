@@ -101,8 +101,13 @@ namespace kroniiapi.Controllers
             }
             if (status == 0)
             {
-                return BadRequest(new ResponseDTO(409, "Class or request deactivated"));
+                return Conflict(new ResponseDTO(409, "Class or request deactivated"));
             }
+            if(status == 2)
+            {
+                return BadRequest(new ResponseDTO(400,"Request is rejected"));
+            }
+            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
 
