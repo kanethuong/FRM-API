@@ -375,14 +375,12 @@ namespace kroniiapi.Controllers
                     foreach (var dict in classDictList) {
                         NewClassInput classInput = new();
                         classInput.ClassName = dict["name"]?.ToString();
-                        if (classInput.ClassName is not null) {
-                            if (classModulesDict.ContainsKey(classInput.ClassName)) {
-                                classInput.ModuleIdList = classModulesDict[classInput.ClassName];
-                            }
-                            if (classTraineesDict.ContainsKey(classInput.ClassName)) {
-                                classInput.TraineeIdList = classTraineesDict[classInput.ClassName];
-                            }
-                        }
+                        classInput.ModuleIdList = classInput.ClassName is not null && classModulesDict.ContainsKey(classInput.ClassName) 
+                            ? classModulesDict[classInput.ClassName] 
+                            : new();
+                        classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName) 
+                            ? classTraineesDict[classInput.ClassName] 
+                            : new();
                         classInput.Description = dict["description"]?.ToString();
                         object room = dict["room"];
                         if (room is not null) {
@@ -421,7 +419,7 @@ namespace kroniiapi.Controllers
 
                     // Validate the class inputs
                     foreach (var classInput in classInputList) {
-                        if (!classInputList.Validate(out List<ValidationResult> validateResults)) {
+                        if (!classInput.Validate(out List<ValidationResult> validateResults)) {
                             return BadRequest(new ResponseDTO(400, "Error when validating class") {
                                 Errors = new {
                                     value = classInput,
@@ -462,9 +460,7 @@ namespace kroniiapi.Controllers
                         await _classService.SaveChange();
                     } catch (Exception e) {
                         _classService.DiscardChanges();
-                        return BadRequest(new ResponseDTO(400, "Failed to add class") {
-                            Errors = e
-                        });
+                        throw e;
                     }
 
                     // Insert Class-Module and Class-Trainee
@@ -492,9 +488,7 @@ namespace kroniiapi.Controllers
                         await _classService.SaveChange();
                     } catch (Exception e) {
                         _classService.DiscardChanges();
-                        return BadRequest(new ResponseDTO(400, "Failed to save changes on module or trainee on class") {
-                            Errors = e
-                        });
+                        throw e;
                     }
                 }
             }
