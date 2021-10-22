@@ -145,7 +145,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
-        [HttpGet("trainee/{id:int}")]
+        [HttpGet("{int:id}/trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
