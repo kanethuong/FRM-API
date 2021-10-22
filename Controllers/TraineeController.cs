@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DTO;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,9 +21,11 @@ namespace kroniiapi.Controllers
     public class TraineeController : ControllerBase
     {
         private readonly IMapper _mapper;
-        public TraineeController(IMapper mapper)
+        private readonly IClassService _classService;
+        public TraineeController(IMapper mapper, IClassService classService)
         {
             _mapper = mapper;
+            _classService = classService;
         }
 
         /// <summary>
@@ -43,8 +47,12 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/feedback")]
         public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedback(int id)
         {
-
-            return null;
+            var whoToFeedback = await _classService.GetFeedbackViewForTrainee(id);
+            if (whoToFeedback == null)
+            {
+                return NotFound(new ResponseDTO(404, "There are no Trainee"));
+            }
+            return whoToFeedback;
         }
 
         /// <summary>

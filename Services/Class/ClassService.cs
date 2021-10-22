@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
+using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
 
@@ -388,6 +389,37 @@ namespace kroniiapi.Services
         public void DiscardChanges()
         {
             _dataContext.ChangeTracker.Clear();
+        }
+        /// <summary>
+        /// Get Trainer and Admin using TraineeId
+        /// </summary>
+        /// <param name="traineeId"></param>
+        /// <returns>FeedbackViewForTrainee</returns>
+        public async Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId)
+        {
+            var traineeToView = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).FirstOrDefaultAsync();
+            if (traineeToView == null)
+            {
+                return null;
+            }
+            Class classOfTrainee = traineeToView.Class;
+
+            FeedbackViewForTrainee returnThing = new FeedbackViewForTrainee
+            {
+                trainer = new TrainerInFeedbackResponse {
+                    TrainerId = classOfTrainee.TrainerId,
+                    Fullname = classOfTrainee.Trainer.Fullname,
+                    Email = classOfTrainee.Trainer.Email,
+                    AvatarURL = classOfTrainee.Trainer.AvatarURL
+                },
+                admin = new AdminInFeedbackResponse {
+                    AdminId = classOfTrainee.AdminId,
+                    Fullname = classOfTrainee.Admin.Fullname,
+                    Email = classOfTrainee.Admin.Email,
+                    AvatarURL = classOfTrainee.Admin.AvatarURL
+                }
+            };
+            return returnThing;
         }
     }
 }
