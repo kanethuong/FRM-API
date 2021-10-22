@@ -181,20 +181,20 @@
                 <h5>Response Body</h5>
                 <p>
                 <pre><code>
+{
+"totalRecords": int,
+"payload": [
     {
-    "totalRecords": int,
-    "payload": [
+    "traineeName": "string",
+    "scoreList": [
         {
-        "traineeName": "string",
-        "scoreList": [
-            {
-            "moduleName": "string",
-            "score": int
-            }
-                    ]
+        "moduleName": "string",
+        "score": int
         }
                 ]
     }
+            ]
+}
     </code></pre>
                 </p>
             </div>
@@ -246,34 +246,34 @@
                 <h5>Response Body</h5>
                 <p>
                 <pre><code>
-    {
-        "trainerFeedback": {
-            "trainer": {
-            "fullname": "string",
-            "email": "string",
-            "avatarURL": "string"
-            },
-            "feedbacks": [
-            {
-                "rate": int,
-                "content": "string"
-            }
-            ]
+{
+    "trainerFeedback": {
+        "trainer": {
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
         },
-        "adminFeedback": {
-            "admin": {
-            "fullname": "string",
-            "email": "string",
-            "avatarURL": "string"
-            },
-            "feedbacks": [
-            {
-                "rate": int,
-                "content": "string"
-            }
-            ]
+        "feedbacks": [
+        {
+            "rate": int,
+            "content": "string"
         }
+        ]
+    },
+    "adminFeedback": {
+        "admin": {
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+        },
+        "feedbacks": [
+        {
+            "rate": int,
+            "content": "string"
         }
+        ]
+    }
+}
             </code></pre>
                 </p>
             </div>
