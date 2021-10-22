@@ -158,7 +158,7 @@ namespace kroniiapi.Controllers
         /// <summary>
         /// Get the uri from redis, call download from mega and return file stream
         /// </summary>
-        /// <returns>file stream</returns>
+        /// <returns>FileContentResult giống trong cái controller action của cái API Mega nhe Tiên :v </returns>
         [HttpGet("rule")]
         public async Task<ActionResult<Stream>> ViewRule()
         {
