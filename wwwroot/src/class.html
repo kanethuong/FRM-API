@@ -433,6 +433,60 @@
             </div>
         </div>
     </div>
+<div id="createNewClass">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create account</h3>
+        </div>
+        <p>By ToanTK</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Trainee</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "className": "string",
+  "description": "string",
+  "trainerId": int,
+  "adminId": int,
+  "roomId": int,
+  "startDay": "DateTime",
+  "endDay": "DateTime",
+  "traineeIdList": [
+    int
+  ],
+  "moduleIdList": [
+    int
+  ]
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
 
     <div id="createClassExcel">
         <!-- Function Title -->
