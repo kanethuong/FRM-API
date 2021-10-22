@@ -397,26 +397,47 @@ namespace kroniiapi.Services
         /// <returns>FeedbackViewForTrainee</returns>
         public async Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId)
         {
-            var traineeToView = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).FirstOrDefaultAsync();
+            var traineeToView = await _dataContext.Trainees
+                                        .Where(t => t.TraineeId == traineeId)
+                                        .Select(c => new Trainee
+                                        {
+                                            TraineeId = c.TraineeId,
+                                            Username = c.Username,
+                                            Fullname = c.Fullname,
+                                            AvatarURL = c.AvatarURL,
+                                            Class = new Class {
+                                                ClassId = c.Class.ClassId,
+                                                AdminId = c.Class.Admin.AdminId,
+                                                Admin = new Admin {
+                                                    Fullname = c.Class.Admin.Fullname,
+                                                    Email = c.Class.Admin.Email,
+                                                    AvatarURL = c.Class.Admin.AvatarURL,
+                                                },
+                                                TrainerId = c.Class.TrainerId,
+                                                Trainer = new Trainer {
+                                                    Fullname = c.Class.Trainer.Fullname,
+                                                    Email = c.Class.Trainer.Email,
+                                                    AvatarURL = c.Class.Trainer.AvatarURL,
+                                                }
+                                            }
+                                        }).FirstOrDefaultAsync();
             if (traineeToView == null)
             {
                 return null;
             }
-            Class classOfTrainee = traineeToView.Class;
-
-            FeedbackViewForTrainee returnThing = new FeedbackViewForTrainee
+            var returnThing = new FeedbackViewForTrainee
             {
                 trainer = new TrainerInFeedbackResponse {
-                    TrainerId = classOfTrainee.TrainerId,
-                    Fullname = classOfTrainee.Trainer.Fullname,
-                    Email = classOfTrainee.Trainer.Email,
-                    AvatarURL = classOfTrainee.Trainer.AvatarURL
+                    TrainerId = traineeToView.Class.TrainerId,
+                    Fullname = traineeToView.Class.Trainer.Fullname,
+                    Email = traineeToView.Class.Trainer.Email,
+                    AvatarURL = traineeToView.Class.Trainer.AvatarURL
                 },
                 admin = new AdminInFeedbackResponse {
-                    AdminId = classOfTrainee.AdminId,
-                    Fullname = classOfTrainee.Admin.Fullname,
-                    Email = classOfTrainee.Admin.Email,
-                    AvatarURL = classOfTrainee.Admin.AvatarURL
+                    AdminId = traineeToView.Class.AdminId,
+                    Fullname = traineeToView.Class.Admin.Fullname,
+                    Email = traineeToView.Class.Admin.Email,
+                    AvatarURL = traineeToView.Class.Admin.AvatarURL
                 }
             };
             return returnThing;

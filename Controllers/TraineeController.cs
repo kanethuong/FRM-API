@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.ClassDetailDTO;
@@ -22,10 +23,12 @@ namespace kroniiapi.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IClassService _classService;
-        public TraineeController(IMapper mapper, IClassService classService)
+        private readonly IFeedbackService _feedbackService;
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService)
         {
             _mapper = mapper;
             _classService = classService;
+            _feedbackService = feedbackService;
         }
 
         /// <summary>
@@ -63,8 +66,21 @@ namespace kroniiapi.Controllers
         [HttpPost("feedback/trainer")]
         public async Task<ActionResult> SendTrainerFeedback([FromBody] TrainerFeedbackInput trainerFeedbackInput)
         {
-
-            return null;
+            TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
+            int rs = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
+            }
+            if (rs == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Don't have Trainee or Trainer"));
+            }
+            if (rs == 1)
+            {
+                return Ok(new ResponseDTO(200, "Feedback Success"));
+            }
+            return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
         
         /// <summary>
@@ -75,8 +91,21 @@ namespace kroniiapi.Controllers
         [HttpPost("feedback/admin")]
         public async Task<ActionResult> SendAdminFeedback([FromBody] AdminFeedbackInput adminFeedbackInput)
         {
-
-            return null;
+            AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
+            int rs = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
+            }
+            if (rs == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Don't have Trainee or Trainer"));
+            }
+            if (rs == 1)
+            {
+                return Ok(new ResponseDTO(200, "Feedback Success"));
+            }
+            return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
         /// <summary>
         /// View trainee profile
