@@ -12,6 +12,7 @@ using kroniiapi.Helper;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace kroniiapi.Controllers
 {
@@ -99,6 +100,7 @@ namespace kroniiapi.Controllers
         /// <param name="token">Access token</param>
         /// <returns>200: Logout success</returns>
         [HttpPost("logout")]
+        [Authorize]
         public ActionResult Logout()
         {
             if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
