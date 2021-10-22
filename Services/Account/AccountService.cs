@@ -551,7 +551,8 @@ namespace kroniiapi.Services
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
-            if (tupleResponse == null || password == null || password == "")
+            AccountResponse account = tupleResponse.Item1;
+            if (tupleResponse == null || password == null || password == "" || account.Role == "administrator")
             {
                 return 0;
             }
@@ -566,7 +567,6 @@ namespace kroniiapi.Services
 
             password = BCrypt.Net.BCrypt.HashPassword(password);
 
-            AccountResponse account = tupleResponse.Item1;
             int rowInserted = 0;
             switch (account.Role.ToLower())
             {
