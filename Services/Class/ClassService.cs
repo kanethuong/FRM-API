@@ -16,26 +16,17 @@ namespace kroniiapi.Services
         private DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
-<<<<<<< HEAD
-        private readonly IAdminService _adminService;
-        public ClassService(DataContext dataContext, IMapper mapper, ITraineeService traineeService, IAdminService adminService)
-=======
         // private readonly IAdminService _adminService;
         public ClassService(DataContext dataContext,
                             IMapper mapper,
                             ITraineeService traineeService
         // IAdminService adminService
         )
->>>>>>> fa4d9eeb8df1a38184abc8b163cc4c7b5c756f47
         {
             _dataContext = dataContext;
             _mapper = mapper;
             _traineeService = traineeService;
-<<<<<<< HEAD
-            _adminService = adminService;
-=======
             // _adminService = adminService;
->>>>>>> fa4d9eeb8df1a38184abc8b163cc4c7b5c756f47
         }
         /// <summary>
         /// Get Class List
@@ -256,16 +247,10 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             Class c = await GetClassByClassID(deleteClassRequest.ClassId);
-<<<<<<< HEAD
-            Admin admin= await _adminService.GetAdminById(deleteClassRequest.AdminId);
-
-            if (c == null || admin==null)
-=======
             // Admin admin= await _adminService.GetAdminById(deleteClassRequest.AdminId);
             var admin = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId);
 
             if (c == null || admin == false)
->>>>>>> fa4d9eeb8df1a38184abc8b163cc4c7b5c756f47
             {
                 return 0;
             }
