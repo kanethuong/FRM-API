@@ -16,7 +16,10 @@ namespace kroniiapi.Services
         private DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
-        public ClassService(DataContext dataContext, IMapper mapper, ITraineeService traineeService)
+        public ClassService(DataContext dataContext,
+                            IMapper mapper,
+                            ITraineeService traineeService
+        )
         {
             _dataContext = dataContext;
             _mapper = mapper;
@@ -56,7 +59,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == null)
+                                    .Where(c => c.IsAccepted == null && c.Class.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
@@ -132,14 +135,21 @@ namespace kroniiapi.Services
                 await _dataContext.SaveChangesAsync();
                 return 2;
             }
-            else if (confirmDeleteClassInput.IsDeactivate == false)
-            {
-                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
-                existedRequest.IsAccepted = false;
-                await _dataContext.SaveChangesAsync();
-                return 2;
-            }
             return -1;
+        }
+        public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId)
+        {
+            int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)
+            .Select(t => t.ClassId).FirstOrDefaultAsync();
+            var listRequest = await _dataContext.DeleteClassRequests.Where(t => t.ClassId == classId).ToListAsync();
+            foreach (var i in listRequest)
+            {
+                i.IsAccepted = false;
+            };
+            var currentReq = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId).FirstOrDefaultAsync();
+            currentReq.IsAccepted = true;
+            int rs = await _dataContext.SaveChangesAsync();
+            return rs;
         }
         /// <summary>
         ///  Get Deleted Class List
@@ -148,7 +158,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -234,6 +244,12 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             Class c = await GetClassByClassID(deleteClassRequest.ClassId);
+            var admin = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId);
+
+            if (c == null || admin == false)
+            {
+                return 0;
+            }
 
             if (c.IsDeactivated == true)
             {

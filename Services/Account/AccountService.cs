@@ -22,6 +22,7 @@ namespace kroniiapi.Services
         private ITraineeService _traineeService;
         private IEmailService _emailService;
         private IMapper _mapper;
+        private string defaultAvatar ="https://ibb.co/t4mtsyF";
 
         public AccountService(DataContext dataContext, IMapper mapper, IAdminService adminService
         , IAdministratorService administratorService, ICompanyService companyService, ITraineeService traineeService
@@ -79,7 +80,7 @@ namespace kroniiapi.Services
                 itemToResponse.AccountId = item.CompanyId;
                 totalAccount.Add(itemToResponse);
             }
-
+            totalAccount.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
             return totalAccount;
         }
 
@@ -269,8 +270,9 @@ namespace kroniiapi.Services
         {
             string password = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
 
-            password = BCrypt.Net.BCrypt.HashPassword(password);
             sendEmail(email, password);
+            password = BCrypt.Net.BCrypt.HashPassword(password);
+
             return password;
         }
 
@@ -308,6 +310,7 @@ namespace kroniiapi.Services
                     {
                         return -1;
                     }
+                    adminstratorToAdd.AvatarURL = defaultAvatar;
                     _dataContext.Administrators.Add(adminstratorToAdd);
                     insertedStatus = true;
                     break;
@@ -315,24 +318,28 @@ namespace kroniiapi.Services
                     var adminToAdd = _mapper.Map<Admin>(accountInput);
                     adminToAdd.RoleId = 2;
                     adminToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    adminToAdd.AvatarURL = defaultAvatar;
                     insertedStatus = _adminService.InsertNewAdminNoSaveChange(adminToAdd);
                     break;
                 case "trainer":
                     var trainerToAdd = _mapper.Map<Trainer>(accountInput);
                     trainerToAdd.RoleId = 3;
                     trainerToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    trainerToAdd.AvatarURL = defaultAvatar;
                     insertedStatus = _trainerService.InsertNewTrainerNoSaveChange(trainerToAdd);
                     break;
                 case "trainee":
                     var traineeToAdd = _mapper.Map<Trainee>(accountInput);
                     traineeToAdd.RoleId = 4;
                     traineeToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    traineeToAdd.AvatarURL = defaultAvatar;
                     insertedStatus = _traineeService.InsertNewTraineeNoSaveChange(traineeToAdd);
                     break;
                 case "company":
                     var companyToAdd = _mapper.Map<Company>(accountInput);
                     companyToAdd.RoleId = 5;
                     companyToAdd.Password = processPasswordAndSendEmail(accountInput.Email);
+                    companyToAdd.AvatarURL = defaultAvatar;
                     insertedStatus = _companyService.InsertNewCompanyNoSaveChange(companyToAdd);
                     break;
                 default:
@@ -394,12 +401,13 @@ namespace kroniiapi.Services
                             DiscardChanges();
                             return Tuple.Create(false, processingIndex);
                         }
+                        adminstratorToAdd.AvatarURL = defaultAvatar;
                         _dataContext.Administrators.Add(adminstratorToAdd);
                         break;
                     case "admin":
                         var adminToAdd = _mapper.Map<Admin>(account);
                         adminToAdd.RoleId = 2;
-
+                        adminToAdd.AvatarURL = defaultAvatar;
                         passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
                         try
                         {
@@ -420,7 +428,7 @@ namespace kroniiapi.Services
                     case "trainer":
                         var trainerToAdd = _mapper.Map<Trainer>(account);
                         trainerToAdd.RoleId = 3;
-
+                        trainerToAdd.AvatarURL = defaultAvatar;
                         passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
                         try
                         {
@@ -442,7 +450,7 @@ namespace kroniiapi.Services
                     case "trainee":
                         var traineeToAdd = _mapper.Map<Trainee>(account);
                         traineeToAdd.RoleId = 4;
-
+                        traineeToAdd.AvatarURL = defaultAvatar;
                         passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
                         try
                         {
@@ -464,7 +472,7 @@ namespace kroniiapi.Services
                     case "company":
                         var companyToAdd = _mapper.Map<Company>(account);
                         companyToAdd.RoleId = 5;
-
+                        companyToAdd.AvatarURL = defaultAvatar;
                         passwordBeforeHash = AutoGeneratorPassword.passwordGenerator(15, 5, 5, 5);
                         try
                         {

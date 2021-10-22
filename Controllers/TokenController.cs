@@ -87,7 +87,6 @@ namespace kroniiapi.Controllers
         /// Gett access token from header then get account data and return it to user
         /// </summary>
         /// <returns>200: Account data</returns>
-        [Authorize]
         [HttpPost("account")]
         public async Task<ActionResult<AuthResponse>> GetAccountData()
         {

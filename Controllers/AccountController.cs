@@ -11,12 +11,14 @@ using kroniiapi.DTO.Email;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Administrator")]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
@@ -166,10 +168,8 @@ namespace kroniiapi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(new ResponseDTO(400, "Error when saving the insertion")
-                {
-                    Errors = e
-                });
+                _accountService.DiscardChanges();
+                throw e;
             }
         }
 
@@ -195,6 +195,7 @@ namespace kroniiapi.Controllers
         /// <param name="emailInput">Email for sending</param>
         /// <returns>200: Sent / 404: Email not found</returns>
         [HttpPost("forgot")]
+        [AllowAnonymous]
         public async Task<ActionResult> ForgotPassword([FromBody] EmailInput emailInput)
         {
             if (emailInput == null || emailInput.Email == "")
