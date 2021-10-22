@@ -16,17 +16,14 @@ namespace kroniiapi.Services
         private DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
-        // private readonly IAdminService _adminService;
         public ClassService(DataContext dataContext,
                             IMapper mapper,
                             ITraineeService traineeService
-        // IAdminService adminService
         )
         {
             _dataContext = dataContext;
             _mapper = mapper;
             _traineeService = traineeService;
-            // _adminService = adminService;
         }
         /// <summary>
         /// Get Class List
@@ -247,7 +244,6 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             Class c = await GetClassByClassID(deleteClassRequest.ClassId);
-            // Admin admin= await _adminService.GetAdminById(deleteClassRequest.AdminId);
             var admin = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId);
 
             if (c == null || admin == false)
