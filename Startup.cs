@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 using kroniiapi.Services;
 using kroniiapi.DTO.Email;
 using OfficeOpenXml;
+using kroniiapi.Helper.Upload;
 
 namespace kroniiapi
 {
@@ -107,6 +108,13 @@ namespace kroniiapi
 
             // Access restrict with IAuthorizationHandler
             services.AddSingleton<IAuthorizationHandler, AccessHandler>();
+            
+            // Config username and password Mega using
+            services.AddSingleton<IMegaHelper>(provider => {
+                string username = Configuration["Email:MailAddress"];
+                string password = Configuration["Email:MegaPassword"];
+                return new MegaHelper(username, password);
+            });
 
             // Map data from Model to DTO and back
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
