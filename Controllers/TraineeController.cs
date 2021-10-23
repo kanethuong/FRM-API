@@ -237,7 +237,7 @@ namespace kroniiapi.Controllers
             try
             {
                 (int totalRecord, IEnumerable<Application> application) = await _traineeService.GetApplicationListByTraineeId(id, paginationParameter);
-                IEnumerable<ApplicationResponse> applicationDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<ApplicationResponse>>(application);
+                IEnumerable<ApplicationResponse> applicationDTO = _mapper.Map<IEnumerable<Application>,IEnumerable<ApplicationResponse>>(application);
                 return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, applicationDTO));
             }
             catch
