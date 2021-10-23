@@ -133,6 +133,153 @@
         </div>
     </div>
 
+    <div id="viewClassScore">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Class Score</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/score</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>classID: ID of class</p>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Trainee name field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "totalRecords": int,
+    "payload": [
+        {
+        "traineeName": "string",
+        "scoreList": [
+            {
+            "moduleName": "string",
+            "score": int
+                }
+            ]
+        }
+    ]
+}
+    </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewClassFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Class Feedback</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/feedback</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>classID: ID of class</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "trainerFeedback": {
+        "trainer": {
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+        },
+        "feedbacks": [
+        {
+            "rate": int,
+            "content": "string"
+            }
+        ]
+    },
+    "adminFeedback": {
+        "admin": {
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+        },
+        "feedbacks": [
+        {
+            "rate": int,
+            "content": "string"
+            }
+        ]
+    }
+}
+            </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div id="confirmDeleteClassRequest">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
@@ -152,7 +299,7 @@
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
-                <p>POST</p>
+                <p>PUT</p>
             </div>
             <div class="col-4">
                 <h5>Status</h5>
@@ -179,6 +326,77 @@
         </div>
     </div>
 
+    <div id="ViewClassDetail">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>ViewClassDetail</h3>
+        </div>
+        <p>By DatLT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 </p>
+            </div>
+        </div>
+         <!-- Parameter & file -->
+         <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of class</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+                    "payload": [
+                    {
+                        "classId": int,
+                        "className": "string",
+                        "description": "string",
+                        "modules": [
+                          {
+                            "moduleName": "string",
+                            "iconURL": "string",
+                            "syllabusURL": "string"
+                          }
+                        ],
+                        "trainer": {
+                          "fullname": "string",
+                          "avatarURL": "string",
+                          "email": "string"
+                        },
+                        "admin": {
+                          "fullname": "string",
+                          "avatarURL": "string",
+                          "email": "string"
+                        }
+                      }
+                    ]
+                }
+            </code></pre>
+                </p>
+            </div>
+        </div>
     <div id="getDeletedClass">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
@@ -241,4 +459,155 @@
         </div>
     </div>
 
+    <div id="createRequestDeleteClass">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create Request Delete Class</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class/request</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 404 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>{
+  "reason": "string",
+  "classId": int,
+  "adminId": int
+}</code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Repsonse</p>
+            </div>
+        </div>
+    </div>
+<div id="createNewClass">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create account</h3>
+        </div>
+        <p>By ToanTK</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Trainee</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "className": "string",
+  "description": "string",
+  "trainerId": int,
+  "adminId": int,
+  "roomId": int,
+  "startDay": "DateTime",
+  "endDay": "DateTime",
+  "traineeIdList": [
+    int
+  ],
+  "moduleIdList": [
+    int
+  ]
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="createClassExcel">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create Class by excel</h3>
+        </div>
+        <p>By TienHQ</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/excel</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 400 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Form file</h5>
+                <p>File: <a href="excel/class-template.xlsx" download="">Download Template</a></p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
 </div>

@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
+using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,10 @@ namespace kroniiapi.Services
         private DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
-        public ClassService(DataContext dataContext, IMapper mapper, ITraineeService traineeService)
+        public ClassService(DataContext dataContext,
+                            IMapper mapper,
+                            ITraineeService traineeService
+        )
         {
             _dataContext = dataContext;
             _mapper = mapper;
@@ -56,7 +60,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == null)
+                                    .Where(c => c.IsAccepted == null && c.Class.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
@@ -132,14 +136,21 @@ namespace kroniiapi.Services
                 await _dataContext.SaveChangesAsync();
                 return 2;
             }
-            else if (confirmDeleteClassInput.IsDeactivate == false)
-            {
-                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
-                existedRequest.IsAccepted = false;
-                await _dataContext.SaveChangesAsync();
-                return 2;
-            }
             return -1;
+        }
+        public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId)
+        {
+            int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)
+            .Select(t => t.ClassId).FirstOrDefaultAsync();
+            var listRequest = await _dataContext.DeleteClassRequests.Where(t => t.ClassId == classId).ToListAsync();
+            foreach (var i in listRequest)
+            {
+                i.IsAccepted = false;
+            };
+            var currentReq = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId).FirstOrDefaultAsync();
+            currentReq.IsAccepted = true;
+            int rs = await _dataContext.SaveChangesAsync();
+            return rs;
         }
         /// <summary>
         ///  Get Deleted Class List
@@ -148,7 +159,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -234,6 +245,12 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
             Class c = await GetClassByClassID(deleteClassRequest.ClassId);
+            var admin = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId);
+
+            if (c == null || admin == false)
+            {
+                return 0;
+            }
 
             if (c.IsDeactivated == true)
             {
@@ -278,6 +295,7 @@ namespace kroniiapi.Services
         {
             foreach (var traineeId in traineeIdList)
             {
+                if (await _traineeService.IsTraineeHasClass(traineeId)) continue;
                 var trainee = await _traineeService.GetTraineeById(traineeId);
                 trainee.ClassId = classId;
             }
@@ -287,11 +305,13 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <param name="moduleIdList"></param>
-        public void AddDataToClassModule(int classId, ICollection<int> moduleIdList)
+        public async Task AddDataToClassModule(int classId, ICollection<int> moduleIdList)
         {
             foreach (var moduleId in moduleIdList)
             {
-                ClassModule classModule = new ClassModule()
+                ClassModule classModule = await _dataContext.ClassModules.Where(cm => cm.ClassId == classId && cm.ModuleId == moduleId).FirstOrDefaultAsync();
+                if (classModule is not null) continue;
+                classModule = new ClassModule()
                 {
                     ClassId = classId,
                     ModuleId = moduleId
@@ -319,7 +339,7 @@ namespace kroniiapi.Services
             rowInserted = await SaveChange();
             var newClass = await GetClassByClassName(newClassInput.ClassName);
             await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
+            await AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
             await SaveChange();
             return rowInserted;
         }
@@ -343,9 +363,7 @@ namespace kroniiapi.Services
             var traineeListId = newClassInput.TraineeIdList;
             foreach (var traineeId in traineeListId)
             {
-                var trainee = await _traineeService.GetTraineeById(traineeId);
-                var traineeClassId = trainee.ClassId;
-                if (traineeClassId is not null)
+                if (await _traineeService.IsTraineeHasClass(traineeId))
                 {
                     return -2;
                 }
@@ -371,6 +389,58 @@ namespace kroniiapi.Services
         public void DiscardChanges()
         {
             _dataContext.ChangeTracker.Clear();
+        }
+        /// <summary>
+        /// Get Trainer and Admin using TraineeId
+        /// </summary>
+        /// <param name="traineeId"></param>
+        /// <returns>FeedbackViewForTrainee</returns>
+        public async Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId)
+        {
+            var traineeToView = await _dataContext.Trainees
+                                        .Where(t => t.TraineeId == traineeId)
+                                        .Select(c => new Trainee
+                                        {
+                                            TraineeId = c.TraineeId,
+                                            Username = c.Username,
+                                            Fullname = c.Fullname,
+                                            AvatarURL = c.AvatarURL,
+                                            Class = new Class {
+                                                ClassId = c.Class.ClassId,
+                                                AdminId = c.Class.Admin.AdminId,
+                                                Admin = new Admin {
+                                                    Fullname = c.Class.Admin.Fullname,
+                                                    Email = c.Class.Admin.Email,
+                                                    AvatarURL = c.Class.Admin.AvatarURL,
+                                                },
+                                                TrainerId = c.Class.TrainerId,
+                                                Trainer = new Trainer {
+                                                    Fullname = c.Class.Trainer.Fullname,
+                                                    Email = c.Class.Trainer.Email,
+                                                    AvatarURL = c.Class.Trainer.AvatarURL,
+                                                }
+                                            }
+                                        }).FirstOrDefaultAsync();
+            if (traineeToView == null)
+            {
+                return null;
+            }
+            var returnThing = new FeedbackViewForTrainee
+            {
+                trainer = new TrainerInFeedbackResponse {
+                    TrainerId = traineeToView.Class.TrainerId,
+                    Fullname = traineeToView.Class.Trainer.Fullname,
+                    Email = traineeToView.Class.Trainer.Email,
+                    AvatarURL = traineeToView.Class.Trainer.AvatarURL
+                },
+                admin = new AdminInFeedbackResponse {
+                    AdminId = traineeToView.Class.AdminId,
+                    Fullname = traineeToView.Class.Admin.Fullname,
+                    Email = traineeToView.Class.Admin.Email,
+                    AvatarURL = traineeToView.Class.Admin.AvatarURL
+                }
+            };
+            return returnThing;
         }
     }
 }

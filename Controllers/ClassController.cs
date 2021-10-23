@@ -101,8 +101,13 @@ namespace kroniiapi.Controllers
             }
             if (status == 0)
             {
-                return BadRequest(new ResponseDTO(409, "Class or request deactivated"));
+                return Conflict(new ResponseDTO(409, "Class or request deactivated"));
             }
+            if(status == 2)
+            {
+                return BadRequest(new ResponseDTO(400,"Request is rejected"));
+            }
+            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
 
@@ -145,7 +150,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
-        [HttpGet("trainee/{id:int}")]
+        [HttpGet("{id:int}/trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
@@ -161,7 +166,7 @@ namespace kroniiapi.Controllers
         /// Insert the request delete class to db
         /// </summary>
         /// <param name="requestDeleteClassInput">Request detail</param>
-        /// <returns>201: Request is created / 409: Class is already deactivated</returns>
+        /// <returns>201: Request is created / 409: Class is already deactivated / 404: Fail to request delete class</returns>
         [HttpPost("request")]
         public async Task<ActionResult> CreateRequestDeleteClass(RequestDeleteClassInput requestDeleteClassInput)
         {
@@ -170,9 +175,9 @@ namespace kroniiapi.Controllers
             if(rs==-1){
                 return Conflict(new ResponseDTO(409,"Class is already deactivated"));
             }else if(rs==0){
-                return StatusCode(StatusCodes.Status500InternalServerError,new ResponseDTO(500,"Fail to request delete class"));
+                return NotFound(new ResponseDTO(404,"Fail to request delete class"));
             }else{
-                return Ok(new ResponseDTO(200,"Request delete class success"));
+                return Ok(new ResponseDTO(201,"Request delete class success"));
             }
         }
 
@@ -214,6 +219,11 @@ namespace kroniiapi.Controllers
         {
             Admin admin1 = await _adminService.getAdminByClassId(id);
             Trainer trainer1 = await _trainerService.getTrainerByClassId(id);
+
+            if (admin1 == null || trainer1 == null) {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+                
             FeedbackResponse feedbackResponses = new FeedbackResponse();
 
             IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByAdminId(trainer1.TrainerId);
@@ -370,14 +380,12 @@ namespace kroniiapi.Controllers
                     foreach (var dict in classDictList) {
                         NewClassInput classInput = new();
                         classInput.ClassName = dict["name"]?.ToString();
-                        if (classInput.ClassName is not null) {
-                            if (classModulesDict.ContainsKey(classInput.ClassName)) {
-                                classInput.ModuleIdList = classModulesDict[classInput.ClassName];
-                            }
-                            if (classTraineesDict.ContainsKey(classInput.ClassName)) {
-                                classInput.TraineeIdList = classTraineesDict[classInput.ClassName];
-                            }
-                        }
+                        classInput.ModuleIdList = classInput.ClassName is not null && classModulesDict.ContainsKey(classInput.ClassName) 
+                            ? classModulesDict[classInput.ClassName] 
+                            : new();
+                        classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName) 
+                            ? classTraineesDict[classInput.ClassName] 
+                            : new();
                         classInput.Description = dict["description"]?.ToString();
                         object room = dict["room"];
                         if (room is not null) {
@@ -416,7 +424,7 @@ namespace kroniiapi.Controllers
 
                     // Validate the class inputs
                     foreach (var classInput in classInputList) {
-                        if (!classInputList.Validate(out List<ValidationResult> validateResults)) {
+                        if (!classInput.Validate(out List<ValidationResult> validateResults)) {
                             return BadRequest(new ResponseDTO(400, "Error when validating class") {
                                 Errors = new {
                                     value = classInput,
@@ -457,19 +465,25 @@ namespace kroniiapi.Controllers
                         await _classService.SaveChange();
                     } catch (Exception e) {
                         _classService.DiscardChanges();
-                        return BadRequest(new ResponseDTO(400, "Failed to add class") {
-                            Errors = e
-                        });
+                        throw e;
                     }
 
                     // Insert Class-Module and Class-Trainee
                     foreach(var modulePair in classModulesDict) {
                         var clazz = await _classService.GetClassByClassName(modulePair.Key);
                         if (clazz is not null) {
-                            _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
+                            await _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
                         }
                     }
                     foreach(var traineePair in classTraineesDict) {
+                        foreach (var traineeId in traineePair.Value) {
+                            if (await _traineeService.IsTraineeHasClass(traineeId)) {
+                                var trainee = await _traineeService.GetTraineeById(traineeId);
+                                if (trainee is not null) {
+                                    errors.Add("Trainee " + trainee.Username + " (" + trainee.Email + ") has a class");
+                                }
+                            }
+                        }
                         var clazz = await _classService.GetClassByClassName(traineePair.Key);
                         if (clazz is not null) {
                             await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
@@ -479,13 +493,13 @@ namespace kroniiapi.Controllers
                         await _classService.SaveChange();
                     } catch (Exception e) {
                         _classService.DiscardChanges();
-                        return BadRequest(new ResponseDTO(400, "Failed to save changes on module or trainee on class") {
-                            Errors = e
-                        });
+                        throw e;
                     }
                 }
             }
-            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created"));
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created") {
+                Errors = errors
+            });
         }
     }
 }

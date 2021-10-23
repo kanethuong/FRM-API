@@ -40,11 +40,13 @@ namespace kroniiapi.Controllers
         [HttpGet("history")]
         public async Task<ActionResult> SendHistory(string email)
         {
+            email = email.ToLower();
             List<NotifyMessage> history = new List<NotifyMessage>();
             history = await _cacheProvider.GetFromCache<List<NotifyMessage>>(email);
+            history.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
             if(history == null)
             {
-                return NotFound(new ResponseDTO(404, "email not found!"));
+                return NotFound(new ResponseDTO(404, "history not found!"));
             }
             else
             {

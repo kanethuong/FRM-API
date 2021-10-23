@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -12,6 +16,8 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
+        private IMapper _mapper;
+        private IApplicationService _applicationService;
 
         public TraineeService(DataContext dataContext)
         {
@@ -47,7 +53,7 @@ namespace kroniiapi.Services
         /// <returns>Trainee data</returns>
         public async Task<Trainee> GetTraineeByEmail(string email)
         {
-            return await _dataContext.Trainees.Where(t => t.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
+            return await _dataContext.Trainees.Where(t => t.Email.ToLower().Equals(email.ToLower()) &&
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
@@ -166,6 +172,84 @@ namespace kroniiapi.Services
         public async Task<ICollection<Trainee>> GetTraineeByClassId(int id)
         {
             return await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false).ToListAsync();
+        }
+
+        
+        /// <summary>
+        /// Check if the trainee has a class
+        /// </summary>
+        /// <param name="traineeId">the trainee id</param>
+        /// <returns>whether the trainee has a class</returns>
+        public async Task<bool> IsTraineeHasClass(int traineeId) {
+            var trainee = await GetTraineeById(traineeId);
+            var traineeClassId = trainee?.ClassId;
+            return traineeClassId is not null;
+        }
+
+        public async Task<Tuple<int,IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter)
+        {
+            Trainee trainee = await GetTraineeById(id);
+            if(trainee.ClassId == null)
+            {
+                return null;
+            }
+
+            List<TraineeAttendanceReport> resultList = new List<TraineeAttendanceReport>();
+
+            Dictionary<int,int> NumberOfAbsentByModule = new Dictionary<int, int>();
+
+            IEnumerable<int> listModule = await _dataContext.ClassModules.
+                Where(t => t.ClassId == trainee.ClassId).Select(t => t.ModuleId).ToListAsync();
+
+            foreach (var module in listModule)         //init absent tracker by module id
+            {
+                NumberOfAbsentByModule.Add(module, 0);
+            }
+
+            IEnumerable<int> listCalendarIdAbsent = await _dataContext.Attendances.Where(
+                t => t.IsAbsent == true && t.TraineeId == id ).Select(i => i.CalendarId).ToListAsync();
+            
+            foreach (var calenderId in listCalendarIdAbsent) //count number of absent slot in each module id
+            {
+                int moduleId = _dataContext.Calendars.Where(t => t.CalendarId == calenderId).FirstOrDefault().ModuleId;
+                try
+                {
+                    NumberOfAbsentByModule[moduleId] += 1;
+                }
+                catch
+                {
+                    NumberOfAbsentByModule.Add(moduleId,0);
+                }
+            }
+            
+            
+            foreach (var moduleId in listModule)
+            {
+                Module module =  _dataContext.Modules.Where(t => t.ModuleId == moduleId).FirstOrDefault();
+                resultList.Add(new TraineeAttendanceReport{
+                    NoOfSlot = module.NoOfSlot, ModuleName = module.ModuleName, NumberSlotAbsent = NumberOfAbsentByModule[moduleId]});
+            }
+
+            return Tuple.Create(resultList.Count() ,PaginationHelper.GetPage(resultList.Where(t =>
+                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower())), paginationParameter));
+        }
+
+
+        public async Task<Tuple<int,IEnumerable<Application>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
+        {
+            Trainee trainee = await GetTraineeById(id);
+            if(trainee.Applications == null)
+            {
+                return null;
+            }
+            List<Application> application = await _dataContext.Applications.Where(app => app.ApplicationId == id).ToListAsync();
+            int totalRecords = application.Count();
+            var rs = application.OrderBy(a => a.ApplicationId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
+            
+
         }
     }
 }

@@ -11,12 +11,14 @@ using kroniiapi.DTO.Email;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Administrator")]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
@@ -64,6 +66,10 @@ namespace kroniiapi.Controllers
             if (result == -1)
             {
                 return NotFound(new ResponseDTO(404, "Id not found!"));
+            }
+            if (result == 0)
+            {
+                return BadRequest(new ResponseDTO(409, "Can't deactivate administrator"));
             }
             return Ok(new ResponseDTO(200, "Deleted!"));
         }
@@ -162,10 +168,8 @@ namespace kroniiapi.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(new ResponseDTO(400, "Error when saving the insertion")
-                {
-                    Errors = e
-                });
+                _accountService.DiscardChanges();
+                throw e;
             }
         }
 
@@ -191,6 +195,7 @@ namespace kroniiapi.Controllers
         /// <param name="emailInput">Email for sending</param>
         /// <returns>200: Sent / 404: Email not found</returns>
         [HttpPost("forgot")]
+        [AllowAnonymous]
         public async Task<ActionResult> ForgotPassword([FromBody] EmailInput emailInput)
         {
             if (emailInput == null || emailInput.Email == "")

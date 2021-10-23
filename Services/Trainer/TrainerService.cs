@@ -12,10 +12,12 @@ namespace kroniiapi.Services
     {
         private DataContext _dataContext;
 
-        public TrainerService(DataContext dataContext)
+        public TrainerService(DataContext dataContext, IClassService classService)
         {
             _dataContext = dataContext;
+            _classService = classService;
         }
+        private IClassService _classService;
         /// <summary>
         /// Get Trainer method by id
         /// </summary>
@@ -45,7 +47,11 @@ namespace kroniiapi.Services
         /// <returns>Trainer data</returns>
         public async Task<Trainer> GetTrainerByEmail(string email)
         {
+<<<<<<< HEAD
             return await _dataContext.Trainers.Where(t => t.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
+=======
+            return await _dataContext.Trainers.Where(t => t.Email.ToLower().Equals(email.ToLower()) &&
+>>>>>>> f00482e336499f84deb1c768a7093357ffdfa5e0
             t.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
@@ -146,26 +152,31 @@ namespace kroniiapi.Services
             return true;
         }
         public async Task<Trainer> getTrainerByClassId(int id){
-            Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).Select(c => new Class{
-                TrainerId = c.TrainerId, 
-                Trainer = new Trainer {
-                    TrainerId = c.TrainerId,
-                    Username = c.Trainer.Username,
-                    Password = c.Trainer.Password,
-                    Fullname = c.Trainer.Fullname,
-                    AvatarURL = c.Trainer.AvatarURL,
-                    Email = c.Trainer.Email,
-                    Phone = c.Trainer.Phone,
-                    DOB = c.Trainer.DOB,
-                    Address = c.Trainer.Address, 
-                    Gender = c.Trainer.Gender,
-                    Wage = c.Trainer.Wage,
-                    CreatedAt = c.Trainer.CreatedAt,
-                    IsDeactivated = c.Trainer.IsDeactivated,
-                    DeactivatedAt = c.Trainer.DeactivatedAt,
-                }
-            }).FirstOrDefaultAsync();
-        return class1.Trainer;
+        //     Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).Select(c => new Class{
+        //         TrainerId = c.TrainerId, 
+        //         Trainer = new Trainer {
+        //             TrainerId = c.TrainerId,
+        //             Username = c.Trainer.Username,
+        //             Password = c.Trainer.Password,
+        //             Fullname = c.Trainer.Fullname,
+        //             AvatarURL = c.Trainer.AvatarURL,
+        //             Email = c.Trainer.Email,
+        //             Phone = c.Trainer.Phone,
+        //             DOB = c.Trainer.DOB,
+        //             Address = c.Trainer.Address, 
+        //             Gender = c.Trainer.Gender,
+        //             Wage = c.Trainer.Wage,
+        //             CreatedAt = c.Trainer.CreatedAt,
+        //             IsDeactivated = c.Trainer.IsDeactivated,
+        //             DeactivatedAt = c.Trainer.DeactivatedAt,
+        //         }
+        //     }).FirstOrDefaultAsync();
+        // return class1.Trainer;
+         Class class1 = await _classService.GetClassByClassID(id);
+            if (class1 == null) {
+                return null;
+            }
+            return await _dataContext.Trainers.Where(t => t.TrainerId == class1.TrainerId && t.IsDeactivated == false).FirstOrDefaultAsync();
         }
     }
 }

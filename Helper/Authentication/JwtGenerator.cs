@@ -26,7 +26,7 @@ namespace kroniiapi.Helper
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(15),
+                Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature
                 )

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
+using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 
 namespace kroniiapi.Services
@@ -19,12 +20,13 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter);
         Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest);
         Task AddClassIdToTrainee(int classId, ICollection<int> traineeIdList);
-        void AddDataToClassModule(int classId, ICollection<int> moduleIdList);
+        Task AddDataToClassModule(int classId, ICollection<int> moduleIdList);
         Task<int> InsertNewClass(NewClassInput newClass);
         Task<int> InsertNewClassNoSave(NewClassInput newClass);
-        
+        Task<int> RejectAllOtherDeleteRequest(int deleteRequestId);
         Task<Class> GetClassByClassID(int classId);
         Task<int> SaveChange();
+        Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId);
         void DiscardChanges();
     }
 }
