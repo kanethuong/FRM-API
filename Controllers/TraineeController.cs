@@ -24,11 +24,14 @@ namespace kroniiapi.Controllers
         private readonly IMapper _mapper;
         private readonly IClassService _classService;
         private readonly IFeedbackService _feedbackService;
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService)
+        private readonly ITraineeService _traineeService;
+
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService)
         {
             _mapper = mapper;
             _classService = classService;
             _feedbackService = feedbackService;
+            _traineeService = traineeService;
         }
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace kroniiapi.Controllers
             }
             return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
-        
+
         /// <summary>
         /// send admin feedback
         /// </summary>
@@ -129,7 +132,7 @@ namespace kroniiapi.Controllers
             return null;
         }
 
-         /// <summary>
+        /// <summary>
         /// Get the detail information of a class 
         /// </summary>
         /// <param name="id"> id of class</param>
@@ -147,7 +150,7 @@ namespace kroniiapi.Controllers
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
         [HttpGet("{id:int}/class/trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListInClass(int id, [FromQuery] PaginationParameter paginationParameter)
-        { 
+        {
             return null;
         }
 
@@ -167,11 +170,11 @@ namespace kroniiapi.Controllers
         /// <param name="certificateInput">detail of certificate input</param>
         /// <returns>201: created / 409: bad request</returns>
         [HttpPost("{traineeId:int}/certificate/{moduleId:int}")]
-        public async Task<ActionResult> SubmitCertificate(IFormFile file,int traineeId, int moduleId)
+        public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
         {
             return null;
         }
-        
+
         /// <summary>
         /// View trainee attendance report
         /// </summary>
@@ -181,7 +184,19 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/attendance")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeAttendanceReport>>>> ViewAttendanceReport(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return BadRequest(new ResponseDTO(404, "id not found"));
+            }
+            try
+            {
+                (int totalRecord, IEnumerable<TraineeAttendanceReport> result) = await _traineeService.GetAttendanceReports(id, paginationParameter);
+                return Ok(new PaginationResponse<IEnumerable<TraineeAttendanceReport>>(totalRecord, result));
+            }
+            catch
+            {
+                return BadRequest(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
+            }
         }
 
         /// <summary>
@@ -205,7 +220,7 @@ namespace kroniiapi.Controllers
 
             return null;
         }
-        
+
         /// <summary>
         /// get application list of trainee
         /// </summary>
@@ -213,7 +228,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list </returns>
         [HttpGet("{id:int}/application")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int id,[FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             return null;
         }
