@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
+using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 
 namespace kroniiapi.Services
@@ -25,6 +26,7 @@ namespace kroniiapi.Services
         Task<int> RejectAllOtherDeleteRequest(int deleteRequestId);
         Task<Class> GetClassByClassID(int classId);
         Task<int> SaveChange();
+        Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId);
         void DiscardChanges();
     }
 }

@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -178,6 +180,54 @@ namespace kroniiapi.Services
             var trainee = await GetTraineeById(traineeId);
             var traineeClassId = trainee?.ClassId;
             return traineeClassId is not null;
+        }
+
+        public async Task<Tuple<int,IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter)
+        {
+            Trainee trainee = await GetTraineeById(id);
+            if(trainee.ClassId == null)
+            {
+                return null;
+            }
+
+            List<TraineeAttendanceReport> resultList = new List<TraineeAttendanceReport>();
+
+            Dictionary<int,int> NumberOfAbsentByModule = new Dictionary<int, int>();
+
+            IEnumerable<int> listModule = await _dataContext.ClassModules.
+                Where(t => t.ClassId == trainee.ClassId).Select(t => t.ModuleId).ToListAsync();
+
+            foreach (var module in listModule)         //init absent tracker by module id
+            {
+                NumberOfAbsentByModule.Add(module, 0);
+            }
+
+            IEnumerable<int> listCalendarIdAbsent = await _dataContext.Attendances.Where(
+                t => t.IsAbsent == true && t.TraineeId == id ).Select(i => i.CalendarId).ToListAsync();
+            
+            foreach (var calenderId in listCalendarIdAbsent) //count number of absent slot in each module id
+            {
+                int moduleId = _dataContext.Calendars.Where(t => t.CalendarId == calenderId).FirstOrDefault().ModuleId;
+                try
+                {
+                    NumberOfAbsentByModule[moduleId] += 1;
+                }
+                catch
+                {
+                    NumberOfAbsentByModule.Add(moduleId,0);
+                }
+            }
+            
+            
+            foreach (var moduleId in listModule)
+            {
+                Module module =  _dataContext.Modules.Where(t => t.ModuleId == moduleId).FirstOrDefault();
+                resultList.Add(new TraineeAttendanceReport{
+                    NoOfSlot = module.NoOfSlot, ModuleName = module.ModuleName, NumberSlotAbsent = NumberOfAbsentByModule[moduleId]});
+            }
+
+            return Tuple.Create(resultList.Count() ,PaginationHelper.GetPage(resultList.Where(t =>
+                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower())), paginationParameter));
         }
     }
 }
