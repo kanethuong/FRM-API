@@ -181,12 +181,12 @@ namespace kroniiapi.Controllers
         [HttpGet("deleted")]
         public async Task<ActionResult> GetDeactivatedAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecord, IEnumerable<AccountResponse> deletedAccount) = await _accountService.GetDeactivatedAccountList(paginationParameter);
+            (int totalRecord, IEnumerable<DeletedAccountResponse> deletedAccount) = await _accountService.GetDeactivatedAccountList(paginationParameter);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404));
             }
-            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord, deletedAccount));
+            return Ok(new PaginationResponse<IEnumerable<DeletedAccountResponse>>(totalRecord, deletedAccount));
         }
 
         /// <summary>
