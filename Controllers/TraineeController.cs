@@ -4,11 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DB.Models;
+using kroniiapi.DTO;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,9 +22,16 @@ namespace kroniiapi.Controllers
     public class TraineeController : ControllerBase
     {
         private readonly IMapper _mapper;
-        public TraineeController(IMapper mapper)
+        private readonly IClassService _classService;
+        private readonly IFeedbackService _feedbackService;
+        private readonly ITraineeService _traineeService;
+
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService)
         {
             _mapper = mapper;
+            _classService = classService;
+            _feedbackService = feedbackService;
+            _traineeService = traineeService;
         }
 
         /// <summary>
@@ -43,8 +53,12 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/feedback")]
         public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedback(int id)
         {
-
-            return null;
+            var whoToFeedback = await _classService.GetFeedbackViewForTrainee(id);
+            if (whoToFeedback == null)
+            {
+                return NotFound(new ResponseDTO(404, "There are no Trainee"));
+            }
+            return whoToFeedback;
         }
 
         /// <summary>
@@ -55,10 +69,23 @@ namespace kroniiapi.Controllers
         [HttpPost("feedback/trainer")]
         public async Task<ActionResult> SendTrainerFeedback([FromBody] TrainerFeedbackInput trainerFeedbackInput)
         {
-
-            return null;
+            TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
+            int rs = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
+            }
+            if (rs == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Don't have Trainee or Trainer"));
+            }
+            if (rs == 1)
+            {
+                return Ok(new ResponseDTO(200, "Feedback Success"));
+            }
+            return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
-        
+
         /// <summary>
         /// send admin feedback
         /// </summary>
@@ -67,8 +94,21 @@ namespace kroniiapi.Controllers
         [HttpPost("feedback/admin")]
         public async Task<ActionResult> SendAdminFeedback([FromBody] AdminFeedbackInput adminFeedbackInput)
         {
-
-            return null;
+            AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
+            int rs = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
+            }
+            if (rs == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Don't have Trainee or Trainer"));
+            }
+            if (rs == 1)
+            {
+                return Ok(new ResponseDTO(200, "Feedback Success"));
+            }
+            return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
         /// <summary>
         /// View trainee profile
@@ -92,7 +132,7 @@ namespace kroniiapi.Controllers
             return null;
         }
 
-         /// <summary>
+        /// <summary>
         /// Get the detail information of a class 
         /// </summary>
         /// <param name="id"> id of class</param>
@@ -100,8 +140,24 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/class")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
-            return null;
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(id);
+
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
+
+            var clazz = await _classService.GetClassDetail(classId);
+
+            if (clazz == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+
+            return Ok(_mapper.Map<ClassDetailResponse>(clazz));
+
         }
+
         /// <summary>
         /// Get trainee list with pagination
         /// </summary>
@@ -110,7 +166,7 @@ namespace kroniiapi.Controllers
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
         [HttpGet("{id:int}/class/trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListInClass(int id, [FromQuery] PaginationParameter paginationParameter)
-        { 
+        {
             return null;
         }
 
@@ -130,11 +186,11 @@ namespace kroniiapi.Controllers
         /// <param name="certificateInput">detail of certificate input</param>
         /// <returns>201: created / 409: bad request</returns>
         [HttpPost("{traineeId:int}/certificate/{moduleId:int}")]
-        public async Task<ActionResult> SubmitCertificate(IFormFile file,int traineeId, int moduleId)
+        public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
         {
             return null;
         }
-        
+
         /// <summary>
         /// View trainee attendance report
         /// </summary>
@@ -144,7 +200,19 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/attendance")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeAttendanceReport>>>> ViewAttendanceReport(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return BadRequest(new ResponseDTO(404, "id not found"));
+            }
+            try
+            {
+                (int totalRecord, IEnumerable<TraineeAttendanceReport> result) = await _traineeService.GetAttendanceReports(id, paginationParameter);
+                return Ok(new PaginationResponse<IEnumerable<TraineeAttendanceReport>>(totalRecord, result));
+            }
+            catch
+            {
+                return BadRequest(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
+            }
         }
 
         /// <summary>
@@ -168,7 +236,7 @@ namespace kroniiapi.Controllers
 
             return null;
         }
-        
+
         /// <summary>
         /// get application list of trainee
         /// </summary>
@@ -176,7 +244,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list </returns>
         [HttpGet("{id:int}/application")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int id,[FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             return null;
         }

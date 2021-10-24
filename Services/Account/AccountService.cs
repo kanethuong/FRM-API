@@ -531,7 +531,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
-        public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
+        public async Task<Tuple<int, IEnumerable<DeletedAccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
@@ -542,7 +542,36 @@ namespace kroniiapi.Services
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
                  t.IsDeactivated == true && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
 
-            IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
+            List<DeletedAccountResponse> totalAccount = new List<DeletedAccountResponse>();
+
+            foreach (var item in admins)
+            {
+                var itemToResponse = _mapper.Map<DeletedAccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in trainers)
+            {
+                var itemToResponse = _mapper.Map<DeletedAccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in trainees)
+            {
+                var itemToResponse = _mapper.Map<DeletedAccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                totalAccount.Add(itemToResponse);
+            }
+
+            foreach (var item in companies)
+            {
+                var itemToResponse = _mapper.Map<DeletedAccountResponse>(item);
+                itemToResponse.Role = await getRoleName(item.RoleId);
+                totalAccount.Add(itemToResponse);
+            }
+            totalAccount.Sort((x, y) => y.DeactivatedAt.CompareTo(x.DeactivatedAt));
 
             return Tuple.Create(totalAccount.Count(), PaginationHelper.GetPage(totalAccount,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
@@ -551,7 +580,8 @@ namespace kroniiapi.Services
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
-            if (tupleResponse == null || password == null || password == "")
+            AccountResponse account = tupleResponse.Item1;
+            if (tupleResponse == null || password == null || password == "" || account.Role == "administrator")
             {
                 return 0;
             }
@@ -566,7 +596,6 @@ namespace kroniiapi.Services
 
             password = BCrypt.Net.BCrypt.HashPassword(password);
 
-            AccountResponse account = tupleResponse.Item1;
             int rowInserted = 0;
             switch (account.Role.ToLower())
             {
