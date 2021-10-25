@@ -42,8 +42,8 @@ namespace kroniiapi.Controllers
             {
                 await file.CopyToAsync(stream);
                 var name = file.FileName;
-                Uri uri = await _uploadHelper.Upload(stream, name, "Rules");
-                await _cacheProvider.SetCache<string>("RulesURL", uri.OriginalString);
+                var url = await _uploadHelper.Upload(stream, name, "Rules");
+                await _cacheProvider.SetCache<string>("RulesURL", url);
             }
             return CreatedAtAction(nameof(Get), new ResponseDTO(201, "Uploaded"));
         }
