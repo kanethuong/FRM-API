@@ -265,7 +265,8 @@ namespace kroniiapi.Services
 
             foreach (var item in application)
             {
-                var itemToResponse = new ApplicationResponse{
+                var itemToResponse = new ApplicationResponse
+                {
                     Description = item.Description,
                     ApplicationURL = item.ApplicationURL,
                     Type = item.ApplicationCategory.CategoryName,
@@ -277,6 +278,12 @@ namespace kroniiapi.Services
             return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
+
+        /// <summary>
+        /// Get Class Id using trainee id
+        /// </summary>
+        /// <param name="id">TraineeId</param>
+        /// <returns>-1: Message / {classId}</returns>
         public async Task<(int, string)> GetClassIdByTraineeId(int id)
         {
             var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id);
@@ -294,29 +301,71 @@ namespace kroniiapi.Services
             return ((int)trainee.ClassId, "");
         }
 
-
+        /// <summary>
+        /// Get Mark and Skills by Trainee id
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Tuple Mark and Skill data</returns>
         public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
-        {            
-            var mark = await _dataContext.Marks.Where(m => m.TraineeId == id).ToListAsync();
+        {
+            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id)
+                                                                 .Select(ma => new Mark
+                                                                 {
+                                                                     ModuleId = ma.ModuleId,
+                                                                     Module = new Module
+                                                                     {
+                                                                         ModuleName = ma.Module.ModuleName,
+                                                                         Description = ma.Module.Description,
+                                                                         IconURL = ma.Module.IconURL,                                                                         
+                                                                         Certificates = ma.Module.Certificates.ToList(),
+                                                                         
+                                                                     }
+                                                                 })
+                                                                        .ToListAsync();
 
             List<TraineeMarkAndSkill> markAndSkills = new List<TraineeMarkAndSkill>();
-            foreach (var item in mark)
+            foreach (var item in markList)
             {
-                var itemToResponse = new TraineeMarkAndSkill{
+                var itemToResponse = new TraineeMarkAndSkill
+                {
                     ModuleId = item.ModuleId,
-                    Score = item.Score,
                     ModuleName = item.Module.ModuleName,
                     Description = item.Module.Description,
                     IconURL = item.Module.IconURL,
-                    CertificateURL = await _dataContext.Certificates.Where(c => c.TraineeId == id && c.ModuleId == item.ModuleId).Select(a => a.CertificateURL).FirstOrDefaultAsync(),
+                    Score = await this.GetScoreByTraineeIdAndModuleId(id, item.ModuleId),
+                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id,item.ModuleId),
                 };
                 markAndSkills.Add(itemToResponse);
-                
+
             }
             return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
 
         }
-        
+
+        /// <summary>
+        /// GetCertificatesURLByTraineeIdAndModuleId
+        /// </summary>
+        /// <param name="Traineeid"></param>
+        /// <param name="Moduleid"></param>
+        /// <returns>Certificate URL</returns>
+        private async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return certificate.CertificateURL;
+        }
+
+        /// <summary>
+        /// GetScoreByTraineeIdAndModuleId
+        /// </summary>
+        /// <param name="Traineeid"></param>
+        /// <param name="Moduleid"></param>
+        /// <returns>Score</returns>
+        private async Task<float> GetScoreByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return score.Score;
+        }
     }
 }

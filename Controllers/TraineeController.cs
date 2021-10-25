@@ -189,7 +189,7 @@ namespace kroniiapi.Controllers
             (int totalRecord, IEnumerable<TraineeMarkAndSkill> markAndSkills) = await _traineeService.GetMarkAndSkillByTraineeId(id, paginationParameter);
             if (totalRecord == 0)
             {
-                return BadRequest(new ResponseDTO(404, "Trainee doesn't have module"));
+                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any module"));
             }
             return Ok(new PaginationResponse<IEnumerable<TraineeMarkAndSkill>>(totalRecord, markAndSkills));
         }
