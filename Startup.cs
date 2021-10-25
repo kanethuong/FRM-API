@@ -157,6 +157,9 @@ namespace kroniiapi
             // Add signalR
             services.AddSignalR();
 
+            // Add Memory Cache
+            services.AddMemoryCache();
+
             // Default service config
             services.AddControllers().AddJsonOptions(options =>
             {
