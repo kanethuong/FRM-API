@@ -134,7 +134,8 @@ namespace kroniiapi
             services.AddScoped<IMarkService, MarkService>();
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
-
+            services.AddScoped<ICalendarService, CalendarService>();
+            services.AddScoped<IRoomService, RoomService>();
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
