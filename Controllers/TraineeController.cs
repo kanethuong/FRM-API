@@ -11,6 +11,7 @@ using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,13 +26,19 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IFeedbackService _feedbackService;
         private readonly ITraineeService _traineeService;
+        private readonly ICertificateService _certificateService;
+        private readonly IMegaHelper _megahelper;
+        
 
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService)
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService,ICertificateService certificateService, IMegaHelper megahelper)
         {
             _mapper = mapper;
             _classService = classService;
             _feedbackService = feedbackService;
             _traineeService = traineeService;
+            _certificateService = certificateService;
+            _megahelper = megahelper;
+            
         }
 
         /// <summary>
@@ -184,11 +191,22 @@ namespace kroniiapi.Controllers
         /// submit trainee certificate (upload to mega)
         /// </summary>
         /// <param name="certificateInput">detail of certificate input</param>
-        /// <returns>201: created / 409: bad request</returns>
+        /// <returns>201: created / 400: bad request</returns>
         [HttpPost("{traineeId:int}/certificate/{moduleId:int}")]
         public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
         {
-            return null;
+            Stream stream = file.OpenReadStream();
+            string Uri = await _megahelper.Upload(stream,file.FileName,"Certificate");
+            CertificateInput certificateInput = new ();
+            certificateInput.ModuleId = moduleId;
+            certificateInput.TraineeId = traineeId;
+            certificateInput.CertificateURL = Uri;
+            Certificate certificate = _mapper.Map<Certificate>(certificateInput);
+            int status = await _certificateService.InsertCertificate(certificate);
+            if (status == 0) {
+                return BadRequest(new ResponseDTO(400, "Your submit failed!"));
+            }
+            return Ok(new ResponseDTO(201,"Your submission was successful!"));
         }
 
         /// <summary>
