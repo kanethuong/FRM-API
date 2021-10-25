@@ -463,9 +463,9 @@ namespace kroniiapi.Controllers
                     }
                     try {
                         await _classService.SaveChange();
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         _classService.DiscardChanges();
-                        throw e;
+                        throw;
                     }
 
                     // Insert Class-Module and Class-Trainee
@@ -491,9 +491,9 @@ namespace kroniiapi.Controllers
                     }
                     try {
                         await _classService.SaveChange();
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         _classService.DiscardChanges();
-                        throw e;
+                        throw;
                     }
                 }
             }
