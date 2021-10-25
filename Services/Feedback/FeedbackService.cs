@@ -33,8 +33,16 @@ namespace kroniiapi.Services
         public async Task<int> InsertNewAdminFeedback(AdminFeedback adminFeedback)
         {
             if (_dataContext.AdminFeedbacks.Any(
-                f => f.TraineeId == adminFeedback.TraineeId
+                f => f.AdminId == adminFeedback.AdminId && f.TraineeId == adminFeedback.TraineeId
             ))
+            {
+                return -1;
+            }
+            if (!_dataContext.Trainees.Any(t => t.TraineeId == adminFeedback.TraineeId))
+            {
+                return 0;
+            }
+            if (!_dataContext.Admins.Any(t => t.AdminId == adminFeedback.AdminId))
             {
                 return 0;
             }
@@ -59,9 +67,17 @@ namespace kroniiapi.Services
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
         public async Task<int> InsertNewTrainerFeedback(TrainerFeedback trainerFeedback)
         {
-            if (_dataContext.AdminFeedbacks.Any(
-                f => f.TraineeId == trainerFeedback.TraineeId
+            if (_dataContext.TrainerFeedbacks.Any(
+                f => f.TrainerId == trainerFeedback.TrainerId && f.TraineeId == trainerFeedback.TraineeId
             ))
+            {
+                return -1;
+            }
+            if (!_dataContext.Trainees.Any(t => t.TraineeId == trainerFeedback.TraineeId))
+            {
+                return 0;
+            }
+            if (!_dataContext.Trainers.Any(t => t.TrainerId == trainerFeedback.TrainerId))
             {
                 return 0;
             }
