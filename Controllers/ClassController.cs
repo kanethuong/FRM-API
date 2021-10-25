@@ -14,6 +14,7 @@ using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
@@ -33,7 +34,7 @@ namespace kroniiapi.Controllers
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
 
-        public ClassController(IClassService classService,ITraineeService traineeService, IMarkService markService, IAdminService adminService, IModuleService moduleService, ITrainerService trainerService, IFeedbackService feedbackService, IMapper mapper)
+        public ClassController(IClassService classService, ITraineeService traineeService, IMarkService markService, IAdminService adminService, IModuleService moduleService, ITrainerService trainerService, IFeedbackService feedbackService, IMapper mapper)
         {
             _classService = classService;
             _adminService = adminService;
@@ -52,6 +53,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List with pagination / 404: class name not found</returns>
         [HttpGet("page")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
@@ -75,6 +77,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of class with pagination / 404: search class name not found</returns>
         [HttpGet("request")]
+        [Authorize(Policy = "ClassGetDeleted")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<RequestDeleteClassResponse>>>> GetDeleteClassRequestList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecords, IEnumerable<DeleteClassRequest> deleteClassRequests) = await _classService.GetRequestDeleteClassList(paginationParameter);
@@ -92,6 +95,7 @@ namespace kroniiapi.Controllers
         /// <param name="confirmDeleteClassInput">Confirm detail</param>
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
         [HttpPut("request")]
+        [Authorize(Policy = "ClassPut")]
         public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
@@ -103,9 +107,9 @@ namespace kroniiapi.Controllers
             {
                 return Conflict(new ResponseDTO(409, "Class or request deactivated"));
             }
-            if(status == 2)
+            if (status == 2)
             {
-                return BadRequest(new ResponseDTO(400,"Request is rejected"));
+                return BadRequest(new ResponseDTO(400, "Request is rejected"));
             }
             int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
             return Ok(new ResponseDTO(200, "Update done"));
@@ -117,6 +121,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of class with pagination / 404: search class name not found</returns>
         [HttpGet("deleted")]
+        [Authorize(Policy = "ClassGetDeleted")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<DeleteClassResponse>>>> GetDeactivatedClass([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> deletedClass) = await _classService.GetDeletedClassList(paginationParameter);
@@ -134,6 +139,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> id of class</param>
         /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("{id:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
             Class s = await _classService.GetClassDetail(id);
@@ -145,12 +151,14 @@ namespace kroniiapi.Controllers
             var cdr = _mapper.Map<ClassDetailResponse>(s);
             return Ok(cdr);
         }
+
         /// <summary>
         /// Get trainee list with pagination
         /// </summary>
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
         [HttpGet("{id:int}/trainee")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
@@ -168,16 +176,22 @@ namespace kroniiapi.Controllers
         /// <param name="requestDeleteClassInput">Request detail</param>
         /// <returns>201: Request is created / 409: Class is already deactivated / 404: Fail to request delete class</returns>
         [HttpPost("request")]
+        [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateRequestDeleteClass(RequestDeleteClassInput requestDeleteClassInput)
         {
-            DeleteClassRequest deleteClassRequest=_mapper.Map<DeleteClassRequest>(requestDeleteClassInput);
-            int rs=await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
-            if(rs==-1){
-                return Conflict(new ResponseDTO(409,"Class is already deactivated"));
-            }else if(rs==0){
-                return NotFound(new ResponseDTO(404,"Fail to request delete class"));
-            }else{
-                return Ok(new ResponseDTO(201,"Request delete class success"));
+            DeleteClassRequest deleteClassRequest = _mapper.Map<DeleteClassRequest>(requestDeleteClassInput);
+            int rs = await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
+            if (rs == -1)
+            {
+                return Conflict(new ResponseDTO(409, "Class is already deactivated"));
+            }
+            else if (rs == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Fail to request delete class"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(201, "Request delete class success"));
             }
         }
 
@@ -188,19 +202,22 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of student mark in a class with pagination / 404: search student name not found</returns>
         [HttpGet("score/{id:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id,paginationParameter);
-            List<MarkResponse> markResponses = new List<MarkResponse>(); 
-            foreach (Trainee trainee in trainees) {
-                    MarkResponse markResponse = new MarkResponse();
-                    markResponse.TraineeName = trainee.Fullname;
-                    IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, new DateTime(2021,2,5),new DateTime(2021,7,11));
-                    foreach (Mark m in markList) {
-                        m.Module = await _moduleService.GetModuleById(m.ModuleId);
-                    }
-                    markResponse.ScoreList = _mapper.Map<IEnumerable<ModuleMark>>(markList);
-                    markResponses.Add(markResponse);
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
+            List<MarkResponse> markResponses = new List<MarkResponse>();
+            foreach (Trainee trainee in trainees)
+            {
+                MarkResponse markResponse = new MarkResponse();
+                markResponse.TraineeName = trainee.Fullname;
+                IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, new DateTime(2021, 2, 5), new DateTime(2021, 7, 11));
+                foreach (Mark m in markList)
+                {
+                    m.Module = await _moduleService.GetModuleById(m.ModuleId);
+                }
+                markResponse.ScoreList = _mapper.Map<IEnumerable<ModuleMark>>(markList);
+                markResponses.Add(markResponse);
             }
             if (totalRecords == 0)
             {
@@ -215,25 +232,27 @@ namespace kroniiapi.Controllers
         /// <param name="id">id of a class</param>
         /// <returns>200: List of trainer feedback and admin feedback</returns>
         [HttpGet("feedback/{id:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<FeedbackResponse>> ViewClassFeedback(int id)
         {
             Admin admin1 = await _adminService.getAdminByClassId(id);
             Trainer trainer1 = await _trainerService.getTrainerByClassId(id);
 
-            if (admin1 == null || trainer1 == null) {
+            if (admin1 == null || trainer1 == null)
+            {
                 return NotFound(new ResponseDTO(404, "Class not found"));
             }
-                
+
             FeedbackResponse feedbackResponses = new FeedbackResponse();
 
             IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByAdminId(trainer1.TrainerId);
             IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByAdminId(admin1.AdminId);
-            
+
             IEnumerable<FeedbackContent> TrainerfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(trainerFeedbacks);
             IEnumerable<FeedbackContent> AdminfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
-            
-            
-            TrainerFeedbackResponse trainerFeedbackResponse = new ();
+
+
+            TrainerFeedbackResponse trainerFeedbackResponse = new();
             trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer1);
             trainerFeedbackResponse.Feedbacks = TrainerfeedbackContents;
 
@@ -254,6 +273,7 @@ namespace kroniiapi.Controllers
         /// <param name="newClassInput">Detail of new class</param>
         /// <returns>201: Class is created / 409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost]
+        [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
             var rs = await _classService.InsertNewClass(newClassInput);
@@ -282,6 +302,7 @@ namespace kroniiapi.Controllers
         /// <param name="file">Excel file to stores class data</param>
         /// <returns>201: Class is created /400: File content inapproriate /409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost("excel")]
+        [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult<ResponseDTO>> CreateNewClassByExcel([FromForm] IFormFile file)
         {
             bool success;
@@ -316,29 +337,39 @@ namespace kroniiapi.Controllers
                     // Export Class-Module dictionary
                     Predicate<List<string>> moduleChecker = list => list.ContainsAll("class", "module");
                     List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
-                    if (!success) {
+                    if (!success)
+                    {
                         return BadRequest(new ResponseDTO(400, "Error on Module: " + message));
                     }
-                    foreach (var dict in moduleDictList) {
+                    foreach (var dict in moduleDictList)
+                    {
                         string className = dict["class"]?.ToString();
                         string module = dict["module"]?.ToString();
-                        if (className is null || module is null) {
+                        if (className is null || module is null)
+                        {
                             continue;
                         }
                         int moduleId;
-                        if (!int.TryParse(module, out moduleId)) {
+                        if (!int.TryParse(module, out moduleId))
+                        {
                             continue;
                         }
                         HashSet<int> list;
-                        if (classModulesDict.ContainsKey(className)) {
+                        if (classModulesDict.ContainsKey(className))
+                        {
                             list = classModulesDict[className];
-                        } else {
+                        }
+                        else
+                        {
                             list = new HashSet<int>();
                             classModulesDict[className] = list;
                         }
-                        if (await _moduleService.GetModuleById(moduleId) is not null) {
+                        if (await _moduleService.GetModuleById(moduleId) is not null)
+                        {
                             list.Add(moduleId);
-                        } else {
+                        }
+                        else
+                        {
                             errors.Add("Invalid module: " + module);
                         }
                     }
@@ -347,24 +378,31 @@ namespace kroniiapi.Controllers
                     // Export Class-Trainee dictionary
                     Predicate<List<string>> traineeChecker = list => list.ContainsAll("class", "email");
                     List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
-                    if (!success) {
+                    if (!success)
+                    {
                         return BadRequest(new ResponseDTO(400, "Error on Trainee: " + message));
                     }
-                    foreach (var dict in traineeDictList) {
+                    foreach (var dict in traineeDictList)
+                    {
                         string className = dict["class"]?.ToString();
                         string email = dict["email"]?.ToString();
-                        if (className is null || email is null) {
+                        if (className is null || email is null)
+                        {
                             continue;
                         }
                         int? traineeId = (await _traineeService.GetTraineeByEmail(email))?.TraineeId;
-                        if (!traineeId.HasValue) {
+                        if (!traineeId.HasValue)
+                        {
                             errors.Add("Invalid email: " + email);
                             continue;
                         }
                         HashSet<int> list;
-                        if (classTraineesDict.ContainsKey(className)) {
+                        if (classTraineesDict.ContainsKey(className))
+                        {
                             list = classTraineesDict[className];
-                        } else {
+                        }
+                        else
+                        {
                             list = new HashSet<int>();
                             classTraineesDict[className] = list;
                         }
@@ -374,48 +412,61 @@ namespace kroniiapi.Controllers
                     // Export Class list
                     Predicate<List<string>> classChecker = list => list.ContainsAll("name", "description", "trainer", "admin", "room", "start", "end");
                     List<Dictionary<string, object>> classDictList = classSheet.ExportDataFromExcel(classChecker, out success, out message);
-                    if (!success) {
+                    if (!success)
+                    {
                         return BadRequest(new ResponseDTO(400, "Error on Class: " + message));
                     }
-                    foreach (var dict in classDictList) {
+                    foreach (var dict in classDictList)
+                    {
                         NewClassInput classInput = new();
                         classInput.ClassName = dict["name"]?.ToString();
-                        classInput.ModuleIdList = classInput.ClassName is not null && classModulesDict.ContainsKey(classInput.ClassName) 
-                            ? classModulesDict[classInput.ClassName] 
+                        classInput.ModuleIdList = classInput.ClassName is not null && classModulesDict.ContainsKey(classInput.ClassName)
+                            ? classModulesDict[classInput.ClassName]
                             : new();
-                        classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName) 
-                            ? classTraineesDict[classInput.ClassName] 
+                        classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName)
+                            ? classTraineesDict[classInput.ClassName]
                             : new();
                         classInput.Description = dict["description"]?.ToString();
                         object room = dict["room"];
-                        if (room is not null) {
+                        if (room is not null)
+                        {
                             int roomId = 0;
                             int.TryParse(room.ToString(), out roomId);
                             classInput.RoomId = roomId; // TODO: RoomService ?
                         }
                         object startTime = dict["start"];
-                        if (startTime is not null && startTime is DateTime) {
-                            classInput.StartDay = (DateTime) startTime;
+                        if (startTime is not null && startTime is DateTime)
+                        {
+                            classInput.StartDay = (DateTime)startTime;
                         }
                         object endTime = dict["end"];
-                        if (endTime is not null && endTime is DateTime) {
-                            classInput.EndDay = (DateTime) endTime;
+                        if (endTime is not null && endTime is DateTime)
+                        {
+                            classInput.EndDay = (DateTime)endTime;
                         }
                         string trainerEmail = dict["trainer"]?.ToString();
-                        if (trainerEmail is not null) {
+                        if (trainerEmail is not null)
+                        {
                             Trainer trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
-                            if (trainer is null) {
+                            if (trainer is null)
+                            {
                                 errors.Add("Invalid trainer email: " + trainerEmail);
-                            } else {
+                            }
+                            else
+                            {
                                 classInput.TrainerId = trainer.TrainerId;
                             }
                         }
                         string adminEmail = dict["admin"]?.ToString();
-                        if (adminEmail is not null) {
+                        if (adminEmail is not null)
+                        {
                             Admin admin = await _adminService.GetAdminByEmail(adminEmail);
-                            if (admin is null) {
+                            if (admin is null)
+                            {
                                 errors.Add("Invalid admin email: " + adminEmail);
-                            } else {
+                            }
+                            else
+                            {
                                 classInput.AdminId = admin.AdminId;
                             }
                         }
@@ -423,10 +474,14 @@ namespace kroniiapi.Controllers
                     }
 
                     // Validate the class inputs
-                    foreach (var classInput in classInputList) {
-                        if (!classInput.Validate(out List<ValidationResult> validateResults)) {
-                            return BadRequest(new ResponseDTO(400, "Error when validating class") {
-                                Errors = new {
+                    foreach (var classInput in classInputList)
+                    {
+                        if (!classInput.Validate(out List<ValidationResult> validateResults))
+                        {
+                            return BadRequest(new ResponseDTO(400, "Error when validating class")
+                            {
+                                Errors = new
+                                {
                                     value = classInput,
                                     errors = validateResults
                                 }
@@ -435,69 +490,94 @@ namespace kroniiapi.Controllers
                     }
 
                     // Throw remain errors
-                    if (errors.Count > 0) {
-                        return Conflict(new ResponseDTO(409, "Some errors when creating classes") {
+                    if (errors.Count > 0)
+                    {
+                        return Conflict(new ResponseDTO(409, "Some errors when creating classes")
+                        {
                             Errors = errors
                         });
                     }
 
                     // Insert the classes
-                    foreach (var classInput in classInputList) {
+                    foreach (var classInput in classInputList)
+                    {
                         int result = await _classService.InsertNewClassNoSave(classInput);
-                        if (result < 0) {
+                        if (result < 0)
+                        {
                             _classService.DiscardChanges();
-                            if (result == -1) {
-                                return Conflict(new ResponseDTO(409, "Duplicate class name") {
-                                    Errors = new {
+                            if (result == -1)
+                            {
+                                return Conflict(new ResponseDTO(409, "Duplicate class name")
+                                {
+                                    Errors = new
+                                    {
                                         value = classInput
                                     }
                                 });
-                            } else if (result == -2) {
-                                return Conflict(new ResponseDTO(409, "Trainee already have class") {
-                                    Errors = new {
+                            }
+                            else if (result == -2)
+                            {
+                                return Conflict(new ResponseDTO(409, "Trainee already have class")
+                                {
+                                    Errors = new
+                                    {
                                         value = classInput
                                     }
                                 });
                             }
                         }
                     }
-                    try {
+                    try
+                    {
                         await _classService.SaveChange();
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         _classService.DiscardChanges();
                         throw e;
                     }
 
                     // Insert Class-Module and Class-Trainee
-                    foreach(var modulePair in classModulesDict) {
+                    foreach (var modulePair in classModulesDict)
+                    {
                         var clazz = await _classService.GetClassByClassName(modulePair.Key);
-                        if (clazz is not null) {
+                        if (clazz is not null)
+                        {
                             await _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
                         }
                     }
-                    foreach(var traineePair in classTraineesDict) {
-                        foreach (var traineeId in traineePair.Value) {
-                            if (await _traineeService.IsTraineeHasClass(traineeId)) {
+                    foreach (var traineePair in classTraineesDict)
+                    {
+                        foreach (var traineeId in traineePair.Value)
+                        {
+                            if (await _traineeService.IsTraineeHasClass(traineeId))
+                            {
                                 var trainee = await _traineeService.GetTraineeById(traineeId);
-                                if (trainee is not null) {
+                                if (trainee is not null)
+                                {
                                     errors.Add("Trainee " + trainee.Username + " (" + trainee.Email + ") has a class");
                                 }
                             }
                         }
                         var clazz = await _classService.GetClassByClassName(traineePair.Key);
-                        if (clazz is not null) {
+                        if (clazz is not null)
+                        {
                             await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
                         }
                     }
-                    try {
+                    try
+                    {
                         await _classService.SaveChange();
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         _classService.DiscardChanges();
                         throw e;
                     }
                 }
             }
-            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created") {
+            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Created")
+            {
                 Errors = errors
             });
         }

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
@@ -14,6 +16,8 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
+        private IMapper _mapper;
+        private IApplicationService _applicationService;
 
         public TraineeService(DataContext dataContext)
         {
@@ -235,6 +239,54 @@ namespace kroniiapi.Services
                 t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower())), paginationParameter));
         }
 
+        /// <summary>
+        /// Get Application List by Trainee id
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="paginationParameter">Pagination</param>
+        /// <returns>Tuple Application list as Pagination</returns>
+        public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
+        {
+
+            List<Application> application = await _dataContext.Applications
+                                                .Where(app => app.TraineeId == id)
+                                                    .Select(a => new Application
+                                                    {
+                                                        TraineeId = a.TraineeId,
+                                                        Description = a.Description,
+                                                        ApplicationURL = a.ApplicationURL,
+                                                        ApplicationId = a.ApplicationId,
+                                                        ApplicationCategoryId = a.ApplicationCategoryId,
+                                                        ApplicationCategory = new ApplicationCategory
+                                                        {
+                                                            ApplicationCategoryId = a.ApplicationCategoryId,
+                                                            CategoryName = a.ApplicationCategory.CategoryName,
+                                                        },
+                                                    })
+                                                    .ToListAsync();
+            List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
+
+            foreach (var item in application)
+            {
+                var itemToResponse = new ApplicationResponse
+                {
+                    Description = item.Description,
+                    ApplicationURL = item.ApplicationURL,
+                    Type = item.ApplicationCategory.CategoryName,
+                    IsAccepted = item.IsAccepted
+                };
+                applicationReponse.Add(itemToResponse);
+            }
+
+            return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
+
+        /// <summary>
+        /// Get Class Id using trainee id
+        /// </summary>
+        /// <param name="id">TraineeId</param>
+        /// <returns>-1: Message / {classId}</returns>
         public async Task<(int, string)> GetClassIdByTraineeId(int id)
         {
             var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id);
@@ -251,5 +303,6 @@ namespace kroniiapi.Services
 
             return ((int)trainee.ClassId, "");
         }
+
     }
 }

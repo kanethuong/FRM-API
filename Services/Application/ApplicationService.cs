@@ -50,7 +50,14 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-        
+        /// <summary>
+        /// Get Application Category by id
+        /// </summary>
+        /// <param name="id">Application Category Id</param>
+        /// <returns>Application Category data</returns>
+        public async Task<ApplicationCategory> GetApplicationCategory(int id){
+            return await _dataContext.ApplicationCategories.Where(a => a.ApplicationCategoryId == id).FirstOrDefaultAsync();
+        }
        
     }
 }
