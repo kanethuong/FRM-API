@@ -8,7 +8,7 @@ namespace kroniiapi.Services
 {
     public interface IMarkService
     {
-        Task<ICollection<Mark>> GetMarkByTraineeId(int id, DateTime? startDate, DateTime? endDate);
+        Task<ICollection<Mark>> GetMarkByTraineeId(int id, DateTime? startDate = null, DateTime? endDate = null);
         
     
         Task<ICollection<Mark>> GetMarkByModuleId(int id, DateTime? startDate, DateTime? endDate);

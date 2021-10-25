@@ -11,12 +11,14 @@ namespace kroniiapi.DTO.NotificationDTO
     {
         [Required]
         [EmailAddress]
-        public string user { get; set; }
+        public string User { get; set; }
         
         [Required]
-        public string sendTo { get; set; }
+        public string SendTo { get; set; }
         [Required]
-        public string message { get; set; }
+        public string Message { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public bool IsSeen { get; set; }
     }
 }

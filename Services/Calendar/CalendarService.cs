@@ -8,7 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
+<<<<<<< HEAD
     public class CalendarService : ICalendarService
+=======
+    public class CalendarService:ICalendarService
+>>>>>>> a5a429610f5b3f4dfb9809115eb027d031c68f90
     {
         private readonly DataContext _dataContext;
         public CalendarService(DataContext dataContext)
