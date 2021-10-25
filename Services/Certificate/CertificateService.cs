@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
-using kroniiapi.DTO.TraineeDTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
-    public class CertificateService : ICertificateService
+    public class CertificateService :ICertificateService
     {
         private readonly DataContext _dataContext;
         public CertificateService(DataContext dataContext)
@@ -22,5 +22,13 @@ namespace kroniiapi.Services
             _dataContext.Certificates.Add(certificate);
             return await _dataContext.SaveChangesAsync();
         }
+
+        public async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return certificate.CertificateURL;
+        }
+
+
     }
 }

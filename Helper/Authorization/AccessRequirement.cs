@@ -4,10 +4,10 @@ namespace kroniiapi.Requirements
 {
     public class AccessRequirement : IAuthorizationRequirement
     {
-        public string Role { get; set; }
-        public AccessRequirement(string role)
+        public string[] Roles { get; set; }
+        public AccessRequirement(string[] roles)
         {
-            Role = role;
+            Roles = roles;
         }
     }
 }

@@ -27,18 +27,17 @@ namespace kroniiapi.Controllers
         private readonly IFeedbackService _feedbackService;
         private readonly ITraineeService _traineeService;
         private readonly ICertificateService _certificateService;
-        private readonly IMegaHelper _megahelper;
-        
-
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService,ICertificateService certificateService, IMegaHelper megahelper)
+        private readonly IApplicationService _applicationService;
+        private readonly IMegaHelper _megaHelper;
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService,ICertificateService certificateService, IApplicationService applicationService,IMegaHelper megaHelper)
         {
             _mapper = mapper;
             _classService = classService;
             _feedbackService = feedbackService;
             _traineeService = traineeService;
             _certificateService = certificateService;
-            _megahelper = megahelper;
-            
+            _applicationService = applicationService;
+            _megaHelper = megaHelper;
         }
 
         /// <summary>
@@ -183,9 +182,18 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>Trainee mark and skill</returns>
         [HttpGet("{id:int}/mark")]
-        public async Task<ActionResult<IEnumerable<TraineeMarkAndSkill>>> ViewMarkAndSkill(int id)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeMarkAndSkill>>>> ViewMarkAndSkill(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return BadRequest(new ResponseDTO(404, "id not found"));
+            }
+            (int totalRecord, IEnumerable<TraineeMarkAndSkill> markAndSkills) = await _traineeService.GetMarkAndSkillByTraineeId(id, paginationParameter);
+            if (totalRecord == 0)
+            {
+                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any module"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeMarkAndSkill>>(totalRecord, markAndSkills));
         }
         /// <summary>
         /// submit trainee certificate (upload to mega)
@@ -196,7 +204,7 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
         {
             Stream stream = file.OpenReadStream();
-            string Uri = await _megahelper.Upload(stream,file.FileName,"Certificate");
+            string Uri = await _megaHelper.Upload(stream,file.FileName,"Certificate");
             CertificateInput certificateInput = new ();
             certificateInput.ModuleId = moduleId;
             certificateInput.TraineeId = traineeId;
@@ -260,11 +268,20 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">trainee id</param>
         /// <param name="paginationParameter">Pagination parameters from client</param>
-        /// <returns>200: application list </returns>
+        /// <returns>200: application list/ 400: Not found</returns>
         [HttpGet("{id:int}/application")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return BadRequest(new ResponseDTO(404, "id not found"));
+            }
+            (int totalRecord, IEnumerable<ApplicationResponse> application) = await _traineeService.GetApplicationListByTraineeId(id, paginationParameter);
+            if (totalRecord == 0)
+            {
+                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any application"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, application));
         }
 
         /// <summary>
@@ -273,9 +290,14 @@ namespace kroniiapi.Controllers
         /// <param name="applicationInput">detail of applcation input </param>
         /// <returns>201: created</returns>
         [HttpPost("application")]
-        public async Task<ActionResult> SubmitApplicationForm(ApplicationInput applicationInput)
+        public async Task<ActionResult> SubmitApplicationForm([FromQuery]ApplicationInput applicationInput,IFormFile form)
         {
-            return null;
+            var stream = form.OpenReadStream();
+            string formURL = _megaHelper.Upload(stream,form.FileName,"ApplicationForm").ToString();
+            Application app = _mapper.Map<Application>(applicationInput);
+            app.ApplicationURL=formURL;
+            var rs = _applicationService.InsertNewApplication(app);
+            return CreatedAtAction(nameof(ViewApplicationList), new ResponseDTO(201, "Successfully inserted"));;
         }
 
         /// <summary>
@@ -285,7 +307,8 @@ namespace kroniiapi.Controllers
         [HttpGet("application")]
         public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationType()
         {
-            return null;
+            var applicationTypeList = await _applicationService.GetApplicationCategoryList();
+            return Ok(_mapper.Map<ApplicationCategoryResponse>(applicationTypeList));
         }
 
     }

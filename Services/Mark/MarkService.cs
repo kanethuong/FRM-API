@@ -22,7 +22,7 @@ namespace kroniiapi.Services
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        public async Task<ICollection<Mark>> GetMarkByTraineeId(int id, DateTime? startDate, DateTime? endDate)
+        public async Task<ICollection<Mark>> GetMarkByTraineeId(int id, DateTime? startDate = null, DateTime? endDate = null)
         {
             if (startDate == null)
             {
@@ -32,7 +32,7 @@ namespace kroniiapi.Services
             {
                 startDate = DateTime.MinValue;
             }
-            return await _dataContext.Marks.Where(m => m.TraineeId == id && m.PublishedAt > startDate && m.PublishedAt < endDate).ToListAsync();
+            return await _dataContext.Marks.Where(m => m.TraineeId == id && m.PublishedAt >= startDate && m.PublishedAt <= endDate).ToListAsync();
         }
         /// <summary>
         /// Get mark by module id
