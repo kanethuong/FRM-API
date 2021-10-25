@@ -17,7 +17,7 @@ namespace kroniiapi.Services
     {
         private DataContext _dataContext;
         private IMapper _mapper;
-        private IApplicationService _applicationService;
+        private IMarkService _markService;
 
         public TraineeService(DataContext dataContext)
         {
@@ -99,7 +99,6 @@ namespace kroniiapi.Services
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
-
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -295,6 +294,30 @@ namespace kroniiapi.Services
             }
 
             return ((int)trainee.ClassId, "");
+        }
+
+
+        public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
+        {            
+            var mark = await _dataContext.Marks.Where(m => m.TraineeId == id).ToListAsync();
+
+            List<TraineeMarkAndSkill> markAndSkills = new List<TraineeMarkAndSkill>();
+            foreach (var item in mark)
+            {
+                var itemToResponse = new TraineeMarkAndSkill{
+                    ModuleId = item.ModuleId,
+                    Score = item.Score,
+                    ModuleName = item.Module.ModuleName,
+                    Description = item.Module.Description,
+                    IconURL = item.Module.IconURL,
+                    CertificateURL = await _dataContext.Certificates.Where(c => c.TraineeId == id && c.ModuleId == item.ModuleId).Select(a => a.CertificateURL).FirstOrDefaultAsync(),
+                };
+                markAndSkills.Add(itemToResponse);
+                
+            }
+            return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+
         }
         
     }

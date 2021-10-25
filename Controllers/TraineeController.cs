@@ -176,9 +176,18 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>Trainee mark and skill</returns>
         [HttpGet("{id:int}/mark")]
-        public async Task<ActionResult<IEnumerable<TraineeMarkAndSkill>>> ViewMarkAndSkill(int id)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeMarkAndSkill>>>> ViewMarkAndSkill(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return BadRequest(new ResponseDTO(404, "id not found"));
+            }
+            (int totalRecord, IEnumerable<TraineeMarkAndSkill> markAndSkills) = await _traineeService.GetMarkAndSkillByTraineeId(id, paginationParameter);
+            if (totalRecord == 0)
+            {
+                return BadRequest(new ResponseDTO(404, "Trainee doesn't have module"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeMarkAndSkill>>(totalRecord, markAndSkills));
         }
         /// <summary>
         /// submit trainee certificate (upload to mega)
