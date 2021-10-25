@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -12,7 +16,7 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
-
+        private IMapper _mapper;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -93,7 +97,6 @@ namespace kroniiapi.Services
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
-
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -134,7 +137,7 @@ namespace kroniiapi.Services
                 return false;
             }
 
-            _dataContext.Trainees.Add(trainee);            
+            _dataContext.Trainees.Add(trainee);
 
             return true;
         }
@@ -168,16 +171,201 @@ namespace kroniiapi.Services
             return await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false).ToListAsync();
         }
 
-        
+
         /// <summary>
         /// Check if the trainee has a class
         /// </summary>
         /// <param name="traineeId">the trainee id</param>
         /// <returns>whether the trainee has a class</returns>
-        public async Task<bool> IsTraineeHasClass(int traineeId) {
+        public async Task<bool> IsTraineeHasClass(int traineeId)
+        {
             var trainee = await GetTraineeById(traineeId);
             var traineeClassId = trainee?.ClassId;
             return traineeClassId is not null;
+        }
+
+        public async Task<Tuple<int, IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter)
+        {
+            Trainee trainee = await GetTraineeById(id);
+            if (trainee.ClassId == null)
+            {
+                return null;
+            }
+
+            List<TraineeAttendanceReport> resultList = new List<TraineeAttendanceReport>();
+
+            Dictionary<int, int> NumberOfAbsentByModule = new Dictionary<int, int>();
+
+            IEnumerable<int> listModule = await _dataContext.ClassModules.
+                Where(t => t.ClassId == trainee.ClassId).Select(t => t.ModuleId).ToListAsync();
+
+            foreach (var module in listModule)         //init absent tracker by module id
+            {
+                NumberOfAbsentByModule.Add(module, 0);
+            }
+
+            IEnumerable<int> listCalendarIdAbsent = await _dataContext.Attendances.Where(
+                t => t.IsAbsent == true && t.TraineeId == id).Select(i => i.CalendarId).ToListAsync();
+
+            foreach (var calenderId in listCalendarIdAbsent) //count number of absent slot in each module id
+            {
+                int moduleId = _dataContext.Calendars.Where(t => t.CalendarId == calenderId).FirstOrDefault().ModuleId;
+                try
+                {
+                    NumberOfAbsentByModule[moduleId] += 1;
+                }
+                catch
+                {
+                    NumberOfAbsentByModule.Add(moduleId, 0);
+                }
+            }
+
+
+            foreach (var moduleId in listModule)
+            {
+                Module module = _dataContext.Modules.Where(t => t.ModuleId == moduleId).FirstOrDefault();
+                resultList.Add(new TraineeAttendanceReport
+                {
+                    NoOfSlot = module.NoOfSlot,
+                    ModuleName = module.ModuleName,
+                    NumberSlotAbsent = NumberOfAbsentByModule[moduleId]
+                });
+            }
+
+            return Tuple.Create(resultList.Count(), PaginationHelper.GetPage(resultList.Where(t =>
+                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower())), paginationParameter));
+        }
+
+        /// <summary>
+        /// Get Application List by Trainee id
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="paginationParameter">Pagination</param>
+        /// <returns>Tuple Application list as Pagination</returns>
+        public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
+        {
+
+            List<Application> application = await _dataContext.Applications
+                                                .Where(app => app.TraineeId == id)
+                                                    .Select(a => new Application
+                                                    {
+                                                        TraineeId = a.TraineeId,
+                                                        Description = a.Description,
+                                                        ApplicationURL = a.ApplicationURL,
+                                                        ApplicationId = a.ApplicationId,
+                                                        ApplicationCategoryId = a.ApplicationCategoryId,
+                                                        ApplicationCategory = new ApplicationCategory
+                                                        {
+                                                            ApplicationCategoryId = a.ApplicationCategoryId,
+                                                            CategoryName = a.ApplicationCategory.CategoryName,
+                                                        },
+                                                    })
+                                                    .ToListAsync();
+            List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
+
+            foreach (var item in application)
+            {
+                var itemToResponse = new ApplicationResponse
+                {
+                    Description = item.Description,
+                    ApplicationURL = item.ApplicationURL,
+                    Type = item.ApplicationCategory.CategoryName,
+                    IsAccepted = item.IsAccepted
+                };
+                applicationReponse.Add(itemToResponse);
+            }
+
+            return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
+
+        /// <summary>
+        /// Get Class Id using trainee id
+        /// </summary>
+        /// <param name="id">TraineeId</param>
+        /// <returns>-1: Message / {classId}</returns>
+        public async Task<(int, string)> GetClassIdByTraineeId(int id)
+        {
+            var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id);
+
+            if (trainee == null)
+            {
+                return (-1, "Trainee not found");
+            }
+
+            if (trainee.ClassId == null)
+            {
+                return (-1, "Trainee does not have class");
+            }
+
+            return ((int)trainee.ClassId, "");
+        }
+
+        /// <summary>
+        /// Get Mark and Skills by Trainee id
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Tuple Mark and Skill data</returns>
+        public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
+        {
+            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id)
+                                                                 .Select(ma => new Mark
+                                                                 {
+                                                                     ModuleId = ma.ModuleId,
+                                                                     Module = new Module
+                                                                     {
+                                                                         ModuleName = ma.Module.ModuleName,
+                                                                         Description = ma.Module.Description,
+                                                                         IconURL = ma.Module.IconURL,                                                                         
+                                                                         Certificates = ma.Module.Certificates.ToList(),
+                                                                         
+                                                                     }
+                                                                 })
+                                                                        .ToListAsync();
+
+            List<TraineeMarkAndSkill> markAndSkills = new List<TraineeMarkAndSkill>();
+            foreach (var item in markList)
+            {
+                var itemToResponse = new TraineeMarkAndSkill
+                {
+                    ModuleId = item.ModuleId,
+                    ModuleName = item.Module.ModuleName,
+                    Description = item.Module.Description,
+                    IconURL = item.Module.IconURL,
+                    Score = await this.GetScoreByTraineeIdAndModuleId(id, item.ModuleId),
+                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id,item.ModuleId),
+                };
+                markAndSkills.Add(itemToResponse);
+
+            }
+            return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+
+        }
+
+        /// <summary>
+        /// GetCertificatesURLByTraineeIdAndModuleId
+        /// </summary>
+        /// <param name="Traineeid"></param>
+        /// <param name="Moduleid"></param>
+        /// <returns>Certificate URL</returns>
+        private async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return certificate.CertificateURL;
+        }
+
+        /// <summary>
+        /// GetScoreByTraineeIdAndModuleId
+        /// </summary>
+        /// <param name="Traineeid"></param>
+        /// <param name="Moduleid"></param>
+        /// <returns>Score</returns>
+        private async Task<float> GetScoreByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return score.Score;
         }
     }
 }

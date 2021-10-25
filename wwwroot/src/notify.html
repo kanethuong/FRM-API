@@ -1,28 +1,28 @@
 <div class="mb-5">
     <h2 class="fw-bold">Notify</h2>
     <p>
-        mo ta
+        Support realtime notification
     </p>
-    <div id="login">
+    <div id="sendNotifyHistory">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>Login</h3>
+            <h3>get History (sendHistory)</h3>
         </div>
-        <p>By PhuTT</p>
+        <p>By ThoTA</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/auth/login</p>
+            <p>/api/Notify/history</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Anonymous</p>
+                <p>trainee</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
-                <p>POST</p>
+                <p>GET</p>
             </div>
             <div class="col-4">
                 <h5>Status</h5>
@@ -34,13 +34,7 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
-                <p>PageNumber: </p>
-                <p>PageSize: </p>
-                <p>SearchName: </p>
-            </div>
-            <div class="col-6">
-                <h5>Form file</h5>
-                <p>File: </p>
+                <p>email: email of trainee</p>
             </div>
         </div>
 
@@ -50,24 +44,138 @@
                 <h5>Request Body</h5>
                 <p>
                 <pre><code>{
-    "email": "string",
-    "password": "string"
+  "PageSize": int,
+  "PageNumber": int,
+  "searchName": "string"
 }</code></pre>
                 </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
+                
+                    <p><pre><code>{
+                        "totalRecords": int,
+                        "payload": [
+                            {
+                                "user": "string"
+                                "sendTo": "string"
+                                "message": "string"
+                                "createdAt": DateTime
+                                "isSeen": boolean
+                            }
+                        ]
+                    }</code></pre></p>
+                
+            </div>
+        </div>
+    </div>
+
+    <div id="sendAdminNotifyHistory">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>get admin notifycation History</h3>
+        </div>
+        <p>By ThoTA</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Notify/historyForAdmin</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>admin, administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
                 <p>
                 <pre><code>{
-    "accountId": int,
-    "username": "string",
-    "fullname": "string",
-    "email": "string",
-    "avatarURL": "string",
-    "role": "string",
-    "accessToken": "string"
+  "PageSize": int,
+  "PageNumber": int,
+  "searchName": "string"
 }</code></pre>
                 </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                
+                    <p><pre><code>{
+                        "totalRecords": int,
+                        "payload": [
+                            {
+                                "user": "string"
+                                "sendTo": "string"
+                                "message": "string"
+                                "createdAt": DateTime
+                                "isSeen": boolean
+                            }
+                        ]
+                    }</code></pre></p>
+                
+            </div>
+        </div>
+    </div>
+
+    <div id="SendClassNotification">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Send class notification</h3>
+        </div>
+        <p>By ThoTA</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Notify/class</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>204 400</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "user": "string",
+  "sendTo": "string",
+  "message": "string",
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
             </div>
         </div>
     </div>

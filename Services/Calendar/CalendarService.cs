@@ -6,7 +6,7 @@ using kroniiapi.DB;
 
 namespace kroniiapi.Services.Calendar
 {
-    public class CalendarService
+    public class CalendarService:ICalendarService
     {
         private readonly DataContext _dataContext;
         public CalendarService(DataContext dataContext)

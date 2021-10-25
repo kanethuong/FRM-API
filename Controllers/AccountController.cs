@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    [Authorize(Policy = "Administrator")]
+    [Authorize(Policy = "Account")]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
@@ -166,10 +166,10 @@ namespace kroniiapi.Controllers
                     return Conflict(new ResponseDTO(409, "The account at row " + (failIndex + 2) + " existed"));
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _accountService.DiscardChanges();
-                throw e;
+                throw;
             }
         }
 
@@ -181,12 +181,12 @@ namespace kroniiapi.Controllers
         [HttpGet("deleted")]
         public async Task<ActionResult> GetDeactivatedAccountList([FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecord, IEnumerable<AccountResponse> deletedAccount) = await _accountService.GetDeactivatedAccountList(paginationParameter);
+            (int totalRecord, IEnumerable<DeletedAccountResponse> deletedAccount) = await _accountService.GetDeactivatedAccountList(paginationParameter);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404));
             }
-            return Ok(new PaginationResponse<IEnumerable<AccountResponse>>(totalRecord, deletedAccount));
+            return Ok(new PaginationResponse<IEnumerable<DeletedAccountResponse>>(totalRecord, deletedAccount));
         }
 
         /// <summary>

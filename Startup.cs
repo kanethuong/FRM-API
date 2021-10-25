@@ -29,6 +29,7 @@ using kroniiapi.Services;
 using kroniiapi.DTO.Email;
 using OfficeOpenXml;
 using kroniiapi.Helper.Upload;
+using kroniiapi.Services.Calendar;
 
 namespace kroniiapi
 {
@@ -80,16 +81,26 @@ namespace kroniiapi
             // Add authorization to request
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Administrator", policy =>
-                    policy.Requirements.Add(new AccessRequirement("administrator")));
+                options.AddPolicy("Account", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+
+                options.AddPolicy("ClassGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator", "admin", "trainer", "trainee" })));
+                options.AddPolicy("ClassGetDeleted", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+                options.AddPolicy("ClassPost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+                options.AddPolicy("ClassPut", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+
                 options.AddPolicy("Admin", policy =>
-                    policy.Requirements.Add(new AccessRequirement("admin")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
                 options.AddPolicy("Trainer", policy =>
-                    policy.Requirements.Add(new AccessRequirement("trainer")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
                 options.AddPolicy("Trainee", policy =>
-                    policy.Requirements.Add(new AccessRequirement("trainee")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
                 options.AddPolicy("Company", policy =>
-                    policy.Requirements.Add(new AccessRequirement("company")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "company" })));
             });
 
             // Increase input file size limit
@@ -108,9 +119,10 @@ namespace kroniiapi
 
             // Access restrict with IAuthorizationHandler
             services.AddSingleton<IAuthorizationHandler, AccessHandler>();
-            
+
             // Config username and password Mega using
-            services.AddSingleton<IMegaHelper>(provider => {
+            services.AddSingleton<IMegaHelper>(provider =>
+            {
                 string username = Configuration["Email:MailAddress"];
                 string password = Configuration["Email:MegaPassword"];
                 return new MegaHelper(username, password);
@@ -133,7 +145,8 @@ namespace kroniiapi
             services.AddScoped<IMarkService, MarkService>();
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
-
+            services.AddScoped<ICalendarService, CalendarService>();
+            services.AddScoped<ICertificateService, CertificateService>();
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
@@ -192,17 +205,11 @@ namespace kroniiapi
             //Get front-end url from appsettings.json
             var frontEndDevUrl = Configuration["FrontEndDevUrl"];
 
-            //CORS config for Front-end development url
-            app.UseCors(options => options.WithOrigins(frontEndDevUrl)
-                                        .AllowAnyMethod()
-                                        .AllowAnyHeader()
-                                        .AllowCredentials());
-
             //Get front-end url from appsettings.json
             var frontEndUrl = Configuration["FrontEndUrl"];
 
             //CORS config for Front-end url
-            app.UseCors(options => options.WithOrigins(frontEndUrl)
+            app.UseCors(options => options.WithOrigins(frontEndDevUrl, frontEndUrl)
                                         .AllowAnyMethod()
                                         .AllowAnyHeader()
                                         .AllowCredentials());

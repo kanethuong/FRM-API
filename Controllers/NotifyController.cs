@@ -6,6 +6,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.NotificationDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using kroniiapi.Hubs;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -38,20 +39,64 @@ namespace kroniiapi.Controllers
         /// <param name="email">email of user want to recieveHistory</param>
         /// <returns>404: email not found / 204: send success</returns>
         [HttpGet("history")]
-        public async Task<ActionResult> SendHistory(string email)
+        public async Task<ActionResult> SendHistory(string email, [FromBody] PaginationParameter paginationParameter)
         {
+            email = email.ToLower();
             List<NotifyMessage> history = new List<NotifyMessage>();
             history = await _cacheProvider.GetFromCache<List<NotifyMessage>>(email);
-            history.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
-            if(history == null)
+            if (history == null)
             {
                 return NotFound(new ResponseDTO(404, "history not found!"));
             }
-            else
+
+            history.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
+       
+            history = history.Where(t =>
+                t.User.Contains(paginationParameter.SearchName.ToLower()) ||
+                t.SendTo.Contains(paginationParameter.SearchName.ToLower())).Select(t => t).ToList();
+
+            return Ok(new PaginationResponse<IEnumerable<NotifyMessage>>(history.Count(), PaginationHelper.GetPage(history, paginationParameter)));
+        }
+
+        [HttpGet("historyForAdmin")]
+        public async Task<ActionResult<IEnumerable<NotifyMessage>>> GetHistoryForAdmin([FromBody]PaginationParameter paginationParameter)
+        {
+            List<NotifyMessage> history = new List<NotifyMessage>();
+            history = await _cacheProvider.GetAllValueFromCache<NotifyMessage>();
+            if (history == null)
             {
-                await _notifyHub.Clients.Group(email).SendAsync("ReceiveHistory", history);
-                return Ok( new ResponseDTO(204, "Successfully invoke"));
+                return NotFound(new ResponseDTO(404, "history not found!"));
             }
+
+            history.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
+
+            history = history.Where(t =>
+                t.User.Contains(paginationParameter.SearchName.ToLower()) ||
+                t.SendTo.Contains(paginationParameter.SearchName.ToLower())).Select(t => t).ToList();
+
+            return Ok(new PaginationResponse<IEnumerable<NotifyMessage>>(history.Count(), PaginationHelper.GetPage(history, paginationParameter)));
+        }
+
+        [HttpPost("setSeen")]
+        public async Task<ActionResult> SetSeen(string email)
+        {
+            if(email == null)
+            {
+                return BadRequest(new ResponseDTO(404, "email not found"));
+            }
+            List<NotifyMessage> history = new List<NotifyMessage>();
+            history = await _cacheProvider.GetFromCache<List<NotifyMessage>>(email);
+            if(history == null)
+            {
+                return BadRequest(new ResponseDTO(404, "history not found"));
+            }
+            foreach (var notify in history)
+            {
+                notify.IsSeen = true;
+            }
+            await _cacheProvider.SetCache<List<NotifyMessage>>(email, history);
+
+            return Ok(new ResponseDTO(204, "Successfully setSeen"));
         }
 
         /// <summary>
@@ -60,9 +105,10 @@ namespace kroniiapi.Controllers
         /// <param name="notifyMessage">user: email of admin / content: content / sendTo: class name</param>
         /// <returns>400: error with class name / 204: send sucess</returns>
         [HttpPost("class")]
-        public async Task<ActionResult> SendClassNotification([FromBody]NotifyMessage notifyMessage)
+        public async Task<ActionResult> SendClassNotification([FromBody] NotifyMessage notifyMessage)
         {
-            Class classInfor = await _classService.GetClassByClassName(notifyMessage.sendTo);
+            Class classInfor = await _classService.GetClassByClassName(notifyMessage.SendTo);
+            notifyMessage.User = notifyMessage.User.ToLower();
             if (classInfor != null)
             {
                 IEnumerable<Trainee> traineeList = await _traineeService.GetTraineeByClassId(classInfor.ClassId);
@@ -70,8 +116,8 @@ namespace kroniiapi.Controllers
                 {
                     foreach (var trainee in traineeList)
                     {
-                        notifyMessage.sendTo = trainee.Email;
-                        await _cacheProvider.AddValueToKey<NotifyMessage>(trainee.Email, notifyMessage);
+                        notifyMessage.SendTo = trainee.Email.ToLower();
+                        await _cacheProvider.AddValueToKey<NotifyMessage>(trainee.Email.ToLower(), notifyMessage);
                         await _notifyHub.Clients.Group(trainee.Email).SendAsync("ReceiveNotification", notifyMessage);
                     }
                 }
@@ -94,14 +140,16 @@ namespace kroniiapi.Controllers
         /// <param name="notifyMessage">user: email of admin / content: content / sendTo: trainee's email</param>
         /// <returns>400: cannot find trainee's email / 204: send success</returns>
         [HttpPost("trainee")]
-        public async Task<ActionResult> SendTraineeNotification([FromBody]NotifyMessage notifyMessage)
+        public async Task<ActionResult> SendTraineeNotification([FromBody] NotifyMessage notifyMessage)
         {
             // if(_traineeService.GetTraineeByEmail(notifyMessage.sendTo) == null )
             // {
             //     return BadRequest(new ResponseDTO(400, "Can not find trainee's email"));
             // }
-            await _cacheProvider.AddValueToKey<NotifyMessage>(notifyMessage.sendTo, notifyMessage);
-            await _notifyHub.Clients.Group(notifyMessage.sendTo).SendAsync("ReceiveNotification", notifyMessage);
+            notifyMessage.SendTo = notifyMessage.SendTo.ToLower();
+            notifyMessage.User = notifyMessage.User.ToLower();
+            await _cacheProvider.AddValueToKey<NotifyMessage>(notifyMessage.SendTo, notifyMessage);
+            await _notifyHub.Clients.Group(notifyMessage.SendTo).SendAsync("ReceiveNotification", notifyMessage);
             return Ok(new ResponseDTO(204, "Successfully invoke"));
         }
     }
