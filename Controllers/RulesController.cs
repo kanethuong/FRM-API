@@ -38,9 +38,8 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, message));
             }
-            using (var stream = new MemoryStream())
+            using (var stream = file.OpenReadStream())
             {
-                await file.CopyToAsync(stream);
                 var name = file.FileName;
                 var type = file.ContentType;
                 var url = await _uploadHelper.Upload(stream, name, "Rules");
