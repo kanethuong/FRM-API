@@ -26,15 +26,26 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IFeedbackService _feedbackService;
         private readonly ITraineeService _traineeService;
+        private readonly ICalendarService _calendarService;
+        private readonly IModuleService _moduleService;
+        private readonly ITrainerService _trainerService;
+        private readonly IRoomService _roomService;
+        private readonly IExamService _examService;
+
         private readonly ICertificateService _certificateService;
         private readonly IApplicationService _applicationService;
         private readonly IMegaHelper _megaHelper;
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService, ICertificateService certificateService, IApplicationService applicationService, IMegaHelper megaHelper)
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService,ICalendarService calendarService,IModuleService moduleService,ITrainerService trainerService,IRoomService roomService,IExamService examService,ICertificateService certificateService,IApplicationService applicationService,IMegaHelper megaHelper)
         {
             _mapper = mapper;
             _classService = classService;
             _feedbackService = feedbackService;
             _traineeService = traineeService;
+            _calendarService = calendarService;
+            _moduleService = moduleService;
+            _trainerService = trainerService;
+            _roomService = roomService;
+            _examService = examService;
             _certificateService = certificateService;
             _applicationService = applicationService;
             _megaHelper = megaHelper;
@@ -48,7 +59,23 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            return null;
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id,DateTime.Today,DateTime.UtcNow.AddDays(2));
+            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(),DateTime.Today,DateTime.UtcNow.AddDays(2));
+            //Trainee trainee = await _traineeService.GetTraineeById(id);
+            
+            foreach (var item in calenders)
+            {
+                item.Class.Trainer = trainer;
+                item.Class.Room = room;
+            }
+            var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
+            var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
+            TraineeDashboard dashboard = new TraineeDashboard();
+            dashboard.moduleInTraineeDashboards = moduleInDashboard;
+            dashboard.examInTraineeDashboards = examInDashboard;
+            return Ok(dashboard);
         }
 
         /// <summary>

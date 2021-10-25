@@ -86,5 +86,34 @@ namespace kroniiapi.Services
 
             return Tuple.Create(totalRecords, rs);
         }
+
+        public async Task<IEnumerable<Exam>> GetExamListByModuleId(List<Calendar> calendars, DateTime startDate, DateTime endDate){
+            List<int> mds = new List<int>();
+            foreach (var item in calendars)
+            {
+                mds.Add(item.ModuleId);
+            }
+            List<int> mdsNodup = mds.Distinct().ToList();
+            List<Exam> exams = new List<Exam>();
+            foreach (var i in mdsNodup)
+            {
+                Exam e = await _dataContext.Exams.Where(e => e.ModuleId == i && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
+                    e => new Exam{
+                        ExamId = e.ExamId,
+                        ExamName = e.ExamName,
+                        Description = e.Description,
+                        ExamDay = e.ExamDay,
+                        DurationInMinute = e.DurationInMinute,
+                        ModuleId = e.ModuleId,
+                        Module = new Module{
+                            ModuleName = e.Module.ModuleName
+                        }
+                
+                }
+                ).FirstOrDefaultAsync();
+                exams.Add(e);
+            }
+            return exams;
+        }
     }
 }
