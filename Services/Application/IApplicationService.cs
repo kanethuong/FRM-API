@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
 
 namespace kroniiapi.Services
@@ -14,5 +15,6 @@ namespace kroniiapi.Services
         Task<int> InsertNewApplication(Application application);
         Task<Tuple<int, IEnumerable<Application>>> GetApplicationList(PaginationParameter paginationParameter);
         Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList ();
+        Task<ApplicationCategory> GetApplicationCategory(int id);
     }
 }
