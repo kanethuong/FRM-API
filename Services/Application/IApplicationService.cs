@@ -13,5 +13,6 @@ namespace kroniiapi.Services
 
         Task<int> InsertNewApplication(Application application);
         Task<Tuple<int, IEnumerable<Application>>> GetApplicationList(PaginationParameter paginationParameter);
+        Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList ();
     }
 }

@@ -267,7 +267,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == -2)
             {
-                return BadRequest(new ResponseDTO(409, "One or more trainees already have class "));
+                return Conflict(new ResponseDTO(409, "One or more trainees already have class "));
             }
             else if (rs == 0)
             {

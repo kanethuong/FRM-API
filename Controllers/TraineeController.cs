@@ -11,6 +11,7 @@ using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,13 +26,16 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IFeedbackService _feedbackService;
         private readonly ITraineeService _traineeService;
-
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService)
+        private readonly IApplicationService _applicationService;
+        private readonly IMegaHelper _megaHelper;
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService, IApplicationService applicationService,IMegaHelper megaHelper)
         {
             _mapper = mapper;
             _classService = classService;
             _feedbackService = feedbackService;
             _traineeService = traineeService;
+            _applicationService = applicationService;
+            _megaHelper = megaHelper;
         }
 
         /// <summary>
@@ -255,9 +259,14 @@ namespace kroniiapi.Controllers
         /// <param name="applicationInput">detail of applcation input </param>
         /// <returns>201: created</returns>
         [HttpPost("application")]
-        public async Task<ActionResult> SubmitApplicationForm(ApplicationInput applicationInput)
+        public async Task<ActionResult> SubmitApplicationForm([FromQuery]ApplicationInput applicationInput,IFormFile form)
         {
-            return null;
+            var stream = form.OpenReadStream();
+            string formURL = _megaHelper.Upload(stream,form.FileName,"ApplicationForm").ToString();
+            Application app = _mapper.Map<Application>(applicationInput);
+            app.ApplicationURL=formURL;
+            var rs = _applicationService.InsertNewApplication(app);
+            return CreatedAtAction(nameof(ViewApplicationList), new ResponseDTO(201, "Successfully inserted"));;
         }
 
         /// <summary>
@@ -267,7 +276,8 @@ namespace kroniiapi.Controllers
         [HttpGet("application")]
         public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationType()
         {
-            return null;
+            var applicationTypeList = await _applicationService.GetApplicationCategoryList();
+            return Ok(_mapper.Map<ApplicationCategoryResponse>(applicationTypeList));
         }
 
     }
