@@ -42,8 +42,15 @@ namespace kroniiapi.Controllers
             {
                 await file.CopyToAsync(stream);
                 var name = file.FileName;
+                var type = file.ContentType;
                 var url = await _uploadHelper.Upload(stream, name, "Rules");
-                await _cacheProvider.SetCache<string>("RulesURL", url);
+                FileDTO fileDTO = new()
+                {
+                    Name = name,
+                    ContentType = type,
+                    Url = url
+                };
+                await _cacheProvider.SetCache<FileDTO>("RulesURL", fileDTO);
             }
             return CreatedAtAction(nameof(Get), new ResponseDTO(201, "Uploaded"));
         }
@@ -51,16 +58,24 @@ namespace kroniiapi.Controllers
         /// <summary>
         /// Get the link of the rules
         /// </summary>
-        /// <returns>200: Ok with the link as message / 404: The link is not found (Not Uploaded)</returns>
+        /// <returns>200: Ok with the file stream / 404: The link is not found (Not Uploaded)</returns>
         [HttpGet]
         public async Task<ActionResult> Get()
         {
-            string url = await _cacheProvider.GetFromCache<string>("RulesURL");
-            if (url is null)
+            FileDTO fileDTO = await _cacheProvider.GetFromCache<FileDTO>("RulesURL");
+            if (fileDTO is null)
             {
                 return NotFound(new ResponseDTO(404, "The Rules is not found"));
             }
-            return Ok(new ResponseDTO(200, url));
+            var stream = await _uploadHelper.Download(new Uri(fileDTO.Url));
+            using (var memoryStream = new MemoryStream())
+            {
+                await stream.CopyToAsync(memoryStream);
+                return new FileContentResult(memoryStream.ToArray(), fileDTO.ContentType)
+                {
+                    FileDownloadName = fileDTO.Name
+                };
+            }
         }
     }
 }
