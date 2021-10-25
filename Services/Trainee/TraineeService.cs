@@ -268,7 +268,8 @@ namespace kroniiapi.Services
 
             foreach (var item in application)
             {
-                var itemToResponse = new ApplicationResponse{
+                var itemToResponse = new ApplicationResponse
+                {
                     Description = item.Description,
                     ApplicationURL = item.ApplicationURL,
                     Type = item.ApplicationCategory.CategoryName,
@@ -280,6 +281,12 @@ namespace kroniiapi.Services
             return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
+
+        /// <summary>
+        /// Get Class Id using trainee id
+        /// </summary>
+        /// <param name="id">TraineeId</param>
+        /// <returns>-1: Message / {classId}</returns>
         public async Task<(int, string)> GetClassIdByTraineeId(int id)
         {
             var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id);
@@ -296,6 +303,6 @@ namespace kroniiapi.Services
 
             return ((int)trainee.ClassId, "");
         }
-        
+
     }
 }
