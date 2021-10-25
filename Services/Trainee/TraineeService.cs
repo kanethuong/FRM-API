@@ -239,42 +239,46 @@ namespace kroniiapi.Services
                 t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower())), paginationParameter));
         }
 
-
-        public async Task<Tuple<int, IEnumerable<Application>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
+        /// <summary>
+        /// Get Application List by Trainee id
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="paginationParameter">Pagination</param>
+        /// <returns>Tuple Application list as Pagination</returns>
+        public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
         {
 
             List<Application> application = await _dataContext.Applications
                                                 .Where(app => app.TraineeId == id)
-                                                    // .Select(a => new Application
-                                                    // {
-                                                    //     TraineeId = a.TraineeId,
-                                                    //     Description = a.Description,
-                                                    //     ApplicationURL = a.ApplicationURL,
-                                                    //     ApplicationId = a.ApplicationId,
-                                                    //     ApplicationCategoryId = a.ApplicationCategoryId,
-                                                    //     ApplicationCategory = new ApplicationCategory
-                                                    //     {
-                                                    //         ApplicationCategoryId = a.ApplicationCategoryId,
-                                                    //         CategoryName = a.ApplicationCategory.CategoryName,
-                                                    //     },
-                                                    // })
+                                                    .Select(a => new Application
+                                                    {
+                                                        TraineeId = a.TraineeId,
+                                                        Description = a.Description,
+                                                        ApplicationURL = a.ApplicationURL,
+                                                        ApplicationId = a.ApplicationId,
+                                                        ApplicationCategoryId = a.ApplicationCategoryId,
+                                                        ApplicationCategory = new ApplicationCategory
+                                                        {
+                                                            ApplicationCategoryId = a.ApplicationCategoryId,
+                                                            CategoryName = a.ApplicationCategory.CategoryName,
+                                                        },
+                                                    })
                                                     .ToListAsync();
-            ApplicationResponse applicationReponse;
+            List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
 
-            ApplicationCategory applicationCategory = await _applicationService.GetApplicationCategory(6);
-            Application application1;
-            application1 = _mapper.Map<Application>(applicationCategory);
-            application1.ApplicationCategoryId = applicationCategory.ApplicationCategoryId;
+            foreach (var item in application)
+            {
+                var itemToResponse = new ApplicationResponse{
+                    Description = item.Description,
+                    ApplicationURL = item.ApplicationURL,
+                    Type = item.ApplicationCategory.CategoryName,
+                    IsAccepted = item.IsAccepted
+                };
+                applicationReponse.Add(itemToResponse);
+            }
 
-            applicationReponse = _mapper.Map<ApplicationResponse>(applicationCategory);
-            applicationReponse.Type = applicationCategory.CategoryName;
-
-            int totalRecords = application.Count();
-            var rs = application.OrderBy(a => a.ApplicationId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
-            return Tuple.Create(totalRecords, rs);
-
+            return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
 
         }
     }

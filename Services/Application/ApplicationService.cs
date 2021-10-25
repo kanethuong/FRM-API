@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
-using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,8 +12,6 @@ namespace kroniiapi.Services
     public class ApplicationService : IApplicationService
     {
         private DataContext _dataContext;
-        private IMapper _mapper;
-        private IApplicationService _applicationService;
         public ApplicationService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -54,6 +50,11 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
+        /// <summary>
+        /// Get Application Category by id
+        /// </summary>
+        /// <param name="id">Application Category Id</param>
+        /// <returns>Application Category data</returns>
         public async Task<ApplicationCategory> GetApplicationCategory(int id){
             return await _dataContext.ApplicationCategories.Where(a => a.ApplicationCategoryId == id).FirstOrDefaultAsync();
         }
