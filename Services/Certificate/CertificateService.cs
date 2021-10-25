@@ -15,6 +15,13 @@ namespace kroniiapi.Services
         {
             _dataContext = dataContext;
         }
+        public async Task<int> InsertCertificate(Certificate certificate) {
+            if (_dataContext.Certificates.Any(cert => cert.ModuleId == certificate.ModuleId && cert.TraineeId == certificate.TraineeId)){
+                return 0;
+            }
+            _dataContext.Certificates.Add(certificate);
+            return await _dataContext.SaveChangesAsync();
+        }
 
         public async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
