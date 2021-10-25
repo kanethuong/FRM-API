@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
 {
-    public class CertificateService : ICertificateService
+    public class CertificateService :ICertificateService
     {
         private readonly DataContext _dataContext;
         public CertificateService(DataContext dataContext)

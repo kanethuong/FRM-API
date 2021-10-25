@@ -166,10 +166,10 @@ namespace kroniiapi.Controllers
                     return Conflict(new ResponseDTO(409, "The account at row " + (failIndex + 2) + " existed"));
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _accountService.DiscardChanges();
-                throw e;
+                throw;
             }
         }
 

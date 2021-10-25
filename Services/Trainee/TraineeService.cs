@@ -17,8 +17,6 @@ namespace kroniiapi.Services
     {
         private DataContext _dataContext;
         private IMapper _mapper;
-        private IMarkService _markService;
-
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;

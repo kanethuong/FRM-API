@@ -267,7 +267,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == -2)
             {
-                return BadRequest(new ResponseDTO(409, "One or more trainees already have class "));
+                return Conflict(new ResponseDTO(409, "One or more trainees already have class "));
             }
             else if (rs == 0)
             {
@@ -463,9 +463,9 @@ namespace kroniiapi.Controllers
                     }
                     try {
                         await _classService.SaveChange();
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         _classService.DiscardChanges();
-                        throw e;
+                        throw;
                     }
 
                     // Insert Class-Module and Class-Trainee
@@ -491,9 +491,9 @@ namespace kroniiapi.Controllers
                     }
                     try {
                         await _classService.SaveChange();
-                    } catch (Exception e) {
+                    } catch (Exception) {
                         _classService.DiscardChanges();
-                        throw e;
+                        throw;
                     }
                 }
             }
