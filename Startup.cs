@@ -29,6 +29,7 @@ using kroniiapi.Services;
 using kroniiapi.DTO.Email;
 using OfficeOpenXml;
 using kroniiapi.Helper.Upload;
+using kroniiapi.Services.Calendar;
 
 namespace kroniiapi
 {
@@ -144,6 +145,7 @@ namespace kroniiapi
             services.AddScoped<IMarkService, MarkService>();
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
+            services.AddScoped<ICalendarService, CalendarService>();
 
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings

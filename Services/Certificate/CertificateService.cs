@@ -6,7 +6,7 @@ using kroniiapi.DB;
 
 namespace kroniiapi.Services.Certificate
 {
-    public class CertificateService
+    public class CertificateService :ICertificateService
     {
         private readonly DataContext _dataContext;
         public CertificateService(DataContext dataContext)
