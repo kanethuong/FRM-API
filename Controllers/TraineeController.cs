@@ -140,8 +140,24 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/class")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
-            return null;
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(id);
+
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
+
+            var clazz = await _classService.GetClassDetail(classId);
+
+            if (clazz == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+
+            return Ok(_mapper.Map<ClassDetailResponse>(clazz));
+
         }
+
         /// <summary>
         /// Get trainee list with pagination
         /// </summary>
