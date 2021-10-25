@@ -9,6 +9,7 @@ using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace kroniiapi.Controllers
 {
@@ -16,13 +17,16 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class RulesController : ControllerBase
     {
+        private static string CACHE_KEY = "RulesContent";
         private readonly ICacheProvider _cacheProvider;
         private readonly IMegaHelper _uploadHelper;
+        private readonly IMemoryCache _memoryCache;
 
-        public RulesController(ICacheProvider cacheProvider, IMegaHelper uploadHelper)
+        public RulesController(ICacheProvider cacheProvider, IMegaHelper uploadHelper, IMemoryCache memoryCache)
         {
             _cacheProvider = cacheProvider;
             _uploadHelper = uploadHelper;
+            _memoryCache = memoryCache;
         }
 
         /// <summary>
@@ -38,9 +42,8 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, message));
             }
-            using (var stream = new MemoryStream())
+            using (var stream = file.OpenReadStream())
             {
-                await file.CopyToAsync(stream);
                 var name = file.FileName;
                 var type = file.ContentType;
                 var url = await _uploadHelper.Upload(stream, name, "Rules");
@@ -52,6 +55,7 @@ namespace kroniiapi.Controllers
                 };
                 await _cacheProvider.SetCache<FileDTO>("RulesURL", fileDTO);
             }
+            _memoryCache.Remove(CACHE_KEY);
             return CreatedAtAction(nameof(Get), new ResponseDTO(201, "Uploaded"));
         }
 
@@ -67,15 +71,19 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "The Rules is not found"));
             }
-            var stream = await _uploadHelper.Download(new Uri(fileDTO.Url));
-            using (var memoryStream = new MemoryStream())
+            return await _memoryCache.GetOrCreateAsync(CACHE_KEY, async entry =>
             {
-                await stream.CopyToAsync(memoryStream);
-                return new FileContentResult(memoryStream.ToArray(), fileDTO.ContentType)
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+                var stream = await _uploadHelper.Download(new Uri(fileDTO.Url));
+                using (var memoryStream = new MemoryStream())
                 {
-                    FileDownloadName = fileDTO.Name
-                };
-            }
+                    await stream.CopyToAsync(memoryStream);
+                    return new FileContentResult(memoryStream.ToArray(), fileDTO.ContentType)
+                    {
+                        FileDownloadName = fileDTO.Name
+                    };
+                }
+            });
         }
     }
 }
