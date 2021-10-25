@@ -29,7 +29,7 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IApplicationService _applicationService;
         private readonly IMegaHelper _megaHelper;
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService,ICertificateService certificateService, IApplicationService applicationService,IMegaHelper megaHelper)
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService, ICertificateService certificateService, IApplicationService applicationService, IMegaHelper megaHelper)
         {
             _mapper = mapper;
             _classService = classService;
@@ -204,17 +204,18 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
         {
             Stream stream = file.OpenReadStream();
-            string Uri = await _megaHelper.Upload(stream,file.FileName,"Certificate");
-            CertificateInput certificateInput = new ();
+            string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
+            CertificateInput certificateInput = new();
             certificateInput.ModuleId = moduleId;
             certificateInput.TraineeId = traineeId;
             certificateInput.CertificateURL = Uri;
             Certificate certificate = _mapper.Map<Certificate>(certificateInput);
             int status = await _certificateService.InsertCertificate(certificate);
-            if (status == 0) {
+            if (status == 0)
+            {
                 return BadRequest(new ResponseDTO(400, "Your submit failed!"));
             }
-            return Ok(new ResponseDTO(201,"Your submission was successful!"));
+            return Ok(new ResponseDTO(201, "Your submission was successful!"));
         }
 
         /// <summary>
@@ -290,14 +291,14 @@ namespace kroniiapi.Controllers
         /// <param name="applicationInput">detail of applcation input </param>
         /// <returns>201: created</returns>
         [HttpPost("application")]
-        public async Task<ActionResult> SubmitApplicationForm([FromQuery]ApplicationInput applicationInput,IFormFile form)
+        public async Task<ActionResult> SubmitApplicationForm([FromForm] ApplicationInput applicationInput, [FromForm]IFormFile form)
         {
             var stream = form.OpenReadStream();
-            string formURL = _megaHelper.Upload(stream,form.FileName,"ApplicationForm").ToString();
+            String formURL = await _megaHelper.Upload(stream, form.FileName, "ApplicationForm");
             Application app = _mapper.Map<Application>(applicationInput);
-            app.ApplicationURL=formURL;
+            app.ApplicationURL = formURL;
             var rs = _applicationService.InsertNewApplication(app);
-            return CreatedAtAction(nameof(ViewApplicationList), new ResponseDTO(201, "Successfully inserted"));;
+            return Created(nameof(ViewApplicationList),new ResponseDTO(201, "Successfully inserted")); ;
         }
 
         /// <summary>
@@ -308,7 +309,8 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationType()
         {
             var applicationTypeList = await _applicationService.GetApplicationCategoryList();
-            return Ok(_mapper.Map<ApplicationCategoryResponse>(applicationTypeList));
+            var rs =_mapper.Map<IEnumerable<ApplicationCategoryResponse>>(applicationTypeList);
+            return Ok(rs);
         }
 
     }
