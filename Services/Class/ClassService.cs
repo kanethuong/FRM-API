@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
+using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
 
@@ -388,6 +389,58 @@ namespace kroniiapi.Services
         public void DiscardChanges()
         {
             _dataContext.ChangeTracker.Clear();
+        }
+        /// <summary>
+        /// Get Trainer and Admin using TraineeId
+        /// </summary>
+        /// <param name="traineeId"></param>
+        /// <returns>FeedbackViewForTrainee</returns>
+        public async Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId)
+        {
+            var traineeToView = await _dataContext.Trainees
+                                        .Where(t => t.TraineeId == traineeId)
+                                        .Select(c => new Trainee
+                                        {
+                                            TraineeId = c.TraineeId,
+                                            Username = c.Username,
+                                            Fullname = c.Fullname,
+                                            AvatarURL = c.AvatarURL,
+                                            Class = new Class {
+                                                ClassId = c.Class.ClassId,
+                                                AdminId = c.Class.Admin.AdminId,
+                                                Admin = new Admin {
+                                                    Fullname = c.Class.Admin.Fullname,
+                                                    Email = c.Class.Admin.Email,
+                                                    AvatarURL = c.Class.Admin.AvatarURL,
+                                                },
+                                                TrainerId = c.Class.TrainerId,
+                                                Trainer = new Trainer {
+                                                    Fullname = c.Class.Trainer.Fullname,
+                                                    Email = c.Class.Trainer.Email,
+                                                    AvatarURL = c.Class.Trainer.AvatarURL,
+                                                }
+                                            }
+                                        }).FirstOrDefaultAsync();
+            if (traineeToView == null)
+            {
+                return null;
+            }
+            var returnThing = new FeedbackViewForTrainee
+            {
+                trainer = new TrainerInFeedbackResponse {
+                    TrainerId = traineeToView.Class.TrainerId,
+                    Fullname = traineeToView.Class.Trainer.Fullname,
+                    Email = traineeToView.Class.Trainer.Email,
+                    AvatarURL = traineeToView.Class.Trainer.AvatarURL
+                },
+                admin = new AdminInFeedbackResponse {
+                    AdminId = traineeToView.Class.AdminId,
+                    Fullname = traineeToView.Class.Admin.Fullname,
+                    Email = traineeToView.Class.Admin.Email,
+                    AvatarURL = traineeToView.Class.Admin.AvatarURL
+                }
+            };
+            return returnThing;
         }
     }
 }

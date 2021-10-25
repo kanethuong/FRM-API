@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TraineeDTO;
 
 namespace kroniiapi.Services
 {
@@ -19,5 +20,7 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineeListByClassId(int id, PaginationParameter paginationParameter);
         Task<ICollection<Trainee>> GetTraineeByClassId(int id);
         Task<bool> IsTraineeHasClass(int traineeId);
+        Task<Tuple<int, IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter);
+        Task<(int, string)> GetClassIdByTraineeId(int id);
     }
 }
