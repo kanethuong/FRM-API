@@ -81,16 +81,26 @@ namespace kroniiapi
             // Add authorization to request
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Administrator", policy =>
-                    policy.Requirements.Add(new AccessRequirement("administrator")));
+                options.AddPolicy("Account", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+
+                options.AddPolicy("ClassGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator", "admin", "trainer", "trainee" })));
+                options.AddPolicy("ClassGetDeleted", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+                options.AddPolicy("ClassPost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+                options.AddPolicy("ClassPut", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+
                 options.AddPolicy("Admin", policy =>
-                    policy.Requirements.Add(new AccessRequirement("admin")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
                 options.AddPolicy("Trainer", policy =>
-                    policy.Requirements.Add(new AccessRequirement("trainer")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
                 options.AddPolicy("Trainee", policy =>
-                    policy.Requirements.Add(new AccessRequirement("trainee")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
                 options.AddPolicy("Company", policy =>
-                    policy.Requirements.Add(new AccessRequirement("company")));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "company" })));
             });
 
             // Increase input file size limit
@@ -136,7 +146,7 @@ namespace kroniiapi
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
             services.AddScoped<ICalendarService, CalendarService>();
-
+            services.AddScoped<ICertificateService, CertificateService>();
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {

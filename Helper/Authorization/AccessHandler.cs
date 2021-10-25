@@ -17,9 +17,12 @@ namespace kroniiapi.Requirements
             var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var role = claims?.FirstOrDefault(c => c.Type.EndsWith("role", StringComparison.CurrentCultureIgnoreCase))?.Value;
 
-            if (role != null && role.Equals(requirement.Role, StringComparison.OrdinalIgnoreCase))
+            foreach (var requireRole in requirement.Roles)
             {
-                context.Succeed(requirement);
+                if (role != null && role.Equals(requireRole, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Succeed(requirement);
+                }
             }
 
             // False
