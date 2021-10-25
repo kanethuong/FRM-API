@@ -15,7 +15,7 @@ namespace kroniiapi.Helper.Upload
             client = new MegaApiClient();
             client.Login(username, password);
         }
-        public async Task<Uri> Upload(Stream data, string fileName, string folderName)
+        public async Task<String> Upload(Stream data, string fileName, string folderName)
         {
             IEnumerable<INode> nodes = await client.GetNodesAsync();
             INode root = nodes.Single(x => x.Type == NodeType.Root);
@@ -31,7 +31,7 @@ namespace kroniiapi.Helper.Upload
             
             INode myFile = await client.UploadAsync(data, fileName, folder);
             Uri downloadLink = await client.GetDownloadLinkAsync(myFile);
-            return downloadLink;
+            return downloadLink.ToString();
         }
         public Task<Stream> Download(Uri uri)
         {
