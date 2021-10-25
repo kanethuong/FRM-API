@@ -279,7 +279,23 @@ namespace kroniiapi.Services
 
             return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
-
         }
+        public async Task<(int, string)> GetClassIdByTraineeId(int id)
+        {
+            var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id);
+
+            if (trainee == null)
+            {
+                return (-1, "Trainee not found");
+            }
+
+            if (trainee.ClassId == null)
+            {
+                return (-1, "Trainee does not have class");
+            }
+
+            return ((int)trainee.ClassId, "");
+        }
+        
     }
 }
