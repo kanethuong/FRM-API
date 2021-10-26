@@ -16,7 +16,6 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
-        private IMapper _mapper;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -121,7 +120,7 @@ namespace kroniiapi.Services
 
             return rowUpdated;
         }
-        
+
         /// <summary>
         /// Delete trainee method
         /// </summary>
