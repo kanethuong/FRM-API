@@ -76,12 +76,12 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id,DateTime.Today,DateTime.UtcNow.AddDays(2));
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2));
             Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
             Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(),DateTime.Today,DateTime.UtcNow.AddDays(2));
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.UtcNow.AddDays(2));
             //Trainee trainee = await _traineeService.GetTraineeById(id);
-            
+
             foreach (var item in calenders)
             {
                 item.Class.Trainer = trainer;
@@ -220,7 +220,7 @@ namespace kroniiapi.Controllers
             string fileType = image.ContentType;
 
             string avatarUrl = await _imgHelper.Upload(stream, fileName, fileLength, fileType);
-            int rs = await _traineeService.UpdateAvatar(id,avatarUrl);
+            int rs = await _traineeService.UpdateAvatar(id, avatarUrl);
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
@@ -347,21 +347,25 @@ namespace kroniiapi.Controllers
         /// <returns>list event in 1 month, include module and exam</returns>
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id, DateTime date)
-        { 
-            var startDate = new DateTime(date.Year,date.Month,1);
-            var endDate = new DateTime(date.Year,date.Month,DateTime.DaysInMonth(date.Year,date.Month));
-
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id,startDate,endDate);
-            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByTraineeId(id,startDate,endDate);
-            
-            foreach (var item in calenders)
+        {
+            TimeSpan oneday = new TimeSpan(23, 59, 59);
+            var startDate = new DateTime(date.Year, date.Month, 1);
+            var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            endDate = endDate.Add(oneday);
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, startDate, endDate);
+            var exam = await _examService.GetExamListByTraineeId(id, startDate, endDate);
+            if (calenders.Count() != 0)
             {
-                item.Class.Trainer = trainer;
-                item.Class.Room = room;
+                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+                foreach (var item in calenders)
+                {
+                    item.Class.Trainer = trainer;
+                    item.Class.Room = room;
+                }
             }
-            var moduleInTimeTable  = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
+
+            var moduleInTimeTable = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
             var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
             EventInTimeTable events = new EventInTimeTable();
             events.moduleInTimeTables = moduleInTimeTable;
@@ -396,14 +400,14 @@ namespace kroniiapi.Controllers
         /// <param name="applicationInput">detail of applcation input </param>
         /// <returns>201: created</returns>
         [HttpPost("application")]
-        public async Task<ActionResult> SubmitApplicationForm([FromForm] ApplicationInput applicationInput, [FromForm]IFormFile form)
+        public async Task<ActionResult> SubmitApplicationForm([FromForm] ApplicationInput applicationInput, [FromForm] IFormFile form)
         {
             var stream = form.OpenReadStream();
             String formURL = await _megaHelper.Upload(stream, form.FileName, "ApplicationForm");
             Application app = _mapper.Map<Application>(applicationInput);
             app.ApplicationURL = formURL;
             var rs = _applicationService.InsertNewApplication(app);
-            return Created(nameof(ViewApplicationList),new ResponseDTO(201, "Successfully inserted")); ;
+            return Created(nameof(ViewApplicationList), new ResponseDTO(201, "Successfully inserted")); ;
         }
 
         /// <summary>
@@ -414,7 +418,7 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationType()
         {
             var applicationTypeList = await _applicationService.GetApplicationCategoryList();
-            var rs =_mapper.Map<IEnumerable<ApplicationCategoryResponse>>(applicationTypeList);
+            var rs = _mapper.Map<IEnumerable<ApplicationCategoryResponse>>(applicationTypeList);
             return Ok(rs);
         }
 

@@ -98,8 +98,6 @@ namespace kroniiapi.Services
             foreach (var i in mdsNodup)
             {
                 var e = await _dataContext.Exams.Where(e => e.ModuleId == i && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
-<<<<<<< HEAD
-=======
                     e => new Exam{
                         ExamId = e.ExamId,
                         ExamName = e.ExamName,
@@ -124,7 +122,6 @@ namespace kroniiapi.Services
             foreach (var item in traineeExams)
             {
                 var e = await _dataContext.Exams.Where(e => e.ExamId == item && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
->>>>>>> fa9a1564ef9d6b83114821c72ebfe7fa81040df9
                     e => new Exam{
                         ExamId = e.ExamId,
                         ExamName = e.ExamName,
