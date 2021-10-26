@@ -71,4 +71,80 @@
         </div>
     </div>
     <!-- View trainee timetable -->
+    <div id="viewTimetable">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Timetable</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/trainee/{traineeId}/timetable</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>traineeId: ID of trainee</p>
+                <p>date: Specify the datetime of timetable want to show</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "moduleInTimeTables": [
+        {
+        "calendarId": int,
+        "moduleId": int,
+        "moduleName": "string",
+        "date": "string",
+        "class": {
+            "trainerAvatarURL": "string",
+            "trainerName": "string",
+            "trainerEmail": "string",
+            "roomName": "string"
+        }
+        }
+    ],
+    "examInTimeTables": [
+        {
+        "examId": int,
+        "examName": "string",
+        "examDay": "string",
+        "durationInMinute": int
+        }
+    ]
+}
+    </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
