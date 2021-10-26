@@ -103,6 +103,26 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Update trainee's avatar method
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="avatarUrl"></param>
+        /// <returns>-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> UpdateAvatar(int id, string avatarUrl)
+        {
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
+            if (existedTrainee == null)
+            {
+                return -1;
+            }
+            existedTrainee.AvatarURL = avatarUrl;
+
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+        
+        /// <summary>
         /// Delete trainee method
         /// </summary>
         /// <param name="id"></param>
