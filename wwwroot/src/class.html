@@ -357,7 +357,80 @@
             </div>
         </div>
     </div>
-<div id="createNewClass">
+    
+    <div id="ViewClassDetail">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>ViewClassDetail</h3>
+        </div>
+        <p>By DatLT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/{id}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 </p>
+            </div>
+        </div>
+         <!-- Parameter & file -->
+         <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of class</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+                     
+{
+    "classId": int,
+    "className": "string",
+    "description": "string",
+    "modules": [
+        {
+        "moduleName": "string",
+        "iconURL": "string",
+        "syllabusURL": "string"
+        }
+    ],
+    "trainer": {
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string"
+    },
+    "admin": {
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string"
+    }
+}
+                
+            </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="createNewClass">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
             <h3>Create account</h3>
