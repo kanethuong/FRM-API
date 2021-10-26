@@ -349,8 +349,26 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id)
         {
+            var today = DateTime.Now;
+            var startDate = new DateTime(today.Year,today.Month,1);
+            var endDate = new DateTime(today.Year,today.Month,DateTime.DaysInMonth(today.Year,today.Month));
 
-            return null;
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id,startDate,endDate);
+            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(),startDate,endDate);
+            
+            foreach (var item in calenders)
+            {
+                item.Class.Trainer = trainer;
+                item.Class.Room = room;
+            }
+            var moduleInTimeTable  = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
+            var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
+            EventInTimeTable events = new EventInTimeTable();
+            events.moduleInTimeTables = moduleInTimeTable;
+            events.examInTimeTables = examInTimeTable;
+            return Ok(events);
         }
 
         /// <summary>

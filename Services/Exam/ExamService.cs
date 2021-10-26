@@ -97,7 +97,7 @@ namespace kroniiapi.Services
             List<Exam> exams = new List<Exam>();
             foreach (var i in mdsNodup)
             {
-                Exam e = await _dataContext.Exams.Where(e => e.ModuleId == i && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
+                var e = await _dataContext.Exams.Where(e => e.ModuleId == i && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
                     e => new Exam{
                         ExamId = e.ExamId,
                         ExamName = e.ExamName,
@@ -110,8 +110,8 @@ namespace kroniiapi.Services
                         }
                 
                 }
-                ).FirstOrDefaultAsync();
-                exams.Add(e);
+                ).ToListAsync();
+                exams.AddRange(e);
             }
             return exams;
         }
