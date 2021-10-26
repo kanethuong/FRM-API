@@ -52,7 +52,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">trainee id</param>
         /// <returns>Trainee mark and skill</returns>
-        [HttpGet("{traineeId:int}")]
+        [HttpGet("trainee/{traineeId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeMarkAndSkill>>>> ViewMarkAndSkill(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
             if (await _traineeService.GetTraineeById(traineeId) == null)
@@ -94,7 +94,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">id of class</param>
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of student mark in a class with pagination / 404: search student name not found</returns>
-        [HttpGet("{classId:int}")]
+        [HttpGet("class/{classId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int classId, [FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
