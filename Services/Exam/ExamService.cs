@@ -134,8 +134,8 @@ namespace kroniiapi.Services
                         }
                 
                 }
-                ).FirstOrDefaultAsync();
-                exams.Add(e);
+                ).ToListAsync();
+                exams.AddRange(e);
             }
             return exams;
             }
