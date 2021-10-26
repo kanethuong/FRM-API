@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 
 namespace kroniiapi.Services
 {
@@ -12,5 +13,6 @@ namespace kroniiapi.Services
         Task<int> InsertNewModule(Module module);
         Task<int> UpdateModule(int id, Module module);
         Task<IEnumerable<Module>> GetModulesByClassId(int classId);
+        Task<Tuple<int, IEnumerable<Module>>> GetAllModule(PaginationParameter paginationParameter);
     }
 }

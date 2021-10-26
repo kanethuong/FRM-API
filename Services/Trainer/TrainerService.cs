@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -147,32 +149,46 @@ namespace kroniiapi.Services
 
             return true;
         }
-        public async Task<Trainer> getTrainerByClassId(int id){
-        //     Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).Select(c => new Class{
-        //         TrainerId = c.TrainerId, 
-        //         Trainer = new Trainer {
-        //             TrainerId = c.TrainerId,
-        //             Username = c.Trainer.Username,
-        //             Password = c.Trainer.Password,
-        //             Fullname = c.Trainer.Fullname,
-        //             AvatarURL = c.Trainer.AvatarURL,
-        //             Email = c.Trainer.Email,
-        //             Phone = c.Trainer.Phone,
-        //             DOB = c.Trainer.DOB,
-        //             Address = c.Trainer.Address, 
-        //             Gender = c.Trainer.Gender,
-        //             Wage = c.Trainer.Wage,
-        //             CreatedAt = c.Trainer.CreatedAt,
-        //             IsDeactivated = c.Trainer.IsDeactivated,
-        //             DeactivatedAt = c.Trainer.DeactivatedAt,
-        //         }
-        //     }).FirstOrDefaultAsync();
-        // return class1.Trainer;
-         Class class1 = await _classService.GetClassByClassID(id);
-            if (class1 == null) {
+        public async Task<Trainer> getTrainerByClassId(int id)
+        {
+            //     Class class1 = await _dataContext.Classes.Where(c => c.ClassId == id).Select(c => new Class{
+            //         TrainerId = c.TrainerId, 
+            //         Trainer = new Trainer {
+            //             TrainerId = c.TrainerId,
+            //             Username = c.Trainer.Username,
+            //             Password = c.Trainer.Password,
+            //             Fullname = c.Trainer.Fullname,
+            //             AvatarURL = c.Trainer.AvatarURL,
+            //             Email = c.Trainer.Email,
+            //             Phone = c.Trainer.Phone,
+            //             DOB = c.Trainer.DOB,
+            //             Address = c.Trainer.Address, 
+            //             Gender = c.Trainer.Gender,
+            //             Wage = c.Trainer.Wage,
+            //             CreatedAt = c.Trainer.CreatedAt,
+            //             IsDeactivated = c.Trainer.IsDeactivated,
+            //             DeactivatedAt = c.Trainer.DeactivatedAt,
+            //         }
+            //     }).FirstOrDefaultAsync();
+            // return class1.Trainer;
+            Class class1 = await _classService.GetClassByClassID(id);
+            if (class1 == null)
+            {
                 return null;
             }
             return await _dataContext.Trainers.Where(t => t.TrainerId == class1.TrainerId && t.IsDeactivated == false).FirstOrDefaultAsync();
+        }
+        /// <summary>
+        /// Get all trainer with pagination
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
+        public async Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter)
+        {
+            var trainerList = await _dataContext.Trainers.Where(t
+                 => t.IsDeactivated == false && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            return Tuple.Create(trainerList.Count(), PaginationHelper.GetPage(trainerList,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
         }
     }
 }

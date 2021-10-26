@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 
 namespace kroniiapi.Services
 {
@@ -16,5 +17,6 @@ namespace kroniiapi.Services
         Task<int> UpdateTrainer(int id, Trainer trainer);
         Task<int> DeleteTrainer(int id);
         Task<Trainer> getTrainerByClassId(int id);
+        Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter);
     }
 }
