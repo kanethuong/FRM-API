@@ -12,7 +12,5 @@ namespace kroniiapi.DTO.TraineeDTO
         public int ModuleId { get; set; }
         [Required]
         public int TraineeId { get; set; }
-        [Required]
-        public string CertificateURL { get; set; }
     }
 }
