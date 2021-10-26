@@ -15,6 +15,7 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<TraineeProfileDetail,Trainee>();
             CreateMap<CertificateInput,Certificate>();
+            CreateMap<Trainee,TraineeProfileDetail>();
             CreateMap<Calendar,ModuleInTraineeDashboard>()
                 .ForMember(md => md.ModuleId,c => c.MapFrom(s => s.Module.ModuleId))
                 .ForMember(md => md.ModuleName,c => c.MapFrom(s => s.Module.ModuleName));
