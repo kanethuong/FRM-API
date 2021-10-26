@@ -15,7 +15,28 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<TraineeProfileDetail,Trainee>();
             CreateMap<CertificateInput,Certificate>();
-            
+            //TraineeDashboard Mapping
+            CreateMap<Trainee,TraineeProfileDetail>();
+            CreateMap<Calendar,ModuleInTraineeDashboard>()
+                .ForMember(md => md.ModuleId,c => c.MapFrom(s => s.Module.ModuleId))
+                .ForMember(md => md.ModuleName,c => c.MapFrom(s => s.Module.ModuleName));
+            CreateMap<Class,TraineeClassInfo>()
+                .ForMember(ti => ti.TrainerAvatarURL,c => c.MapFrom(s => s.Trainer.AvatarURL))
+                .ForMember(ti => ti.TrainerName,c => c.MapFrom(s => s.Trainer.Fullname))
+                .ForMember(ti => ti.TrainerEmail,c => c.MapFrom(s => s.Trainer.Email))
+                .ForMember(ti => ti.RoomName,c => c.MapFrom(s => s.Room.RoomName));
+            CreateMap<Exam,ExamInTraineeDashboard>()
+                .ForMember(mi => mi.ModuleName,c => c.MapFrom(s => s.Module.ModuleName));
+            //TraineeTimetable Mapping
+            CreateMap<Calendar,ModuleInTimeTable>()
+                .ForMember(md => md.ModuleId,c => c.MapFrom(s => s.Module.ModuleId))
+                .ForMember(md => md.ModuleName,c => c.MapFrom(s => s.Module.ModuleName));
+            CreateMap<Class,TraineeClassInfo>()
+                .ForMember(ti => ti.TrainerAvatarURL,c => c.MapFrom(s => s.Trainer.AvatarURL))
+                .ForMember(ti => ti.TrainerName,c => c.MapFrom(s => s.Trainer.Fullname))
+                .ForMember(ti => ti.TrainerEmail,c => c.MapFrom(s => s.Trainer.Email))
+                .ForMember(ti => ti.RoomName,c => c.MapFrom(s => s.Room.RoomName));
+            CreateMap<Exam,ExamInTimeTable>();
         }
     }
 }

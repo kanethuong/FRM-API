@@ -6,8 +6,8 @@ using kroniiapi.DB.Models;
 
 namespace kroniiapi.Services
 {
-    public interface ICalendarService
+    public interface IRoomService
     {
-        Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId,DateTime startDate, DateTime endDate);
+        Task<Room> GetRoomById(int id);
     }
 }

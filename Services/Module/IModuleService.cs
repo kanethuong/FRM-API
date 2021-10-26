@@ -11,5 +11,6 @@ namespace kroniiapi.Services
         Task<Module> GetModuleById(int id);
         Task<int> InsertNewModule(Module module);
         Task<int> UpdateModule(int id, Module module);
+        Task<IEnumerable<Module>> GetModulesByClassId(int classId);
     }
 }
