@@ -16,7 +16,6 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
-        private IMapper _mapper;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -121,7 +120,7 @@ namespace kroniiapi.Services
 
             return rowUpdated;
         }
-        
+
         /// <summary>
         /// Delete trainee method
         /// </summary>
@@ -337,9 +336,9 @@ namespace kroniiapi.Services
                                                                      {
                                                                          ModuleName = ma.Module.ModuleName,
                                                                          Description = ma.Module.Description,
-                                                                         IconURL = ma.Module.IconURL,                                                                         
+                                                                         IconURL = ma.Module.IconURL,
                                                                          Certificates = ma.Module.Certificates.ToList(),
-                                                                         
+
                                                                      }
                                                                  })
                                                                         .ToListAsync();
@@ -354,7 +353,7 @@ namespace kroniiapi.Services
                     Description = item.Module.Description,
                     IconURL = item.Module.IconURL,
                     Score = await this.GetScoreByTraineeIdAndModuleId(id, item.ModuleId),
-                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id,item.ModuleId),
+                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id, item.ModuleId),
                 };
                 markAndSkills.Add(itemToResponse);
 
