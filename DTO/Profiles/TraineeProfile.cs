@@ -15,7 +15,7 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<TraineeProfileDetail,Trainee>();
             CreateMap<CertificateInput,Certificate>();
-            
+            CreateMap<Trainee,TraineeProfileDetail>();
         }
     }
 }

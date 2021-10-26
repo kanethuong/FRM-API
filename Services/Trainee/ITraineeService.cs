@@ -16,6 +16,7 @@ namespace kroniiapi.Services
         Task<int> InsertNewTrainee(Trainee trainee);
         bool InsertNewTraineeNoSaveChange(Trainee trainee);
         Task<int> UpdateTrainee(int id, Trainee trainee);
+        Task<int> UpdateAvatar(int id, string avatarUrl);
         Task<int> DeleteTrainee(int id);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineeListByClassId(int id, PaginationParameter paginationParameter);
         Task<ICollection<Trainee>> GetTraineeByClassId(int id);
