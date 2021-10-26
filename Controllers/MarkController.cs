@@ -72,15 +72,12 @@ namespace kroniiapi.Controllers
         /// <param name="certificateInput">detail of certificate input</param>
         /// <returns>201: created / 400: bad request</returns>
         [HttpPost("certificate")]
-        public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
+        public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file,[FromForm] CertificateInput certificateInput)
         {
             Stream stream = file.OpenReadStream();
             string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
-            CertificateInput certificateInput = new();
-            certificateInput.ModuleId = moduleId;
-            certificateInput.TraineeId = traineeId;
-            certificateInput.CertificateURL = Uri;
             Certificate certificate = _mapper.Map<Certificate>(certificateInput);
+            certificate.CertificateURL = Uri;
             int status = await _certificateService.InsertCertificate(certificate);
             if (status == 0)
             {
