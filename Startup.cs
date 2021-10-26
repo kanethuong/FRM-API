@@ -29,6 +29,7 @@ using kroniiapi.Services;
 using kroniiapi.DTO.Email;
 using OfficeOpenXml;
 using kroniiapi.Helper.Upload;
+using kroniiapi.Helper.UploadDownloadFile;
 
 namespace kroniiapi
 {
@@ -144,6 +145,7 @@ namespace kroniiapi
             services.AddScoped<IMarkService, MarkService>();
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
+            services.AddScoped<IImgHelper, ImgHelper>();
             services.AddScoped<ICalendarService, CalendarService>();
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<ICertificateService, CertificateService>();

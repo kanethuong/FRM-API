@@ -151,6 +151,31 @@ namespace kroniiapi.Controllers
             var cdr = _mapper.Map<ClassDetailResponse>(s);
             return Ok(cdr);
         }
+        /// <summary>
+        /// Get the detail information of a class 
+        /// </summary>
+        /// <param name="id"> id of class</param>
+        /// <returns> 200: Detail of class  / 404: class not found </returns>
+        [HttpGet("trainee/{traineeId:int}")]
+        public async Task<ActionResult<ClassDetailResponse>> ViewClassDetailByTraineeId(int traineeId)
+        {
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(traineeId);
+
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
+
+            var clazz = await _classService.GetClassDetail(classId);
+
+            if (clazz == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+
+            return Ok(_mapper.Map<ClassDetailResponse>(clazz));
+
+        }
 
         /// <summary>
         /// Get trainee list with pagination
