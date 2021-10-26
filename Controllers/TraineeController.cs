@@ -214,7 +214,6 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(409, errorMsg));
             }
-
             string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
             Stream stream = image.OpenReadStream();
             long fileLength = image.Length;
