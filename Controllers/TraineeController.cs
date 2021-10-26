@@ -26,14 +26,27 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IFeedbackService _feedbackService;
         private readonly ITraineeService _traineeService;
+        private readonly ICalendarService _calendarService;
+        private readonly IModuleService _moduleService;
+        private readonly ITrainerService _trainerService;
+        private readonly IRoomService _roomService;
+        private readonly IExamService _examService;
+
+        private readonly ICertificateService _certificateService;
         private readonly IApplicationService _applicationService;
         private readonly IMegaHelper _megaHelper;
-        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService, IApplicationService applicationService,IMegaHelper megaHelper)
+        public TraineeController(IMapper mapper, IClassService classService, IFeedbackService feedbackService, ITraineeService traineeService,ICalendarService calendarService,IModuleService moduleService,ITrainerService trainerService,IRoomService roomService,IExamService examService,ICertificateService certificateService,IApplicationService applicationService,IMegaHelper megaHelper)
         {
             _mapper = mapper;
             _classService = classService;
             _feedbackService = feedbackService;
             _traineeService = traineeService;
+            _calendarService = calendarService;
+            _moduleService = moduleService;
+            _trainerService = trainerService;
+            _roomService = roomService;
+            _examService = examService;
+            _certificateService = certificateService;
             _applicationService = applicationService;
             _megaHelper = megaHelper;
         }
@@ -46,7 +59,23 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            return null;
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id,DateTime.Today,DateTime.UtcNow.AddDays(2));
+            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(),DateTime.Today,DateTime.UtcNow.AddDays(2));
+            //Trainee trainee = await _traineeService.GetTraineeById(id);
+            
+            foreach (var item in calenders)
+            {
+                item.Class.Trainer = trainer;
+                item.Class.Room = room;
+            }
+            var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
+            var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
+            TraineeDashboard dashboard = new TraineeDashboard();
+            dashboard.moduleInTraineeDashboards = moduleInDashboard;
+            dashboard.examInTraineeDashboards = examInDashboard;
+            return Ok(dashboard);
         }
 
         /// <summary>
@@ -180,19 +209,40 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>Trainee mark and skill</returns>
         [HttpGet("{id:int}/mark")]
-        public async Task<ActionResult<IEnumerable<TraineeMarkAndSkill>>> ViewMarkAndSkill(int id)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeMarkAndSkill>>>> ViewMarkAndSkill(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return BadRequest(new ResponseDTO(404, "id not found"));
+            }
+            (int totalRecord, IEnumerable<TraineeMarkAndSkill> markAndSkills) = await _traineeService.GetMarkAndSkillByTraineeId(id, paginationParameter);
+            if (totalRecord == 0)
+            {
+                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any module"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeMarkAndSkill>>(totalRecord, markAndSkills));
         }
         /// <summary>
         /// submit trainee certificate (upload to mega)
         /// </summary>
         /// <param name="certificateInput">detail of certificate input</param>
-        /// <returns>201: created / 409: bad request</returns>
+        /// <returns>201: created / 400: bad request</returns>
         [HttpPost("{traineeId:int}/certificate/{moduleId:int}")]
         public async Task<ActionResult> SubmitCertificate(IFormFile file, int traineeId, int moduleId)
         {
-            return null;
+            Stream stream = file.OpenReadStream();
+            string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
+            CertificateInput certificateInput = new();
+            certificateInput.ModuleId = moduleId;
+            certificateInput.TraineeId = traineeId;
+            certificateInput.CertificateURL = Uri;
+            Certificate certificate = _mapper.Map<Certificate>(certificateInput);
+            int status = await _certificateService.InsertCertificate(certificate);
+            if (status == 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Your submit failed!"));
+            }
+            return Ok(new ResponseDTO(201, "Your submission was successful!"));
         }
 
         /// <summary>
@@ -217,16 +267,6 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
             }
-        }
-
-        /// <summary>
-        /// Get the uri from redis, call download from mega and return file stream
-        /// </summary>
-        /// <returns>FileContentResult giống trong cái controller action của cái API Mega nhe Tiên :v </returns>
-        [HttpGet("rule")]
-        public async Task<ActionResult<Stream>> ViewRule()
-        {
-            return null;
         }
 
         /// <summary>
@@ -268,14 +308,14 @@ namespace kroniiapi.Controllers
         /// <param name="applicationInput">detail of applcation input </param>
         /// <returns>201: created</returns>
         [HttpPost("application")]
-        public async Task<ActionResult> SubmitApplicationForm([FromQuery]ApplicationInput applicationInput,IFormFile form)
+        public async Task<ActionResult> SubmitApplicationForm([FromForm] ApplicationInput applicationInput, [FromForm]IFormFile form)
         {
             var stream = form.OpenReadStream();
-            string formURL = _megaHelper.Upload(stream,form.FileName,"ApplicationForm").ToString();
+            String formURL = await _megaHelper.Upload(stream, form.FileName, "ApplicationForm");
             Application app = _mapper.Map<Application>(applicationInput);
-            app.ApplicationURL=formURL;
+            app.ApplicationURL = formURL;
             var rs = _applicationService.InsertNewApplication(app);
-            return CreatedAtAction(nameof(ViewApplicationList), new ResponseDTO(201, "Successfully inserted"));;
+            return Created(nameof(ViewApplicationList),new ResponseDTO(201, "Successfully inserted")); ;
         }
 
         /// <summary>
@@ -286,7 +326,8 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationType()
         {
             var applicationTypeList = await _applicationService.GetApplicationCategoryList();
-            return Ok(_mapper.Map<ApplicationCategoryResponse>(applicationTypeList));
+            var rs =_mapper.Map<IEnumerable<ApplicationCategoryResponse>>(applicationTypeList);
+            return Ok(rs);
         }
 
     }

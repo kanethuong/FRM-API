@@ -17,8 +17,6 @@ namespace kroniiapi.Services
     {
         private DataContext _dataContext;
         private IMapper _mapper;
-        private IApplicationService _applicationService;
-
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -99,7 +97,6 @@ namespace kroniiapi.Services
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
-
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -304,5 +301,71 @@ namespace kroniiapi.Services
             return ((int)trainee.ClassId, "");
         }
 
+        /// <summary>
+        /// Get Mark and Skills by Trainee id
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Tuple Mark and Skill data</returns>
+        public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
+        {
+            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id)
+                                                                 .Select(ma => new Mark
+                                                                 {
+                                                                     ModuleId = ma.ModuleId,
+                                                                     Module = new Module
+                                                                     {
+                                                                         ModuleName = ma.Module.ModuleName,
+                                                                         Description = ma.Module.Description,
+                                                                         IconURL = ma.Module.IconURL,
+                                                                         Certificates = ma.Module.Certificates.ToList(),
+
+                                                                     }
+                                                                 })
+                                                                        .ToListAsync();
+
+            List<TraineeMarkAndSkill> markAndSkills = new List<TraineeMarkAndSkill>();
+            foreach (var item in markList)
+            {
+                var itemToResponse = new TraineeMarkAndSkill
+                {
+                    ModuleId = item.ModuleId,
+                    ModuleName = item.Module.ModuleName,
+                    Description = item.Module.Description,
+                    IconURL = item.Module.IconURL,
+                    Score = await this.GetScoreByTraineeIdAndModuleId(id, item.ModuleId),
+                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id, item.ModuleId),
+                };
+                markAndSkills.Add(itemToResponse);
+
+            }
+            return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+
+        }
+
+        /// <summary>
+        /// GetCertificatesURLByTraineeIdAndModuleId
+        /// </summary>
+        /// <param name="Traineeid"></param>
+        /// <param name="Moduleid"></param>
+        /// <returns>Certificate URL</returns>
+        private async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return certificate.CertificateURL;
+        }
+
+        /// <summary>
+        /// GetScoreByTraineeIdAndModuleId
+        /// </summary>
+        /// <param name="Traineeid"></param>
+        /// <param name="Moduleid"></param>
+        /// <returns>Score</returns>
+        private async Task<float> GetScoreByTraineeIdAndModuleId(int Traineeid, int Moduleid)
+        {
+            var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            return score.Score;
+        }
     }
 }
