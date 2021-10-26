@@ -66,13 +66,7 @@ namespace kroniiapi.Helper
 
             var mimeType = HeyRed.Mime.MimeGuesser.GuessMimeType(bytes);
 
-            // Check MIME type is Docx
-            if (!mimeType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
-            {
-                return Tuple.Create(false, "Not support fake extension");
-            }
-            // Check MIME type is Doc
-            if (!mimeType.Equals("application/msword"))
+            if ((!mimeType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) && (!mimeType.Equals("application/msword")))
             {
                 return Tuple.Create(false, "Not support fake extension");
             }
