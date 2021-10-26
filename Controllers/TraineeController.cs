@@ -77,16 +77,17 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
             TimeSpan oneSecond = new TimeSpan(0,0,-1);
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id,DateTime.Today,DateTime.Today.AddDays(2).Add(oneSecond));
-            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByTraineeId(id,DateTime.Today,DateTime.Today.AddDays(2).Add(oneSecond));
-            //Trainee trainee = await _traineeService.GetTraineeById(id);
-            
-            foreach (var item in calenders)
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2).Add(oneSecond));
+            var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2).Add(oneSecond));
+            if (calenders.Count() != 0)
             {
-                item.Class.Trainer = trainer;
-                item.Class.Room = room;
+                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+                foreach (var item in calenders)
+                {
+                    item.Class.Trainer = trainer;
+                    item.Class.Room = room;
+                }
             }
             var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
             var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
