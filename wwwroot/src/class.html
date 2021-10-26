@@ -442,7 +442,7 @@
         <p>By DatLT</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/class/</p>
+            <p>/api/class/{id}</p>
         </div>
 
         <!-- Role, Method and Status code -->
@@ -476,31 +476,30 @@
                 <h5>Response Body</h5>
                 <p>
                 <pre><code>
-                    "payload": [
-                    {
-                        "classId": int,
-                        "className": "string",
-                        "description": "string",
-                        "modules": [
-                          {
-                            "moduleName": "string",
-                            "iconURL": "string",
-                            "syllabusURL": "string"
-                          }
-                        ],
-                        "trainer": {
-                          "fullname": "string",
-                          "avatarURL": "string",
-                          "email": "string"
-                        },
-                        "admin": {
-                          "fullname": "string",
-                          "avatarURL": "string",
-                          "email": "string"
-                        }
-                      }
-                    ]
-                }
+                     
+{
+    "classId": int,
+    "className": "string",
+    "description": "string",
+    "modules": [
+        {
+        "moduleName": "string",
+        "iconURL": "string",
+        "syllabusURL": "string"
+        }
+    ],
+    "trainer": {
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string"
+    },
+    "admin": {
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string"
+    }
+}
+                
             </code></pre>
                 </p>
             </div>

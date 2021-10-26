@@ -76,8 +76,9 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2));
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.UtcNow.AddDays(2));
+            TimeSpan oneSecond = new TimeSpan(00, 00, -1);
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
             //Trainee trainee = await _traineeService.GetTraineeById(id);
 
             if (calenders.Count() != 0)
