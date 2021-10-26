@@ -16,6 +16,8 @@ namespace kroniiapi.Services
         Task<int> UpdateExam(int id, Exam exam);
        
         Task<Tuple<int, IEnumerable<Exam>>> GetExamList(PaginationParameter paginationParameter);
+        Task<IEnumerable<Exam>> GetExamListByModuleId(List<Calendar> calendars, DateTime startDate, DateTime endDate);
+        Task<IEnumerable<Exam>> GetExamListByTraineeId(int traineeId, DateTime startDate, DateTime endDate);
         
     }
 }

@@ -25,6 +25,26 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Get all key value in database
+        /// </summary>
+        /// <typeparam name="T">A class</typeparam>
+        public async Task<List<T>> GetAllValueFromCache<T>() where T : class
+        {
+            List<T> listResult = new List<T>();
+            IEnumerable<string> keyList =  await _cache.Db0.SearchKeysAsync("*@*");
+            
+            foreach (var key in keyList)
+            {
+                var temp = await GetFromCache<List<T>>(key);
+                foreach (var value in temp)
+                {
+                    listResult.Add(value);
+                }
+            }
+            return listResult == null ? null : listResult;
+        }
+
+        /// <summary>
         /// Insert new data (include class data) to cache databse
         /// </summary>
         /// <typeparam name="T">A class</typeparam>

@@ -16,7 +16,6 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
-        private IMapper _mapper;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -97,6 +96,26 @@ namespace kroniiapi.Services
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+
+        /// <summary>
+        /// Update trainee's avatar method
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="avatarUrl"></param>
+        /// <returns>-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> UpdateAvatar(int id, string avatarUrl)
+        {
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
+            if (existedTrainee == null)
+            {
+                return -1;
+            }
+            existedTrainee.AvatarURL = avatarUrl;
+
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -317,9 +336,9 @@ namespace kroniiapi.Services
                                                                      {
                                                                          ModuleName = ma.Module.ModuleName,
                                                                          Description = ma.Module.Description,
-                                                                         IconURL = ma.Module.IconURL,                                                                         
+                                                                         IconURL = ma.Module.IconURL,
                                                                          Certificates = ma.Module.Certificates.ToList(),
-                                                                         
+
                                                                      }
                                                                  })
                                                                         .ToListAsync();
@@ -334,7 +353,7 @@ namespace kroniiapi.Services
                     Description = item.Module.Description,
                     IconURL = item.Module.IconURL,
                     Score = await this.GetScoreByTraineeIdAndModuleId(id, item.ModuleId),
-                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id,item.ModuleId),
+                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id, item.ModuleId),
                 };
                 markAndSkills.Add(itemToResponse);
 
