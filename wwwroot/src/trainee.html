@@ -11,6 +11,64 @@
     <!-- Edit trainee avatar -->
 
     <!-- View trainee attendace -->
+    <div id="ViewAttendanceReport">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View trainee's attendance report</h3>
+        </div>
+        <p>By ThoTA</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>api/trainee/id/attendance</p>
+        </div>
 
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>trainee, admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Numbers item per page</p>
+                <p>searchName: Module name</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                
+<p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+            "ModuleName": "string"
+            "NoOfSlot": "int"
+            "NumberSlotAbsent": "int"
+        }
+    ]
+}</code></pre></p>
+                
+            </div>
+        </div>
+    </div>
     <!-- View trainee timetable -->
 </div>
