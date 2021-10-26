@@ -76,8 +76,8 @@ namespace kroniiapi.Controllers
         /// get all application type
         /// </summary>
         /// <returns>all applcation type</returns>
-        [HttpGet("type")]
-        public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationType()
+        [HttpGet("category")]
+        public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationCategory()
         {
             var applicationTypeList = await _applicationService.GetApplicationCategoryList();
             var rs = _mapper.Map<IEnumerable<ApplicationCategoryResponse>>(applicationTypeList);
