@@ -76,10 +76,11 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id,DateTime.Today,DateTime.UtcNow.AddDays(2));
+            TimeSpan oneSecond = new TimeSpan(0,0,-1);
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id,DateTime.Today,DateTime.Today.AddDays(2).Add(oneSecond));
             Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
             Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(),DateTime.Today,DateTime.UtcNow.AddDays(2));
+            var exam = await _examService.GetExamListByTraineeId(id,DateTime.Today,DateTime.Today.AddDays(2).Add(oneSecond));
             //Trainee trainee = await _traineeService.GetTraineeById(id);
             
             foreach (var item in calenders)
