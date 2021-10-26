@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
+using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper.Upload;
@@ -24,15 +25,26 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IMapper _mapper;
         private readonly IMegaHelper _megaHelper;
+        private readonly IModuleService _moduleService;
+        private readonly IClassService _classService;
+        private readonly IMarkService _markService;
+
         public MarkController(ITraineeService traineeService,
                             ICertificateService certificateService,
                             IMegaHelper megaHelper,
-                            IMapper mapper)
+                            IMapper mapper,
+                            IModuleService moduleService,
+                            IMarkService markService,
+                            IClassService classService
+                            )
         {
             _traineeService = traineeService;
             _certificateService = certificateService;
             _megaHelper = megaHelper;
             _mapper = mapper;
+            _moduleService = moduleService;
+            _markService = markService;
+            _classService = classService;
         }
 
          /// <summary>
@@ -76,5 +88,35 @@ namespace kroniiapi.Controllers
             }
             return Ok(new ResponseDTO(201, "Your submission was successful!"));
         }
+        /// <summary>
+        /// Get the student mark with pagination of a class
+        /// </summary>
+        /// <param name="id">id of class</param>
+        /// <param name="paginationParameter">Pagination parameters from client</param>
+        /// <returns>200: List of student mark in a class with pagination / 404: search student name not found</returns>
+        [HttpGet("{classId:int}")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int classId, [FromQuery] PaginationParameter paginationParameter)
+        {
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
+            List<MarkResponse> markResponses = new List<MarkResponse>();
+            foreach (Trainee trainee in trainees)
+            {
+                MarkResponse markResponse = new MarkResponse();
+                markResponse.TraineeName = trainee.Fullname;
+                IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, new DateTime(2021, 2, 5), new DateTime(2021, 7, 11));
+                foreach (Mark m in markList)
+                {
+                    m.Module = await _moduleService.GetModuleById(m.ModuleId);
+                }
+                markResponse.ScoreList = _mapper.Map<IEnumerable<ModuleMark>>(markList);
+                markResponses.Add(markResponse);
+            }
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search student name not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
+        }
+
     }
 }
