@@ -9,4 +9,82 @@
     <!-- Give admin feedback -->
 
     <!-- Get class's feedback -->
+    <div id="viewClassFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Class Feedback</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/feedback/{classId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>classID: ID of class</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "trainerFeedback": {
+        "trainer": {
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+        },
+        "feedbacks": [
+        {
+            "rate": int,
+            "content": "string"
+            }
+        ]
+    },
+    "adminFeedback": {
+        "admin": {
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+        },
+        "feedbacks": [
+        {
+            "rate": int,
+            "content": "string"
+            }
+        ]
+    }
+}
+            </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
