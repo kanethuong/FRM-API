@@ -231,5 +231,20 @@ namespace kroniiapi.Controllers
             events.examInTimeTables = examInTimeTable;
             return Ok(events);
         }
+        [HttpGet("free_trainee")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
+        {
+            
+            (int totalRecord, IEnumerable<Trainee> listTrainee) = await _traineeService.GetAllTraineeWithoutClass(paginationParameter);
+
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search trainee email not found"));
+            }
+            var trainees = _mapper.Map<IEnumerable<TraineeInClassDetail>>(listTrainee);
+
+            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, trainees));
+        }
+        
     }
 }

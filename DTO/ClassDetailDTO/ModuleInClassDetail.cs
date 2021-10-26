@@ -7,6 +7,7 @@ namespace kroniiapi.DTO.ClassDetailDTO
 {
     public class ModuleInClassDetail
     {
+        public int ModuleId { get; set; }
         public string ModuleName { get; set; }
         public string IconURL { get; set; }
         public string SyllabusURL { get; set; }
