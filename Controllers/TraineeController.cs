@@ -76,9 +76,10 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            TimeSpan oneSecond = new TimeSpan(0,0,-1);
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2).Add(oneSecond));
-            var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2).Add(oneSecond));
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2));
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.UtcNow.AddDays(2));
+            //Trainee trainee = await _traineeService.GetTraineeById(id);
+
             if (calenders.Count() != 0)
             {
                 Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
@@ -112,6 +113,7 @@ namespace kroniiapi.Controllers
             }
             return Ok(_mapper.Map<TraineeProfileDetail>(trainee));
         }
+
         /// <summary>
         /// Edit trainee profile
         /// </summary>
@@ -151,14 +153,13 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(409, errorMsg));
             }
-
             string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
             Stream stream = image.OpenReadStream();
             long fileLength = image.Length;
             string fileType = image.ContentType;
 
             string avatarUrl = await _imgHelper.Upload(stream, fileName, fileLength, fileType);
-            int rs = await _traineeService.UpdateAvatar(id,avatarUrl);
+            int rs = await _traineeService.UpdateAvatar(id, avatarUrl);
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
@@ -172,7 +173,6 @@ namespace kroniiapi.Controllers
                 return Ok(new ResponseDTO(200, "Update avatar success"));
             }
         }
-
 
         /// <summary>
         /// View trainee attendance report
@@ -204,32 +204,31 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>list event in 1 month, include module and exam</returns>
         [HttpGet("{id:int}/timetable")]
-        public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id)
+        public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id, DateTime date)
         {
-            var today = DateTime.Now;
-            var startDate = new DateTime(today.Year,today.Month,1);
-            var endDate = new DateTime(today.Year,today.Month,DateTime.DaysInMonth(today.Year,today.Month));
-
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id,startDate,endDate);
-            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(),startDate,endDate);
-            
-            foreach (var item in calenders)
+            TimeSpan oneday = new TimeSpan(23, 59, 59);
+            var startDate = new DateTime(date.Year, date.Month, 1);
+            var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            endDate = endDate.Add(oneday);
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, startDate, endDate);
+            var exam = await _examService.GetExamListByTraineeId(id, startDate, endDate);
+            if (calenders.Count() != 0)
             {
-                item.Class.Trainer = trainer;
-                item.Class.Room = room;
+                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+                foreach (var item in calenders)
+                {
+                    item.Class.Trainer = trainer;
+                    item.Class.Room = room;
+                }
             }
-            var moduleInTimeTable  = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
+
+            var moduleInTimeTable = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
             var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
             EventInTimeTable events = new EventInTimeTable();
             events.moduleInTimeTables = moduleInTimeTable;
             events.examInTimeTables = examInTimeTable;
             return Ok(events);
         }
-
-        
-
     }
-
 }
