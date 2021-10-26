@@ -211,6 +211,10 @@
                 <h5>Parameter</h5>
                 <p>id: ID of class</p>
             </div>
+            <div class="col-6">
+                <h5>Note</h5>
+                <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId" class="link-dark rounded">ViewTraineeListByClassId</a></p>
+            </div>
         </div>
         <div class="row mb-3">
             <div class="col-6 border-end">
@@ -250,6 +254,145 @@
                 </p>
             </div>
         </div>
+    </div>
+
+    <div id="ViewClassDetailByTraineeId">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Class Detail By TraineeId</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/trainee/{traineeId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin, Trainer, Trainee</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>traineeId: Id of trainee</p>
+            </div>
+            <div class="col-6">
+                <h5>Note</h5>
+                <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId" class="link-dark rounded">ViewTraineeListByClassId</a></p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "classId": int,
+    "className": "string",
+    "description": "string",
+    "modules": [
+        {
+        "moduleName": "string",
+        "iconURL": "string",
+        "syllabusURL": "string"
+        }
+    ],
+    "trainer": {
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string"
+    },
+    "admin": {
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string"
+    }
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="ViewTraineeListByClassId">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Trainee List By ClassId</h3>
+        </div>
+        <p>By DatLT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class/{id}/trainee</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin, Trainer, Trainee</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: Class id</p>
+                <p>PageNumber: Position of page</p>
+                <p>PageSize: Number of items in page</p>
+                <p>SearchName: Trainee Fullname</p>
+            </div>
+            <div class="col-6">
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "traineeId": int,
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string",
+        "dob": "DateTime"
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
     <div id="getDeletedClass">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
