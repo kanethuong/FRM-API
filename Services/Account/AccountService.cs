@@ -580,8 +580,12 @@ namespace kroniiapi.Services
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
+            if(tupleResponse == null)
+            {
+                return 0;
+            }
             AccountResponse account = tupleResponse.Item1;
-            if (tupleResponse == null || password == null || password == "" || account.Role == "administrator")
+            if (password == null || password == "" || account.Role == "Administrator")
             {
                 return 0;
             }
