@@ -97,7 +97,7 @@ namespace kroniiapi.Services
             List<Exam> exams = new List<Exam>();
             foreach (var i in mdsNodup)
             {
-                Exam e = await _dataContext.Exams.Where(e => e.ModuleId == i && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
+                var e = await _dataContext.Exams.Where(e => e.ModuleId == i && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
                     e => new Exam{
                         ExamId = e.ExamId,
                         ExamName = e.ExamName,
@@ -110,10 +110,34 @@ namespace kroniiapi.Services
                         }
                 
                 }
-                ).FirstOrDefaultAsync();
-                exams.Add(e);
+                ).ToListAsync();
+                exams.AddRange(e);
             }
             return exams;
         }
+            public async Task<IEnumerable<Exam>> GetExamListByTraineeId(int traineeId, DateTime startDate, DateTime endDate){
+            var traineeExams = await _dataContext.TraineeExams.Where(e => e.TraineeId == traineeId).Select(e => e.ExamId).ToListAsync();
+    
+            List<Exam> exams = new List<Exam>();
+            foreach (var item in traineeExams)
+            {
+                var e = await _dataContext.Exams.Where(e => e.ExamId == item && e.ExamDay >= startDate && e.ExamDay <= endDate).Select(
+                    e => new Exam{
+                        ExamId = e.ExamId,
+                        ExamName = e.ExamName,
+                        Description = e.Description,
+                        ExamDay = e.ExamDay,
+                        DurationInMinute = e.DurationInMinute,
+                        ModuleId = e.ModuleId,
+                        Module = new Module{
+                            ModuleName = e.Module.ModuleName
+                        }
+                
+                }
+                ).ToListAsync();
+                exams.AddRange(e);
+            }
+            return exams;
+            }
     }
 }

@@ -1,0 +1,209 @@
+<div class="mb-5">
+    <h2 class="fw-bold">Mark</h2>
+    <p>Anything relate to mark and certificate</p>
+
+    <!-- View trainee mark -->
+    <div id="ViewTraineeMarkAndSkill">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Trainee Mark and Skill</h3>
+        </div>
+        <p>By DanhLPT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Mark/trainee/{traineeId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Trainee</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: Id of Trainee</p>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>{
+    "traineeId": int
+}</code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>{ 
+    "totalRecords": int,
+    "payload": [
+        {
+            "moduleId": int,
+            "moduleName": "string",
+            "description": "string",
+            "iconURL": "string",
+            "score": float,
+            "certificateURL": "string"
+        }
+               ]
+}</code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Submit certificate -->
+    <div id="submitCertificate">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Submit Certificate</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/mark/certificate</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>File: file certificate</p>
+                <p>moduleId: ID of module</p>
+                <p>traineeId: ID of trainee</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                    <pre><code>
+{
+    "file": file,
+    "moduleId": int,
+    "traineeId": int
+}
+        </code></pre>
+                    </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "status": int,
+    "message": "string",
+    "errors": {}
+}
+    </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- View class mark -->
+    <div id="viewClassScore">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get Class Score</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/mark/class/{classId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>classID: ID of class</p>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Trainee name field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "totalRecords": int,
+    "payload": [
+        {
+        "traineeName": "string",
+        "scoreList": [
+            {
+            "moduleName": "string",
+            "score": int
+                }
+            ]
+        }
+    ]
+}
+    </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -16,7 +16,6 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
-        private IMapper _mapper;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -121,7 +120,6 @@ namespace kroniiapi.Services
 
             return rowUpdated;
         }
-        
         /// <summary>
         /// Delete trainee method
         /// </summary>
@@ -337,9 +335,9 @@ namespace kroniiapi.Services
                                                                      {
                                                                          ModuleName = ma.Module.ModuleName,
                                                                          Description = ma.Module.Description,
-                                                                         IconURL = ma.Module.IconURL,                                                                         
+                                                                         IconURL = ma.Module.IconURL,
                                                                          Certificates = ma.Module.Certificates.ToList(),
-                                                                         
+
                                                                      }
                                                                  })
                                                                         .ToListAsync();
@@ -354,7 +352,7 @@ namespace kroniiapi.Services
                     Description = item.Module.Description,
                     IconURL = item.Module.IconURL,
                     Score = await this.GetScoreByTraineeIdAndModuleId(id, item.ModuleId),
-                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id,item.ModuleId),
+                    CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id, item.ModuleId),
                 };
                 markAndSkills.Add(itemToResponse);
 
@@ -386,6 +384,13 @@ namespace kroniiapi.Services
         {
             var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
             return score.Score;
+        }
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
+        {
+            var traineeList = await _dataContext.Trainees.Where(t
+                 => t.IsDeactivated == false && t.ClassId == null && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            return Tuple.Create(traineeList.Count(), PaginationHelper.GetPage(traineeList,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
         }
     }
 }
