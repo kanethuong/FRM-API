@@ -58,6 +58,10 @@ namespace kroniiapi.Controllers
         {
             TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
             int rs = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
+            if (trainerFeedbackInput.Rate < 0 || trainerFeedback.Rate >5)
+            {
+                return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
+            }
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
@@ -81,6 +85,10 @@ namespace kroniiapi.Controllers
         [HttpPost("admin")]
         public async Task<ActionResult> SendAdminFeedback([FromBody] AdminFeedbackInput adminFeedbackInput)
         {
+            if (adminFeedbackInput.Rate < 0 || adminFeedbackInput.Rate > 5)
+            {
+                return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
+            }
             AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
             int rs = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
             if (rs == -1)
