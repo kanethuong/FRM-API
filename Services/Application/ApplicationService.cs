@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper.Upload;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -12,26 +14,41 @@ namespace kroniiapi.Services
     public class ApplicationService : IApplicationService
     {
         private DataContext _dataContext;
-        public ApplicationService(DataContext dataContext)
+        private readonly IMegaHelper _megaHelper;
+        public ApplicationService(DataContext dataContext, IMegaHelper megaHelper)
         {
             _dataContext = dataContext;
+            _megaHelper = megaHelper;
         }
         /// <summary>
         /// Get Application By id
         /// </summary>
         /// <param name="id"></param>
         /// <returns> Application </returns>
-        public async Task<Application> GetExamById(int id)
-        {   
+        public async Task<Application> GetApplicationById(int id)
+        {
 
-            return await _dataContext.Applications.Where(c => c.ApplicationId == id ).FirstOrDefaultAsync();
+            return await _dataContext.Applications.Where(c => c.ApplicationId == id).FirstOrDefaultAsync();
         }
         /// <summary>
         /// Insert new application
         /// </summary>
         /// <param name="application"></param>
         /// <returns> Return 1 if insert success and 0 if insert fail </returns>
-        public async Task<int> InsertNewApplication(Application application){
+        public async Task<int> InsertNewApplication(Application application, IFormFile form)
+        {
+            //check if trainee in DB
+            var checkTrainee = _dataContext.Trainees.Any(t => t.TraineeId == application.TraineeId && t.IsDeactivated==false);
+            if(checkTrainee is false){
+                return -1;
+            }
+            var checkCategory =_dataContext.ApplicationCategories.Any(t => t.ApplicationCategoryId == application.ApplicationCategoryId);
+            if(checkCategory is false){
+                return -2;
+            }
+            var stream = form.OpenReadStream();
+            String formURL = await _megaHelper.Upload(stream, form.FileName, "ApplicationForm");
+            application.ApplicationURL = formURL;
             _dataContext.Applications.Add(application);
             int rs = await _dataContext.SaveChangesAsync();
             return rs;
@@ -41,7 +58,8 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="paginationParameter"></param>
         /// <returns> Tuple List of application List </returns>
-        public async Task<Tuple<int, IEnumerable<Application>>> GetApplicationList(PaginationParameter paginationParameter){
+        public async Task<Tuple<int, IEnumerable<Application>>> GetApplicationList(PaginationParameter paginationParameter)
+        {
             var applicationList = await _dataContext.Applications.ToListAsync();
             int totalRecords = applicationList.Count();
             var rs = applicationList.OrderBy(c => c.ApplicationId)
@@ -50,17 +68,19 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-        public async Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList (){
+        public async Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList()
+        {
             return await _dataContext.ApplicationCategories.ToListAsync();
-        }        
+        }
         /// <summary>
         /// Get Application Category by id
         /// </summary>
         /// <param name="id">Application Category Id</param>
         /// <returns>Application Category data</returns>
-        public async Task<ApplicationCategory> GetApplicationCategory(int id){
+        public async Task<ApplicationCategory> GetApplicationCategory(int id)
+        {
             return await _dataContext.ApplicationCategories.Where(a => a.ApplicationCategoryId == id).FirstOrDefaultAsync();
         }
-       
+
     }
 }

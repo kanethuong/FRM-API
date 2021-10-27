@@ -39,7 +39,7 @@ namespace kroniiapi.Controllers
         /// <param name="email">email of user want to recieveHistory</param>
         /// <returns>404: email not found / 204: send success</returns>
         [HttpGet("history")]
-        public async Task<ActionResult> SendHistory(string email, [FromBody] PaginationParameter paginationParameter)
+        public async Task<ActionResult> SendHistory([FromQuery]string email, [FromQuery] PaginationParameter paginationParameter)
         {
             email = email.ToLower();
             List<NotifyMessage> history = new List<NotifyMessage>();
@@ -59,7 +59,7 @@ namespace kroniiapi.Controllers
         }
 
         [HttpGet("historyForAdmin")]
-        public async Task<ActionResult<IEnumerable<NotifyMessage>>> GetHistoryForAdmin([FromBody]PaginationParameter paginationParameter)
+        public async Task<ActionResult<IEnumerable<NotifyMessage>>> GetHistoryForAdmin([FromQuery]PaginationParameter paginationParameter)
         {
             List<NotifyMessage> history = new List<NotifyMessage>();
             history = await _cacheProvider.GetAllValueFromCache<NotifyMessage>();
