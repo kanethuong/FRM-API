@@ -141,11 +141,11 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Update trainee avatar
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="image"></param>
-        /// <returns></returns>
+        /// <param name="id">Trainee id</param>
+        /// <param name="image">The avatar to update</param>
+        /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Bad request</returns>
         [HttpPut("{id:int}/avatar")]
         public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
         {
