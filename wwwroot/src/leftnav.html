@@ -161,16 +161,6 @@
                         >
                     </li>
                     <li>
-                        <a href="#viewClassScore" class="link-dark rounded"
-                            >Get Class Score</a
-                        >
-                    </li>
-                    <li>
-                        <a href="#viewClassFeedback" class="link-dark rounded"
-                            >Get Class Feedback</a
-                        >
-                    </li>
-                    <li>
                         <a
                             href="#confirmDeleteClassRequest"
                             class="link-dark rounded"
@@ -192,6 +182,20 @@
                     <li>
                         <a href="#ViewClassDetail" class="link-dark rounded"
                             >View Class Detail</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#ViewClassDetailByTraineeId"
+                            class="link-dark rounded"
+                            >View Class Detail By TraineeId</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#ViewTraineeListByClassId"
+                            class="link-dark rounded"
+                            >View Trainee List By ClassId</a
                         >
                     </li>
                     <li>
@@ -262,10 +266,22 @@
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                     <!-- Dupplicate this to add more sub menu -->
                     <li>
-                        <a
-                            href="#getApplicationlist"
-                            class="link-dark rounded"
-                            >Get Application list by Trainee Id</a>
+                        <a href="#applicationCategory" class="link-dark rounded"
+                            >Get application category</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#getApplicationlist" class="link-dark rounded"
+                            >Get Application list by Trainee Id</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#submitApplication" class="link-dark rounded"
+                            >Submit application</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#submitApplication" class="link-dark rounded">Submit application</a>
                     </li>
                 </ul>
             </div>
@@ -286,6 +302,32 @@
                     <!-- Dupplicate this to add more sub menu -->
                     <li>
                         <a href="#" class="link-dark rounded">Insert here</a>
+                    </li>
+                    <li>
+                        <a
+                            href="#viewTraineeFeedback"
+                            class="link-dark rounded"
+                        >
+                            View Trainee Feedback
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="#giveTrainerFeedback"
+                            class="link-dark rounded"
+                        >
+                            Give Trainer Feedback
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#giveAdminFeedback" class="link-dark rounded">
+                            Give Admin Feedback
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#viewClassFeedback" class="link-dark rounded">
+                            Get Class Feedback
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -308,7 +350,18 @@
                         <a
                             href="#ViewTraineeMarkAndSkill"
                             class="link-dark rounded"
-                            >View Trainee Mark And Skill</a>
+                            >View Trainee Mark And Skill</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#viewClassScore" class="link-dark rounded">
+                            Get Class Score
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#submitCertificate" class="link-dark rounded">
+                            Submit Certificate
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -347,8 +400,73 @@
             <div class="collapse" id="trainee-collapse">
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                     <!-- Dupplicate this to add more sub menu -->
+                    <!-- View Trainee Timetable -->
+                    <li>
+                        <a
+                            href="#ViewTraineeDashboard"
+                            class="link-dark rounded"
+                            >View Trainee Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#viewTimetable" class="link-dark rounded"
+                            >View Time Table</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#ViewAttendanceReport"
+                            class="link-dark rounded"
+                            >View Attendance Report</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#traineeInForm" class="link-dark rounded">Get trainees in new class form</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <!-- Trainer -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#trainer-collapse"
+                aria-expanded="false"
+            >
+                Trainer
+            </button>
+            <div class="collapse" id="trainer-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <!-- Dupplicate this to add more sub menu -->
                     <li>
                         <a href="#" class="link-dark rounded">Insert here</a>
+                    </li>
+                    <li>
+                        <a href="#trainerInForm" class="link-dark rounded">Get trainers in new class form</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Module -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#module-collapse"
+                aria-expanded="false"
+            >
+                Module
+            </button>
+            <div class="collapse" id="module-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <!-- Dupplicate this to add more sub menu -->
+                    <li>
+                        <a href="#" class="link-dark rounded">Insert here</a>
+                    </li>
+                    <li>
+                        <a href="#moduleInForm" class="link-dark rounded">Get modules in new class form</a>
                     </li>
                 </ul>
             </div>

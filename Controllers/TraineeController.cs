@@ -76,16 +76,20 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2));
-            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.UtcNow.AddDays(2));
+            TimeSpan oneSecond = new TimeSpan(00, 00, -1);
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
             //Trainee trainee = await _traineeService.GetTraineeById(id);
 
-            foreach (var item in calenders)
+            if (calenders.Count() != 0)
             {
-                item.Class.Trainer = trainer;
-                item.Class.Room = room;
+                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+                foreach (var item in calenders)
+                {
+                    item.Class.Trainer = trainer;
+                    item.Class.Room = room;
+                }
             }
             var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
             var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
@@ -227,5 +231,20 @@ namespace kroniiapi.Controllers
             events.examInTimeTables = examInTimeTable;
             return Ok(events);
         }
+        [HttpGet("free_trainee")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
+        {
+            
+            (int totalRecord, IEnumerable<Trainee> listTrainee) = await _traineeService.GetAllTraineeWithoutClass(paginationParameter);
+
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search trainee email not found"));
+            }
+            var trainees = _mapper.Map<IEnumerable<TraineeInClassDetail>>(listTrainee);
+
+            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, trainees));
+        }
+        
     }
 }

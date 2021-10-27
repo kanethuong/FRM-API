@@ -386,5 +386,12 @@ namespace kroniiapi.Services
             var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
             return score.Score;
         }
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
+        {
+            var traineeList = await _dataContext.Trainees.Where(t
+                 => t.IsDeactivated == false && t.ClassId == null && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            return Tuple.Create(traineeList.Count(), PaginationHelper.GetPage(traineeList,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
     }
 }
