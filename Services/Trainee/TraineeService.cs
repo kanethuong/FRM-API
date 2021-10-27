@@ -120,7 +120,6 @@ namespace kroniiapi.Services
 
             return rowUpdated;
         }
-
         /// <summary>
         /// Delete trainee method
         /// </summary>
