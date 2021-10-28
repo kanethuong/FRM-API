@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 
 namespace kroniiapi.DTO.ClassDetailDTO
 {
-    public class AdminInClassDetail
+    public class AdminResponse
     {
+        public int AdminId { get; set; }
         public string Fullname { get; set; }
         public string AvatarURL { get; set; }
         public string Email { get; set; }
+        public decimal Wage { get; set; }
     }
 }

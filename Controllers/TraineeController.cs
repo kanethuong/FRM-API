@@ -76,16 +76,20 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.UtcNow.AddDays(2));
-            Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-            Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.UtcNow.AddDays(2));
+            TimeSpan oneSecond = new TimeSpan(00, 00, -1);
+            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
             //Trainee trainee = await _traineeService.GetTraineeById(id);
 
-            foreach (var item in calenders)
+            if (calenders.Count() != 0)
             {
-                item.Class.Trainer = trainer;
-                item.Class.Room = room;
+                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+                foreach (var item in calenders)
+                {
+                    item.Class.Trainer = trainer;
+                    item.Class.Room = room;
+                }
             }
             var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
             var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
@@ -116,7 +120,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">trainee id</param>
         /// <param name="traineeProfileDetail">detail trainee profile</param>
-        /// <returns>200: Updated / 409: Bad request / 404: Profile not found</returns>
+        /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
         [HttpPut("{id:int}/profile")]
         public async Task<ActionResult> EditProfile(int id, [FromBody] TraineeProfileDetailInput traineeProfileDetail)
         {
@@ -128,7 +132,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return BadRequest(new ResponseDTO(409, "Fail to update trainee profile"));
+                return Conflict(new ResponseDTO(409, "Fail to update trainee profile"));
             }
             else
             {
@@ -137,18 +141,18 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Update trainee avatar
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="image"></param>
-        /// <returns></returns>
+        /// <param name="id">Trainee id</param>
+        /// <param name="image">The avatar to update</param>
+        /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/avatar")]
         public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
         {
             (bool isImage, string errorMsg) = FileHelper.CheckImageExtension(image);
             if (isImage == false)
             {
-                return BadRequest(new ResponseDTO(409, errorMsg));
+                return Conflict(new ResponseDTO(409, errorMsg));
             }
             string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
             Stream stream = image.OpenReadStream();
@@ -163,7 +167,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return BadRequest(new ResponseDTO(409, "Fail to update trainee avatar"));
+                return Conflict(new ResponseDTO(409, "Fail to update trainee avatar"));
             }
             else
             {
@@ -182,7 +186,7 @@ namespace kroniiapi.Controllers
         {
             if (await _traineeService.GetTraineeById(id) == null)
             {
-                return BadRequest(new ResponseDTO(404, "id not found"));
+                return NotFound(new ResponseDTO(404, "id not found"));
             }
             try
             {
@@ -191,7 +195,7 @@ namespace kroniiapi.Controllers
             }
             catch
             {
-                return BadRequest(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
+                return NotFound(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
             }
         }
 
@@ -226,6 +230,25 @@ namespace kroniiapi.Controllers
             events.moduleInTimeTables = moduleInTimeTable;
             events.examInTimeTables = examInTimeTable;
             return Ok(events);
+        }
+        [HttpGet("free_trainee")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
+        {
+            
+            (int totalRecord, IEnumerable<Trainee> listTrainee) = await _traineeService.GetAllTraineeWithoutClass(paginationParameter);
+
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search trainee email not found"));
+            }
+            var trainees = _mapper.Map<IEnumerable<TraineeResponse>>(listTrainee);
+
+            return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, trainees));
+        }
+        [HttpGet("page")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeList([FromQuery]PaginationParameter paginationParameter)
+        {
+            return null;
         }
     }
 }
