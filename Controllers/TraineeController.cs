@@ -245,7 +245,7 @@ namespace kroniiapi.Controllers
 
             return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, trainees));
         }
-        [HttpPatch("page")]
+        [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeList([FromQuery]PaginationParameter paginationParameter)
         {
             return null;
