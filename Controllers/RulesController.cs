@@ -37,7 +37,7 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> Upload([FromForm] IFormFile file)
         {
-            (bool success, string message) = FileHelper.CheckDocExtension(file);
+            (bool success, string message) = FileHelper.CheckPDFExtension(file);
             if (!success)
             {
                 return BadRequest(new ResponseDTO(400, message));

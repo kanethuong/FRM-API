@@ -37,6 +37,7 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(ti => ti.TrainerEmail,c => c.MapFrom(s => s.Trainer.Email))
                 .ForMember(ti => ti.RoomName,c => c.MapFrom(s => s.Room.RoomName));
             CreateMap<Exam,ExamInTimeTable>();
+            CreateMap<TraineeProfileDetailInput,Trainee>();
         }
     }
 }

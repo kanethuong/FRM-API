@@ -11,8 +11,8 @@ namespace kroniiapi.DTO.ClassDetailDTO
         public int ClassId { get; set; }
         public string ClassName { get; set; }
         public string Description { get; set; }
-        public ICollection<ModuleInClassDetail> Modules { get; set; }
-        public TrainerInClassDetail Trainer { get; set; }
-        public AdminInClassDetail Admin { get; set; }
+        public ICollection<ModuleResponse> Modules { get; set; }
+        public TrainerResponse Trainer { get; set; }
+        public AdminResponse Admin { get; set; }
     }
 }
