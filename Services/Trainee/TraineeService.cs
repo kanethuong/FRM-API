@@ -388,7 +388,12 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
         {
             var traineeList = await _dataContext.Trainees.Where(t
-                 => t.IsDeactivated == false && t.ClassId == null && t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+                 => t.IsDeactivated == false && t.ClassId == null && 
+                                                (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())  ||
+                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
+                                                .OrderByDescending(t=>t.CreatedAt)
+                                                .ToListAsync();
             return Tuple.Create(traineeList.Count(), PaginationHelper.GetPage(traineeList,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
