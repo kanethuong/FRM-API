@@ -581,7 +581,7 @@ namespace kroniiapi.Services
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
             AccountResponse account = tupleResponse.Item1;
-            if (tupleResponse == null || password == null || password == "" || account.Role == "administrator")
+            if (tupleResponse == null || password == null || password == "" || account.Role == "Administrator")
             {
                 return 0;
             }
