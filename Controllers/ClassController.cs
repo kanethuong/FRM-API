@@ -229,6 +229,17 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
+            foreach (var traineeId in newClassInput.TraineeIdList)
+            {
+                if (_traineeService.CheckTraineeExist(traineeId) is false)
+                {
+                    return NotFound(new ResponseDTO
+                    {
+                        Status = 404,
+                        Message = "Trainee does not exist"
+                    });
+                }
+            }
             var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
@@ -244,7 +255,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return StatusCode(500);
+                return BadRequest("Some error occur");
             }
             return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
         }
