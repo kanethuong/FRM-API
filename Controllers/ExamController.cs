@@ -26,12 +26,12 @@ namespace kroniiapi.Controllers
         {
             return null;
         }
-        [HttpPatch("{id:int}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult> ChangeExamInfo(int id, int duration, DateTime ExamDay)
         {
             return null;
         }
-        [HttpPatch("cancel/{id:int}")]
+        [HttpPut("cancel/{id:int}")]
         public async Task<ActionResult> CancelExam(int id)
         {
             return null;
