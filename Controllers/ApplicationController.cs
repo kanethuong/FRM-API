@@ -43,18 +43,18 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list/ 400: Not found</returns>
         [HttpGet("{traineeId:int}")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
-            if (await _traineeService.GetTraineeById(traineeId) == null)
+            if (_traineeService.CheckTraineeExist(traineeId) is false)
             {
                 return BadRequest(new ResponseDTO(404, "id not found"));
             }
-            (int totalRecord, IEnumerable<ApplicationResponse> application) = await _traineeService.GetApplicationListByTraineeId(traineeId, paginationParameter);
+            (int totalRecord, IEnumerable<TraineeApplicationResponse> application) = await _traineeService.GetApplicationListByTraineeId(traineeId, paginationParameter);
             if (totalRecord == 0)
             {
                 return BadRequest(new ResponseDTO(404, "Trainee doesn't have any application"));
             }
-            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, application));
+            return Ok(new PaginationResponse<IEnumerable<TraineeApplicationResponse>>(totalRecord, application));
         }
 
         /// <summary>
