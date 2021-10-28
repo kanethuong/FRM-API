@@ -118,7 +118,7 @@ namespace kroniiapi.Controllers
                     {
                         notifyMessage.SendTo = trainee.Email.ToLower();
                         await _cacheProvider.AddValueToKey<NotifyMessage>(trainee.Email.ToLower(), notifyMessage);
-                        await _notifyHub.Clients.Group(trainee.Email).SendAsync("ReceiveNotification", notifyMessage);
+                        await _notifyHub.Clients.Group(trainee.Email.ToLower()).SendAsync("ReceiveNotification", notifyMessage);
                     }
                 }
                 else
@@ -149,7 +149,7 @@ namespace kroniiapi.Controllers
             notifyMessage.SendTo = notifyMessage.SendTo.ToLower();
             notifyMessage.User = notifyMessage.User.ToLower();
             await _cacheProvider.AddValueToKey<NotifyMessage>(notifyMessage.SendTo, notifyMessage);
-            await _notifyHub.Clients.Group(notifyMessage.SendTo).SendAsync("ReceiveNotification", notifyMessage);
+            await _notifyHub.Clients.Group(notifyMessage.SendTo.ToLower()).SendAsync("ReceiveNotification", notifyMessage);
             return Ok(new ResponseDTO(204, "Successfully invoke"));
         }
     }
