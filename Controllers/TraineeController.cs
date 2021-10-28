@@ -186,7 +186,7 @@ namespace kroniiapi.Controllers
         {
             if (await _traineeService.GetTraineeById(id) == null)
             {
-                return BadRequest(new ResponseDTO(404, "id not found"));
+                return NotFound(new ResponseDTO(404, "id not found"));
             }
             try
             {
@@ -195,7 +195,7 @@ namespace kroniiapi.Controllers
             }
             catch
             {
-                return BadRequest(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
+                return NotFound(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
             }
         }
 
