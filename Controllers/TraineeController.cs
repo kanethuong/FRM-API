@@ -120,7 +120,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">trainee id</param>
         /// <param name="traineeProfileDetail">detail trainee profile</param>
-        /// <returns>200: Updated / 409: Bad request / 404: Profile not found</returns>
+        /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
         [HttpPut("{id:int}/profile")]
         public async Task<ActionResult> EditProfile(int id, [FromBody] TraineeProfileDetailInput traineeProfileDetail)
         {
@@ -132,7 +132,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return BadRequest(new ResponseDTO(409, "Fail to update trainee profile"));
+                return Conflict(new ResponseDTO(409, "Fail to update trainee profile"));
             }
             else
             {
@@ -145,14 +145,14 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">Trainee id</param>
         /// <param name="image">The avatar to update</param>
-        /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Bad request</returns>
+        /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/avatar")]
         public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
         {
             (bool isImage, string errorMsg) = FileHelper.CheckImageExtension(image);
             if (isImage == false)
             {
-                return BadRequest(new ResponseDTO(409, errorMsg));
+                return Conflict(new ResponseDTO(409, errorMsg));
             }
             string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
             Stream stream = image.OpenReadStream();
@@ -167,7 +167,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return BadRequest(new ResponseDTO(409, "Fail to update trainee avatar"));
+                return Conflict(new ResponseDTO(409, "Fail to update trainee avatar"));
             }
             else
             {
