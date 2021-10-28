@@ -232,7 +232,7 @@ namespace kroniiapi.Controllers
             return Ok(events);
         }
         [HttpGet("free_trainee")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
         {
             
             (int totalRecord, IEnumerable<Trainee> listTrainee) = await _traineeService.GetAllTraineeWithoutClass(paginationParameter);
@@ -241,10 +241,14 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Search trainee email not found"));
             }
-            var trainees = _mapper.Map<IEnumerable<TraineeInClassDetail>>(listTrainee);
+            var trainees = _mapper.Map<IEnumerable<TraineeResponse>>(listTrainee);
 
-            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, trainees));
+            return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, trainees));
         }
-        
+        [HttpPatch("page")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeList([FromQuery]PaginationParameter paginationParameter)
+        {
+            return null;
+        }
     }
 }
