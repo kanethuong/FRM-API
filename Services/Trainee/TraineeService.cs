@@ -264,7 +264,7 @@ namespace kroniiapi.Services
         {
 
             List<Application> application = await _dataContext.Applications
-                                                .Where(app => app.TraineeId == id)
+                                                .Where(app => app.TraineeId == id && app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                     .Select(a => new Application
                                                     {
                                                         TraineeId = a.TraineeId,
@@ -327,7 +327,7 @@ namespace kroniiapi.Services
         /// <returns>Tuple Mark and Skill data</returns>
         public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
         {
-            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id)
+            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id && m.Module.ModuleName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                                  .Select(ma => new Mark
                                                                  {
                                                                      ModuleId = ma.ModuleId,
@@ -355,7 +355,6 @@ namespace kroniiapi.Services
                     CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id, item.ModuleId),
                 };
                 markAndSkills.Add(itemToResponse);
-
             }
             return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
@@ -371,6 +370,9 @@ namespace kroniiapi.Services
         private async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
             var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            if(certificate == null){
+                return null;
+            }
             return certificate.CertificateURL;
         }
 
@@ -383,6 +385,9 @@ namespace kroniiapi.Services
         private async Task<float> GetScoreByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
             var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            if(score == null){
+                return 0;
+            }
             return score.Score;
         }
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
