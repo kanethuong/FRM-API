@@ -25,7 +25,7 @@ namespace kroniiapi.Controllers
         }
 
         [HttpGet("free_module")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<ModuleInClassDetail>>>> GetModuleInForm([FromQuery]PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ModuleResponse>>>> GetModuleInForm([FromQuery]PaginationParameter paginationParameter)
         {
             
             (int totalRecord, IEnumerable<Module> listModule) = await _moduleService.GetAllModule(paginationParameter);
@@ -34,9 +34,9 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Search module name not found"));
             }
-            var modules = _mapper.Map<IEnumerable<ModuleInClassDetail>>(listModule);
+            var modules = _mapper.Map<IEnumerable<ModuleResponse>>(listModule);
 
-            return Ok(new PaginationResponse<IEnumerable<ModuleInClassDetail>>(totalRecord, modules));
+            return Ok(new PaginationResponse<IEnumerable<ModuleResponse>>(totalRecord, modules));
         }
     }
 }
