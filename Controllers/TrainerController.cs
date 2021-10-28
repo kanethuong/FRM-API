@@ -23,8 +23,8 @@ namespace kroniiapi.Controllers
             _mapper = mapper;
             _trainerService = trainerService;
         }
-        [HttpGet("free_trainer")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerResponse>>>> GetAllTrainerInForm([FromQuery]PaginationParameter paginationParameter)
+        [HttpGet("page")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerResponse>>>> GetAllTrainer([FromQuery]PaginationParameter paginationParameter)
         {
             
             (int totalRecord, IEnumerable<Trainer> listTrainer) = await _trainerService.GetAllTrainer(paginationParameter);
