@@ -24,8 +24,8 @@ namespace kroniiapi.Controllers
             _moduleService = moduleService;
         }
 
-        [HttpGet("free_module")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<ModuleResponse>>>> GetModuleInForm([FromQuery]PaginationParameter paginationParameter)
+        [HttpGet("page")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ModuleResponse>>>> GetAllModule([FromQuery]PaginationParameter paginationParameter)
         {
             
             (int totalRecord, IEnumerable<Module> listModule) = await _moduleService.GetAllModule(paginationParameter);

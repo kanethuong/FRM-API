@@ -88,8 +88,9 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<Module>>> GetAllModule(PaginationParameter paginationParameter)
         {
-            var moduleList = await _dataContext.Modules.Where(m
-                 => m.ModuleName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var moduleList = await _dataContext.Modules.Where(m=> m.ModuleName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+                                                        .OrderByDescending(m=>m.CreatedAt)
+                                                        .ToListAsync();
             return Tuple.Create(moduleList.Count(), PaginationHelper.GetPage(moduleList,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
