@@ -260,7 +260,7 @@ namespace kroniiapi.Services
         /// <param name="id">Trainee id</param>
         /// <param name="paginationParameter">Pagination</param>
         /// <returns>Tuple Application list as Pagination</returns>
-        public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
+        public async Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
         {
 
             List<Application> application = await _dataContext.Applications
@@ -280,11 +280,11 @@ namespace kroniiapi.Services
                                                         IsAccepted = a.IsAccepted,
                                                     })
                                                     .ToListAsync();
-            List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
+            List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
 
             foreach (var item in application)
             {
-                var itemToResponse = new ApplicationResponse
+                var itemToResponse = new TraineeApplicationResponse
                 {
                     Description = item.Description,
                     ApplicationURL = item.ApplicationURL,
@@ -394,14 +394,19 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
         {
             var traineeList = await _dataContext.Trainees.Where(t
-                 => t.IsDeactivated == false && t.ClassId == null && 
+                 => t.IsDeactivated == false && t.ClassId == null &&
                                                 (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())  ||
+                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
                                                 t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
-                                                .OrderByDescending(t=>t.CreatedAt)
+                                                .OrderByDescending(t => t.CreatedAt)
                                                 .ToListAsync();
             return Tuple.Create(traineeList.Count(), PaginationHelper.GetPage(traineeList,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
+        public bool CheckTraineeExist(int id)
+        {
+            return  _dataContext.Trainees.Any(t => t.TraineeId == id &&
+            t.IsDeactivated == false);
         }
     }
 }
