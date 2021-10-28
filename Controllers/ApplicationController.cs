@@ -47,12 +47,12 @@ namespace kroniiapi.Controllers
         {
             if (await _traineeService.GetTraineeById(traineeId) == null)
             {
-                return BadRequest(new ResponseDTO(404, "id not found"));
+                return NotFound(new ResponseDTO(404, "id not found"));
             }
             (int totalRecord, IEnumerable<ApplicationResponse> application) = await _traineeService.GetApplicationListByTraineeId(traineeId, paginationParameter);
             if (totalRecord == 0)
             {
-                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any application"));
+                return NotFound(new ResponseDTO(404, "Trainee doesn't have any application"));
             }
             return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, application));
         }
