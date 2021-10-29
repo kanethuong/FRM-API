@@ -12,6 +12,8 @@ namespace kroniiapi.DTO.ExamDTO
         public string Description { get; set; }
         public DateTime ExamDay { get; set; }
         public int DurationInMinute { get; set; }
-        public Admin Admin { get; set; }
+        public int AdminId { get; set; }
+        public IEnumerable<int> TraineeIdList { get; set; }
+        public int ModuleId { get; set; }
     }
 }

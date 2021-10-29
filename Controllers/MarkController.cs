@@ -55,14 +55,15 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{traineeId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeMarkAndSkill>>>> ViewMarkAndSkill(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
-            if (await _traineeService.GetTraineeById(traineeId) == null)
+            var existedTrainee = await _traineeService.GetTraineeById(traineeId);
+            if (existedTrainee == null)
             {
-                return BadRequest(new ResponseDTO(404, "id not found"));
+                return NotFound(new ResponseDTO(404, "id not found"));
             }
             (int totalRecord, IEnumerable<TraineeMarkAndSkill> markAndSkills) = await _traineeService.GetMarkAndSkillByTraineeId(traineeId, paginationParameter);
             if (totalRecord == 0)
             {
-                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any module"));
+                return NotFound(new ResponseDTO(404, "Trainee doesn't have any module"));
             }
             return Ok(new PaginationResponse<IEnumerable<TraineeMarkAndSkill>>(totalRecord, markAndSkills));
         }

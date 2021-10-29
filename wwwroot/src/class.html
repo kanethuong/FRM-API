@@ -219,7 +219,13 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>No</p>
+                <p>
+                <pre><code>{
+    "classId": int,
+    "deleteClassRequestId": int,
+    "isDeactivate": boolean
+}</code></pre>
+                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
@@ -279,12 +285,11 @@
             </div>
             <div class="col-4">
                 <h5>Status</h5>
-                <p>200 404</p>
+                <p>200 404 </p>
             </div>
         </div>
-
-        <!-- Parameter & file -->
-        <div class="row mb-3">
+         <!-- Parameter & file -->
+         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
                 <p>traineeId: Id of trainee</p>
@@ -294,8 +299,6 @@
                 <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId" class="link-dark rounded">ViewTraineeListByClassId</a></p>
             </div>
         </div>
-
-        <!-- Request body and Response body  -->
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
@@ -576,7 +579,7 @@
     <div id="createNewClass">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>Create account</h3>
+            <h3>Create new class</h3>
         </div>
         <p>By ToanTK</p>
         <div>
@@ -588,7 +591,7 @@
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Trainee</p>
+                <p>Admin</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
@@ -596,7 +599,7 @@
             </div>
             <div class="col-4">
                 <h5>Status</h5>
-                <p>201 409</p>
+                <p>201 409 404</p>
             </div>
         </div>
 
