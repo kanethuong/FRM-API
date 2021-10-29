@@ -140,6 +140,16 @@ namespace kroniiapi.Services
             }
             return -1;
         }
+        public async Task<int> DeleteTraineeClass(int deleteClassId){
+            var traineeList = await _dataContext.Trainees.Where(c => c.ClassId == deleteClassId).ToListAsync();
+            foreach (var item in traineeList)
+            {
+                item.ClassId = null;
+            }
+             int status = await _dataContext.SaveChangesAsync();
+             return status;
+        }
+
         public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId)
         {
             int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)

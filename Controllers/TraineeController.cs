@@ -72,17 +72,21 @@ namespace kroniiapi.Controllers
         /// View Trainee module in two day, exam in 1 1 week
         /// </summary>
         /// <param name="id"> trainee id</param>
-        /// <returns>trainee module (two day) and exam (one week)</returns>
+        /// <returns>200 :trainee module (two day) and exam (one week)/ 404: Trainee not found or Class has been deactivated</returns>
         [HttpGet("{id:int}/dashboard")]
-        public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
+        public async Task<ActionResult<List<Object>>> ViewTraineeDashboard(int id)
         {
             var checkTrainee = await _traineeService.GetTraineeById(id);
             if (checkTrainee == null) {
                 return NotFound(new ResponseDTO(404,"Trainee not found!"));
             }
+            var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
+            if(classCheck == null || classCheck.IsDeactivated == true){
+                return NotFound(new ResponseDTO(404,"Class not found"));
+            }
             TimeSpan oneSecond = new TimeSpan(00, 00, -1);
             var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
-            var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(7).Add(oneSecond));
             //Trainee trainee = await _traineeService.GetTraineeById(id);
 
             if (calenders.Count() != 0)
@@ -95,12 +99,29 @@ namespace kroniiapi.Controllers
                     item.Class.Room = room;
                 }
             }
+            
             var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
             var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
-            TraineeDashboard dashboard = new TraineeDashboard();
-            dashboard.moduleInTraineeDashboards = moduleInDashboard;
-            dashboard.examInTraineeDashboards = examInDashboard;
-            return Ok(dashboard);
+            if(examInDashboard.Count() != 0){
+                Room room = await _roomService.GetRoomByTraineeId(id);
+                foreach (var item in examInDashboard)
+                {
+                    item.RoomId = room.RoomId;
+                    item.RoomName = room.RoomName;
+                }
+            }
+            List<Object> listObject = new List<Object>();
+            foreach (var item in moduleInDashboard)
+            {
+                var o = (Object)item;
+                listObject.Add(o);
+            }
+            foreach (var item in examInDashboard)
+            {
+                var o = (Object)item;
+                listObject.Add(o);
+            }
+            return Ok(listObject);
         }
 
         /// <summary>
@@ -209,18 +230,26 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>list event in 1 month, include module and exam</returns>
         [HttpGet("{id:int}/timetable")]
-        public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id, DateTime date)
+        public async Task<ActionResult<List<Object>>> ViewTimeTable(int id, DateTime date)
         {
-            var checkTrainee = await _traineeService.GetTraineeById(id);
-            if (checkTrainee == null) {
-                return NotFound(new ResponseDTO(404,"Trainee not found!"));
-            }
+
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(date.Year, date.Month, 1);
             var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
             endDate = endDate.Add(oneday);
+
+            var checkTrainee = await _traineeService.GetTraineeById(id);
+            if (checkTrainee == null) {
+                return NotFound(new ResponseDTO(404,"Trainee not found!"));
+            }
+            var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
+            if(classCheck == null || classCheck.IsDeactivated == true){
+                return NotFound(new ResponseDTO(404,"Class not found"));
+            }
             var calenders = await _calendarService.GetCalendarsByTraineeId(id, startDate, endDate);
             var exam = await _examService.GetExamListByTraineeId(id, startDate, endDate);
+            //Trainee trainee = await _traineeService.GetTraineeById(id);
+
             if (calenders.Count() != 0)
             {
                 Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
@@ -234,10 +263,27 @@ namespace kroniiapi.Controllers
 
             var moduleInTimeTable = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
             var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
-            EventInTimeTable events = new EventInTimeTable();
-            events.moduleInTimeTables = moduleInTimeTable;
-            events.examInTimeTables = examInTimeTable;
-            return Ok(events);
+            if(examInTimeTable.Count() != 0){
+                Room room = await _roomService.GetRoomByTraineeId(id);
+                foreach (var item in examInTimeTable)
+                {
+                    item.RoomId = room.RoomId;
+                    item.RoomName = room.RoomName;
+                }
+            }
+
+            List<Object> listObject = new List<Object>();
+            foreach (var item in moduleInTimeTable)
+            {
+                var o = (Object)item;
+                listObject.Add(o);
+            }
+            foreach (var item in examInTimeTable)
+            {
+                var o = (Object)item;
+                listObject.Add(o);
+            }
+            return Ok(listObject);
         }
         [HttpGet("free_trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)

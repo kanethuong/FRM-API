@@ -117,7 +117,6 @@ namespace kroniiapi.Services
         }
             public async Task<IEnumerable<Exam>> GetExamListByTraineeId(int traineeId, DateTime startDate, DateTime endDate){
             var traineeExams = await _dataContext.TraineeExams.Where(e => e.TraineeId == traineeId).Select(e => e.ExamId).ToListAsync();
-
             List<Exam> exams = new List<Exam>();
             foreach (var item in traineeExams)
             {
@@ -131,8 +130,16 @@ namespace kroniiapi.Services
                         ModuleId = e.ModuleId,
                         Module = new Module{
                             ModuleName = e.Module.ModuleName
-                        }
-                
+                        },
+                        AdminId = e.AdminId,
+                        Admin = new Admin {
+                            AdminId = e.Admin.AdminId,
+                            Fullname = e.Admin.Fullname,
+                            AvatarURL = e.Admin.AvatarURL,
+                            Email = e.Admin.Email
+                        },
+                        
+
                 }
                 ).ToListAsync();
                 exams.AddRange(e);
