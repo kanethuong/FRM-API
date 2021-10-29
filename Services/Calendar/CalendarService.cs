@@ -29,7 +29,7 @@ namespace kroniiapi.Services
                 Module = m.Module,
                 Class = m.Class
             }
-            ).ToListAsync();
+            ).OrderBy(c => c.Date).ToListAsync();
             return calendars;
         }
     }
