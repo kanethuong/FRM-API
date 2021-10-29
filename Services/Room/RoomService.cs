@@ -21,6 +21,12 @@ namespace kroniiapi.Services
         {
             return await _dataContext.Rooms.Where(r => r.RoomId == id).FirstOrDefaultAsync();
         }
+        public async Task<Room> GetRoomByTraineeId(int traineeId){
+            var classId = await _dataContext.Trainees.Where(e => e.TraineeId == traineeId).Select(e => e.ClassId).FirstOrDefaultAsync();
+            var roomId = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(r => r.RoomId).FirstOrDefaultAsync();
+            var room = await _dataContext.Rooms.Where(c => c.RoomId == roomId).FirstOrDefaultAsync();
+            return room;
+        }
 
         
     }
