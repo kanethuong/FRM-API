@@ -20,17 +20,19 @@ namespace kroniiapi.Controllers
         private readonly IFeedbackService _feedbackService;
         private readonly IAdminService _adminService;
         private readonly ITrainerService _trainerService;
+        private readonly ITraineeService _traineeService;
         public FeedbackController(IClassService classService,
                                  IFeedbackService feedbackService,
                                  IMapper mapper,
                                  IAdminService adminService,
-                                 ITrainerService trainerService)
+                                 ITrainerService trainerService, ITraineeService traineeService)
         {
             _classService = classService;
             _feedbackService = feedbackService;
             _mapper = mapper;
             _adminService = adminService;
             _trainerService = trainerService;
+            _traineeService = traineeService;
         }
         /// <summary>
         /// View Trainer and admin information to be ready to send feedback
@@ -38,14 +40,19 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>trainee and admin info </returns>
         [HttpGet("{traineeId:int}/feedbackInfo")]
-        public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedback(int traineeId)
+        public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedbackInfo(int traineeId)
         {
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(traineeId);
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
             var whoToFeedback = await _classService.GetFeedbackViewForTrainee(traineeId);
             if (whoToFeedback == null)
             {
                 return NotFound(new ResponseDTO(404, "There are no Trainee"));
             }
-            return whoToFeedback;
+            return Ok( whoToFeedback);
         }
 
         /// <summary>
@@ -56,23 +63,28 @@ namespace kroniiapi.Controllers
         [HttpPost("trainer")]
         public async Task<ActionResult> SendTrainerFeedback([FromBody] TrainerFeedbackInput trainerFeedbackInput)
         {
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(trainerFeedbackInput.TraineeId);
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
             TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
-            int rs = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
+            var (rs, feedbackMessage) = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
             if (trainerFeedbackInput.Rate < 0 || trainerFeedback.Rate >5)
             {
                 return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
             }
             if (rs == -1)
             {
-                return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
+                return NotFound(new ResponseDTO(404, feedbackMessage));
             }
             if (rs == 0)
             {
-                return NotFound(new ResponseDTO(404, "Don't have Trainee or Trainer"));
+                return NotFound(new ResponseDTO(404, feedbackMessage));
             }
             if (rs == 1)
             {
-                return Ok(new ResponseDTO(200, "Feedback Success"));
+                return Ok(new ResponseDTO(200, feedbackMessage));
             }
             return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
@@ -85,23 +97,28 @@ namespace kroniiapi.Controllers
         [HttpPost("admin")]
         public async Task<ActionResult> SendAdminFeedback([FromBody] AdminFeedbackInput adminFeedbackInput)
         {
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(adminFeedbackInput.TraineeId);
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
             if (adminFeedbackInput.Rate < 0 || adminFeedbackInput.Rate > 5)
             {
                 return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
             }
             AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
-            int rs = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
+            var (rs, feedbackMessage) = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
             if (rs == -1)
             {
-                return NotFound(new ResponseDTO(404, "Duplicated TrainerId and TraineeId"));
+                return NotFound(new ResponseDTO(404, feedbackMessage));
             }
             if (rs == 0)
             {
-                return NotFound(new ResponseDTO(404, "Don't have Trainee or Trainer"));
+                return NotFound(new ResponseDTO(404, feedbackMessage));
             }
             if (rs == 1)
             {
-                return Ok(new ResponseDTO(200, "Feedback Success"));
+                return Ok(new ResponseDTO(200, feedbackMessage));
             }
             return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }

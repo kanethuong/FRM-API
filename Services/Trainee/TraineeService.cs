@@ -277,6 +277,7 @@ namespace kroniiapi.Services
                                                             ApplicationCategoryId = a.ApplicationCategoryId,
                                                             CategoryName = a.ApplicationCategory.CategoryName,
                                                         },
+                                                        IsAccepted = a.IsAccepted,
                                                     })
                                                     .ToListAsync();
             List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
