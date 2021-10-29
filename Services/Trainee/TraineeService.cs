@@ -120,7 +120,6 @@ namespace kroniiapi.Services
 
             return rowUpdated;
         }
-
         /// <summary>
         /// Delete trainee method
         /// </summary>
@@ -261,11 +260,11 @@ namespace kroniiapi.Services
         /// <param name="id">Trainee id</param>
         /// <param name="paginationParameter">Pagination</param>
         /// <returns>Tuple Application list as Pagination</returns>
-        public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
+        public async Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
         {
 
             List<Application> application = await _dataContext.Applications
-                                                .Where(app => app.TraineeId == id)
+                                                .Where(app => app.TraineeId == id && app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                     .Select(a => new Application
                                                     {
                                                         TraineeId = a.TraineeId,
@@ -278,13 +277,14 @@ namespace kroniiapi.Services
                                                             ApplicationCategoryId = a.ApplicationCategoryId,
                                                             CategoryName = a.ApplicationCategory.CategoryName,
                                                         },
+                                                        IsAccepted = a.IsAccepted,
                                                     })
                                                     .ToListAsync();
-            List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
+            List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
 
             foreach (var item in application)
             {
-                var itemToResponse = new ApplicationResponse
+                var itemToResponse = new TraineeApplicationResponse
                 {
                     Description = item.Description,
                     ApplicationURL = item.ApplicationURL,
@@ -328,7 +328,7 @@ namespace kroniiapi.Services
         /// <returns>Tuple Mark and Skill data</returns>
         public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
         {
-            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id)
+            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id && m.Module.ModuleName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                                  .Select(ma => new Mark
                                                                  {
                                                                      ModuleId = ma.ModuleId,
@@ -356,7 +356,6 @@ namespace kroniiapi.Services
                     CertificateURL = await this.GetCertificatesURLByTraineeIdAndModuleId(id, item.ModuleId),
                 };
                 markAndSkills.Add(itemToResponse);
-
             }
             return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
@@ -372,6 +371,9 @@ namespace kroniiapi.Services
         private async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
             var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            if(certificate == null){
+                return null;
+            }
             return certificate.CertificateURL;
         }
 
@@ -384,7 +386,27 @@ namespace kroniiapi.Services
         private async Task<float> GetScoreByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
             var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
+            if(score == null){
+                return 0;
+            }
             return score.Score;
+        }
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
+        {
+            var traineeList = await _dataContext.Trainees.Where(t
+                 => t.IsDeactivated == false && t.ClassId == null &&
+                                                (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
+                                                .OrderByDescending(t => t.CreatedAt)
+                                                .ToListAsync();
+            return Tuple.Create(traineeList.Count(), PaginationHelper.GetPage(traineeList,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
+        public bool CheckTraineeExist(int id)
+        {
+            return  _dataContext.Trainees.Any(t => t.TraineeId == id &&
+            t.IsDeactivated == false);
         }
     }
 }

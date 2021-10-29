@@ -3,11 +3,184 @@
     <p>Help trainee to give feedback about their admin and trainer</p>
 
     <!-- View trainee feedback -->
+    <div id="viewTraineeFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Feedback Info of Trainee class</h3>
+        </div>
+        <p>By ThinhNP</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Feedback/{traineeId}/feedbackInfo</p>
+        </div>
 
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Not Yet</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>traineeID: ID of Trainee</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "trainer": {
+        "trainerId": 0,
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+      },
+      "admin": {
+        "adminId": 0,
+        "fullname": "string",
+        "email": "string",
+        "avatarURL": "string"
+      }
+}
+            </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
     <!-- Give trainer feedback -->
+    <div id="giveTrainerFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Give Trainer Feedback</h3>
+        </div>
+        <p>By ThinhNP</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Feedback/Trainer</p>
+        </div>
 
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Not Yet</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>No</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                    <pre><code>
+{
+    "rate": 0,
+    "content": "string",
+    "traineeId": 0,
+    "trainerId": 0
+}
+                      </code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>No</p>
+            </div>
+        </div>
+    </div>
     <!-- Give admin feedback -->
+    <div id="giveAdminFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Give Admin Feedback</h3>
+        </div>
+        <p>By ThinhNP</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Feedback/Trainer</p>
+        </div>
 
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Not Yet</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>No</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                    <pre><code>
+{
+    "rate": 0,
+    "content": "string",
+    "traineeId": 0,
+    "adminId": 0
+}
+                      </code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>No</p>
+            </div>
+        </div>
+    </div>
     <!-- Get class's feedback -->
     <div id="viewClassFeedback">
         <!-- Function Title -->

@@ -95,7 +95,7 @@ namespace kroniiapi.Controllers
         /// <param name="confirmDeleteClassInput">Confirm detail</param>
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
         [HttpPut("request")]
-        [Authorize(Policy = "ClassPut")]
+        //[Authorize(Policy = "ClassPut")]
         public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
@@ -112,6 +112,7 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(400, "Request is rejected"));
             }
             int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
+            int deleteTraineeClass = await _classService.DeleteTraineeClass(confirmDeleteClassInput.ClassId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
 
@@ -184,35 +185,39 @@ namespace kroniiapi.Controllers
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
         [HttpGet("{id:int}/trainee")]
         [Authorize(Policy = "ClassGet")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
-            IEnumerable<TraineeInClassDetail> traineeDTO = _mapper.Map<IEnumerable<TraineeInClassDetail>>(trainees);
+            IEnumerable<TraineeResponse> traineeDTO = _mapper.Map<IEnumerable<TraineeResponse>>(trainees);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "Search trainee name not found"));
             }
-            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, traineeDTO));
+            return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, traineeDTO));
         }
 
         /// <summary>
         /// Insert the request delete class to db
         /// </summary>
         /// <param name="requestDeleteClassInput">Request detail</param>
-        /// <returns>201: Request is created / 409: Class is already deactivated / 404: Fail to request delete class</returns>
+        /// <returns>201: Request is created / 404: Class/Admin is not exist / 409: Fail to request delete class</returns>
         [HttpPost("request")]
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateRequestDeleteClass(RequestDeleteClassInput requestDeleteClassInput)
         {
             DeleteClassRequest deleteClassRequest = _mapper.Map<DeleteClassRequest>(requestDeleteClassInput);
             int rs = await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
-            if (rs == -1)
+            if (rs == -2)
             {
-                return Conflict(new ResponseDTO(409, "Class is already deactivated"));
+                return NotFound(new ResponseDTO(404,"Admin is not exist"));
+            }
+            else if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404,"Class is not exist"));
             }
             else if (rs == 0)
             {
-                return NotFound(new ResponseDTO(404, "Fail to request delete class"));
+                return Conflict(new ResponseDTO(409,"Fail to request delete class"));
             }
             else
             {
@@ -229,6 +234,17 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
+            foreach (var traineeId in newClassInput.TraineeIdList)
+            {
+                if (_traineeService.CheckTraineeExist(traineeId) is false)
+                {
+                    return NotFound(new ResponseDTO
+                    {
+                        Status = 404,
+                        Message = "Trainee does not exist"
+                    });
+                }
+            }
             var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
@@ -244,7 +260,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return StatusCode(500);
+                return BadRequest("Some error occur");
             }
             return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
         }

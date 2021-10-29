@@ -13,11 +13,11 @@ namespace kroniiapi.DTO.Profiles
         public ClassDetailProfile()
         {
             CreateMap<Class,ClassDetailResponse>();
-            CreateMap<Trainee,TraineeInClassDetail>();
-            CreateMap<Admin,AdminInClassDetail>();
+            CreateMap<Trainee,TraineeResponse>();
+            CreateMap<Admin,AdminResponse>();
             CreateMap<Trainer,TrainerFeedback>();
-            CreateMap<Module,ModuleInClassDetail>();
-            CreateMap<Trainer,TrainerInClassDetail>();
+            CreateMap<Module,ModuleResponse>();
+            CreateMap<Trainer,TrainerResponse>();
 
         }
     }

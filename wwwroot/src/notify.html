@@ -35,6 +35,9 @@
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
                 <p>email: email of trainee</p>
+                <p>PageSize: Position of page</p>
+                <p>PageNumber: Number of items perpage</p>
+                <p>SearchName: user(sender) and sendTo(reciever) field</p>
             </div>
         </div>
 
@@ -42,13 +45,6 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>
-                <pre><code>{
-  "PageSize": int,
-  "PageNumber": int,
-  "searchName": "string"
-}</code></pre>
-                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
@@ -101,6 +97,9 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
+                <p>PageSize: Position of page</p>
+                <p>PageNumber: Number of items perpage</p>
+                <p>SearchName: user(sender) and sendTo(reciever) field</p>
             </div>
         </div>
 
@@ -108,13 +107,6 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>
-                <pre><code>{
-  "PageSize": int,
-  "PageNumber": int,
-  "searchName": "string"
-}</code></pre>
-                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
@@ -222,5 +214,49 @@
                 <p>Error Reponse</p>
             </div>
         </div>
+
+        <div id="setSeen">
+            <!-- Function Title -->
+            <div class="w-75 border-bottom mb-3">
+                <h3>Set notify state to seen</h3>
+            </div>
+            <p>By ThoTA</p>
+            <div>
+                <h5>Endpoint</h5>
+                <p>/api/Notify/setSeen</p>
+            </div>
+    
+            <!-- Role, Method and Status code -->
+            <div class="row mb-3">
+                <div class="col-4 border-end">
+                    <h5>Allow</h5>
+                    <p>trainee</p>
+                </div>
+                <div class="col-4 border-end">
+                    <h5>Method</h5>
+                    <p>POST</p>
+                </div>
+                <div class="col-4">
+                    <h5>Status</h5>
+                    <p>204 404</p>
+                </div>
+            </div>
+    
+            <!-- Request body and Response body  -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Request Body</h5>
+                    <p><pre><code>
+        "string" (email of trainee, just an string)
+        
+    </code></pre></p>
+                </div>
+                <div class="col-6">
+                    <h5>Response Body</h5>
+                    <p>Error Reponse</p>
+                </div>
+            </div>
+
+
     </div>
 </div>
