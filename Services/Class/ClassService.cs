@@ -285,7 +285,8 @@ namespace kroniiapi.Services
             foreach (var traineeId in traineeIdList)
             {
                 if (await _traineeService.IsTraineeHasClass(traineeId)) continue;
-                var trainee = await _traineeService.GetTraineeById(traineeId);
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId &&
+                                                            t.IsDeactivated == false).FirstOrDefaultAsync();
                 trainee.ClassId = classId;
             }
         }

@@ -9,7 +9,7 @@ namespace kroniiapi.DTO.TraineeDTO
     {
         public int ExamId { get; set; }
         public string ExamName { get; set; }
-        public DateTime ExamDay { get; set; }
+        public DateTime Date { get; set; }
         public int DurationInMinute { get; set; }
     }
 }
