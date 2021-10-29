@@ -33,7 +33,9 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+                                                        .OrderByDescending(c=>c.CreatedAt)
+                                                        .ToListAsync();
 
             int totalRecords = listClass.Count();
 
@@ -271,19 +273,6 @@ namespace kroniiapi.Services
         public async Task<Class> GetClassByClassID(int classId)
         {
             return await _dataContext.Classes.Where(c => c.ClassId == classId).FirstOrDefaultAsync();
-        }
-
-        public async Task<int> InsertNewClass(Class newClass)
-        {
-
-            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
-            {
-                return -1;
-            }
-            int rowInserted = 0;
-            _dataContext.Classes.Add(newClass);
-            rowInserted = await _dataContext.SaveChangesAsync();
-            return rowInserted;
         }
         /// <summary>
         /// add Class Id to Trainee model (after add new class)

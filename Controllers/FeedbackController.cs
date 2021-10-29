@@ -40,7 +40,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>trainee and admin info </returns>
         [HttpGet("{traineeId:int}/feedbackInfo")]
-        public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedback(int traineeId)
+        public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedbackInfo(int traineeId)
         {
             var (classId, message) = await _traineeService.GetClassIdByTraineeId(traineeId);
             if (classId == -1)

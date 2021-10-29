@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
@@ -42,18 +43,18 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list/ 400: Not found</returns>
         [HttpGet("{traineeId:int}")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
-            if (await _traineeService.GetTraineeById(traineeId) == null)
+            if (_traineeService.CheckTraineeExist(traineeId) is false)
             {
-                return BadRequest(new ResponseDTO(404, "id not found"));
+                return NotFound(new ResponseDTO(404, "id not found"));
             }
-            (int totalRecord, IEnumerable<ApplicationResponse> application) = await _traineeService.GetApplicationListByTraineeId(traineeId, paginationParameter);
+            (int totalRecord, IEnumerable<TraineeApplicationResponse> application) = await _traineeService.GetApplicationListByTraineeId(traineeId, paginationParameter);
             if (totalRecord == 0)
             {
-                return BadRequest(new ResponseDTO(404, "Trainee doesn't have any application"));
+                return NotFound(new ResponseDTO(404, "Trainee doesn't have any application"));
             }
-            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, application));
+            return Ok(new PaginationResponse<IEnumerable<TraineeApplicationResponse>>(totalRecord, application));
         }
 
         /// <summary>
@@ -64,12 +65,21 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> SubmitApplicationForm([FromForm] ApplicationInput applicationInput, [FromForm] IFormFile form)
         {
-            var stream = form.OpenReadStream();
-            String formURL = await _megaHelper.Upload(stream, form.FileName, "ApplicationForm");
+            (bool isDoc, string errorMsg) = FileHelper.CheckDocExtension(form);
+            if (isDoc == false)
+            {
+                return BadRequest(new ResponseDTO(400, errorMsg));
+            }
             Application app = _mapper.Map<Application>(applicationInput);
-            app.ApplicationURL = formURL;
-            var rs = _applicationService.InsertNewApplication(app);
-            return Created(nameof(ViewApplicationList), new ResponseDTO(201, "Successfully inserted")); ;
+            var rs = await _applicationService.InsertNewApplication(app, form);
+            if (rs == -1)
+            {
+                return BadRequest(new ResponseDTO(400, "Trainee is not found"));
+            }else if(rs==-2)
+            {
+                return BadRequest(new ResponseDTO(400, "Application category is not found"));
+            }
+            return Created("", new ResponseDTO(201, "Successfully inserted")); ;
         }
 
         /// <summary>

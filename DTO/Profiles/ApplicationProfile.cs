@@ -13,7 +13,7 @@ namespace kroniiapi.DTO.Profiles
     {
         public ApplicationProfile()
         {
-            CreateMap<Application,ApplicationResponse>();
+            CreateMap<Application,TraineeApplicationResponse>();
             CreateMap<ApplicationInput,Application>();
             CreateMap<ApplicationCategory,ApplicationCategoryResponse>();
         }

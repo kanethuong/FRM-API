@@ -184,15 +184,15 @@ namespace kroniiapi.Controllers
         /// <returns>200: List of trainee list in a class with pagination / 404: search trainee name not found</returns>
         [HttpGet("{id:int}/trainee")]
         [Authorize(Policy = "ClassGet")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInClassDetail>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeListByClassId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(id, paginationParameter);
-            IEnumerable<TraineeInClassDetail> traineeDTO = _mapper.Map<IEnumerable<TraineeInClassDetail>>(trainees);
+            IEnumerable<TraineeResponse> traineeDTO = _mapper.Map<IEnumerable<TraineeResponse>>(trainees);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "Search trainee name not found"));
             }
-            return Ok(new PaginationResponse<IEnumerable<TraineeInClassDetail>>(totalRecord, traineeDTO));
+            return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, traineeDTO));
         }
 
         /// <summary>
@@ -229,6 +229,17 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
+            foreach (var traineeId in newClassInput.TraineeIdList)
+            {
+                if (_traineeService.CheckTraineeExist(traineeId) is false)
+                {
+                    return NotFound(new ResponseDTO
+                    {
+                        Status = 404,
+                        Message = "Trainee does not exist"
+                    });
+                }
+            }
             var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
@@ -244,7 +255,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return StatusCode(500);
+                return BadRequest("Some error occur");
             }
             return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
         }

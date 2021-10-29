@@ -39,7 +39,7 @@ namespace kroniiapi.Controllers
         /// <param name="email">email of user want to recieveHistory</param>
         /// <returns>404: email not found / 204: send success</returns>
         [HttpGet("history")]
-        public async Task<ActionResult> SendHistory(string email, [FromBody] PaginationParameter paginationParameter)
+        public async Task<ActionResult> SendHistory([FromQuery]string email, [FromQuery] PaginationParameter paginationParameter)
         {
             email = email.ToLower();
             List<NotifyMessage> history = new List<NotifyMessage>();
@@ -59,7 +59,7 @@ namespace kroniiapi.Controllers
         }
 
         [HttpGet("historyForAdmin")]
-        public async Task<ActionResult<IEnumerable<NotifyMessage>>> GetHistoryForAdmin([FromBody]PaginationParameter paginationParameter)
+        public async Task<ActionResult<IEnumerable<NotifyMessage>>> GetHistoryForAdmin([FromQuery]PaginationParameter paginationParameter)
         {
             List<NotifyMessage> history = new List<NotifyMessage>();
             history = await _cacheProvider.GetAllValueFromCache<NotifyMessage>();
@@ -118,7 +118,7 @@ namespace kroniiapi.Controllers
                     {
                         notifyMessage.SendTo = trainee.Email.ToLower();
                         await _cacheProvider.AddValueToKey<NotifyMessage>(trainee.Email.ToLower(), notifyMessage);
-                        await _notifyHub.Clients.Group(trainee.Email).SendAsync("ReceiveNotification", notifyMessage);
+                        await _notifyHub.Clients.Group(trainee.Email.ToLower()).SendAsync("ReceiveNotification", notifyMessage);
                     }
                 }
                 else
@@ -149,7 +149,7 @@ namespace kroniiapi.Controllers
             notifyMessage.SendTo = notifyMessage.SendTo.ToLower();
             notifyMessage.User = notifyMessage.User.ToLower();
             await _cacheProvider.AddValueToKey<NotifyMessage>(notifyMessage.SendTo, notifyMessage);
-            await _notifyHub.Clients.Group(notifyMessage.SendTo).SendAsync("ReceiveNotification", notifyMessage);
+            await _notifyHub.Clients.Group(notifyMessage.SendTo.ToLower()).SendAsync("ReceiveNotification", notifyMessage);
             return Ok(new ResponseDTO(204, "Successfully invoke"));
         }
     }
