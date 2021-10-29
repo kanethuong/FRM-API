@@ -76,7 +76,7 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
-            var checkTrainee = _traineeService.GetTraineeById(id);
+            var checkTrainee = await _traineeService.GetTraineeById(id);
             if (checkTrainee == null) {
                 return NotFound(new ResponseDTO(404,"Trainee not found!"));
             }
@@ -211,7 +211,7 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id, DateTime date)
         {
-            var checkTrainee = _traineeService.GetTraineeById(id);
+            var checkTrainee = await _traineeService.GetTraineeById(id);
             if (checkTrainee == null) {
                 return NotFound(new ResponseDTO(404,"Trainee not found!"));
             }
