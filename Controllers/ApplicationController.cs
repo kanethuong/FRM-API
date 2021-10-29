@@ -99,7 +99,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="paginationParameter"></param>
         /// <returns>Tuple of all application</returns>
-        [HttpGet("trainee")]
+        [HttpGet]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<TraineeApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
