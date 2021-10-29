@@ -274,19 +274,6 @@ namespace kroniiapi.Services
         {
             return await _dataContext.Classes.Where(c => c.ClassId == classId).FirstOrDefaultAsync();
         }
-
-        public async Task<int> InsertNewClass(Class newClass)
-        {
-
-            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
-            {
-                return -1;
-            }
-            int rowInserted = 0;
-            _dataContext.Classes.Add(newClass);
-            rowInserted = await _dataContext.SaveChangesAsync();
-            return rowInserted;
-        }
         /// <summary>
         /// add Class Id to Trainee model (after add new class)
         /// </summary>

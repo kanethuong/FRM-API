@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace kroniiapi.DTO.ApplicationDTO
 {
-    public class ApplicationResponse
+    public class TraineeApplicationResponse
     {
         public string Description { get; set; }
         public string ApplicationURL { get; set; }

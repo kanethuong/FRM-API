@@ -76,6 +76,10 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<TraineeDashboard>> ViewTraineeDashboard(int id)
         {
+            var checkTrainee = _traineeService.GetTraineeById(id);
+            if (checkTrainee == null) {
+                return NotFound(new ResponseDTO(404,"Trainee not found!"));
+            }
             TimeSpan oneSecond = new TimeSpan(00, 00, -1);
             var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
             var exam = await _examService.GetExamListByModuleId(calenders.ToList(), DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
@@ -186,7 +190,7 @@ namespace kroniiapi.Controllers
         {
             if (await _traineeService.GetTraineeById(id) == null)
             {
-                return BadRequest(new ResponseDTO(404, "id not found"));
+                return NotFound(new ResponseDTO(404, "id not found"));
             }
             try
             {
@@ -195,7 +199,7 @@ namespace kroniiapi.Controllers
             }
             catch
             {
-                return BadRequest(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
+                return NotFound(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
             }
         }
 
@@ -207,6 +211,10 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<EventInTimeTable>> ViewTimeTable(int id, DateTime date)
         {
+            var checkTrainee = _traineeService.GetTraineeById(id);
+            if (checkTrainee == null) {
+                return NotFound(new ResponseDTO(404,"Trainee not found!"));
+            }
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(date.Year, date.Month, 1);
             var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
