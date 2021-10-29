@@ -30,25 +30,30 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="adminFeedback"></param>
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
-        public async Task<int> InsertNewAdminFeedback(AdminFeedback adminFeedback)
+        public async Task<(int,string)> InsertNewAdminFeedback(AdminFeedback adminFeedback)
         {
+            var classId = await _dataContext.Trainees.Where(c => c.TraineeId == adminFeedback.TraineeId).FirstOrDefaultAsync();
+            if (_dataContext.Classes.Any(c => c.AdminId == adminFeedback.AdminId && c.ClassId == classId.ClassId))
+            {
+                return (-1, "Trainer doesn't train Trainee");
+            }
             if (_dataContext.AdminFeedbacks.Any(
                 f => f.AdminId == adminFeedback.AdminId && f.TraineeId == adminFeedback.TraineeId
             ))
             {
-                return -1;
+                return (-1,"Trainee has feedback this Admin");
             }
             if (!_dataContext.Trainees.Any(t => t.TraineeId == adminFeedback.TraineeId))
             {
-                return 0;
+                return (0,"Don't have this Trainee");
             }
             if (!_dataContext.Admins.Any(t => t.AdminId == adminFeedback.AdminId))
             {
-                return 0;
+                return (0,"Don't have this Admin");
             }
             _dataContext.Add(adminFeedback);
-
-            return await _dataContext.SaveChangesAsync();
+            await _dataContext.SaveChangesAsync();
+            return (1, "Success");
         }
         /// <summary>
         /// Get Trainer Feedback
@@ -65,25 +70,30 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="trainerFeedback"></param>
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
-        public async Task<int> InsertNewTrainerFeedback(TrainerFeedback trainerFeedback)
+        public async Task<(int, string)> InsertNewTrainerFeedback(TrainerFeedback trainerFeedback)
         {
+            var classId = await _dataContext.Trainees.Where(c => c.TraineeId == trainerFeedback.TraineeId).FirstOrDefaultAsync();
+            if (_dataContext.Classes.Any(c => c.TrainerId == trainerFeedback.TrainerId && c.ClassId == classId.ClassId))
+            {
+                return (-1, "Trainer doesn't train Trainee");
+            }
             if (_dataContext.TrainerFeedbacks.Any(
                 f => f.TrainerId == trainerFeedback.TrainerId && f.TraineeId == trainerFeedback.TraineeId
             ))
             {
-                return -1;
+                return (-1,"Trainee has feedback this Trainer");
             }
             if (!_dataContext.Trainees.Any(t => t.TraineeId == trainerFeedback.TraineeId))
             {
-                return 0;
+                return (0, "Don't have this Trainee");
             }
             if (!_dataContext.Trainers.Any(t => t.TrainerId == trainerFeedback.TrainerId))
             {
-                return 0;
+                return (0,"Don't have this Trainer");
             }
             _dataContext.Add(trainerFeedback);
-
-            return await _dataContext.SaveChangesAsync();
+            await _dataContext.SaveChangesAsync();
+            return (1, "Success");
         }
     }
 }

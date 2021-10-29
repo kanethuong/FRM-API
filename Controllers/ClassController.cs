@@ -199,20 +199,24 @@ namespace kroniiapi.Controllers
         /// Insert the request delete class to db
         /// </summary>
         /// <param name="requestDeleteClassInput">Request detail</param>
-        /// <returns>201: Request is created / 409: Class is already deactivated / 404: Fail to request delete class</returns>
+        /// <returns>201: Request is created / 404: Class/Admin is not exist / 409: Fail to request delete class</returns>
         [HttpPost("request")]
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateRequestDeleteClass(RequestDeleteClassInput requestDeleteClassInput)
         {
             DeleteClassRequest deleteClassRequest = _mapper.Map<DeleteClassRequest>(requestDeleteClassInput);
             int rs = await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
-            if (rs == -1)
+            if (rs == -2)
             {
-                return Conflict(new ResponseDTO(409, "Class is already deactivated"));
+                return NotFound(new ResponseDTO(404,"Admin is not exist"));
+            }
+            else if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404,"Class is not exist"));
             }
             else if (rs == 0)
             {
-                return NotFound(new ResponseDTO(404, "Fail to request delete class"));
+                return Conflict(new ResponseDTO(409,"Fail to request delete class"));
             }
             else
             {
@@ -229,6 +233,17 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
+            foreach (var traineeId in newClassInput.TraineeIdList)
+            {
+                if (_traineeService.CheckTraineeExist(traineeId) is false)
+                {
+                    return NotFound(new ResponseDTO
+                    {
+                        Status = 404,
+                        Message = "Trainee does not exist"
+                    });
+                }
+            }
             var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
@@ -244,7 +259,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return StatusCode(500);
+                return BadRequest("Some error occur");
             }
             return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
         }

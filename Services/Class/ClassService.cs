@@ -34,7 +34,7 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
             var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == false && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                                        .OrderByDescending(c=>c.CreatedAt)
+                                                        .OrderByDescending(c => c.CreatedAt)
                                                         .ToListAsync();
 
             int totalRecords = listClass.Count();
@@ -243,18 +243,19 @@ namespace kroniiapi.Services
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
-        /// <returns> -1: Class is already deactivated / 0: Insert fail / 1: Insert success </returns>
+        /// <returns> -2: Admin is not exist / -1: Class is not exist / 0: Insert fail / 1: Insert success </returns>
         public async Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest)
         {
-            Class c = await GetClassByClassID(deleteClassRequest.ClassId);
-            var admin = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId);
+            var isAdminExist = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId && a.IsDeactivated == false);
+            var isClassExist = _dataContext.Classes.Any(c => c.ClassId == deleteClassRequest.ClassId && c.IsDeactivated == false);
 
-            if (c == null || admin == false)
+
+
+            if (isAdminExist == false)
             {
-                return 0;
+                return -2;
             }
-
-            if (c.IsDeactivated == true)
+            else if (isClassExist == false)
             {
                 return -1;
             }
@@ -273,19 +274,6 @@ namespace kroniiapi.Services
         public async Task<Class> GetClassByClassID(int classId)
         {
             return await _dataContext.Classes.Where(c => c.ClassId == classId).FirstOrDefaultAsync();
-        }
-
-        public async Task<int> InsertNewClass(Class newClass)
-        {
-
-            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
-            {
-                return -1;
-            }
-            int rowInserted = 0;
-            _dataContext.Classes.Add(newClass);
-            rowInserted = await _dataContext.SaveChangesAsync();
-            return rowInserted;
         }
         /// <summary>
         /// add Class Id to Trainee model (after add new class)
@@ -407,16 +395,19 @@ namespace kroniiapi.Services
                                             Username = c.Username,
                                             Fullname = c.Fullname,
                                             AvatarURL = c.AvatarURL,
-                                            Class = new Class {
+                                            Class = new Class
+                                            {
                                                 ClassId = c.Class.ClassId,
                                                 AdminId = c.Class.Admin.AdminId,
-                                                Admin = new Admin {
+                                                Admin = new Admin
+                                                {
                                                     Fullname = c.Class.Admin.Fullname,
                                                     Email = c.Class.Admin.Email,
                                                     AvatarURL = c.Class.Admin.AvatarURL,
                                                 },
                                                 TrainerId = c.Class.TrainerId,
-                                                Trainer = new Trainer {
+                                                Trainer = new Trainer
+                                                {
                                                     Fullname = c.Class.Trainer.Fullname,
                                                     Email = c.Class.Trainer.Email,
                                                     AvatarURL = c.Class.Trainer.AvatarURL,
@@ -429,13 +420,15 @@ namespace kroniiapi.Services
             }
             var returnThing = new FeedbackViewForTrainee
             {
-                trainer = new TrainerInFeedbackResponse {
+                trainer = new TrainerInFeedbackResponse
+                {
                     TrainerId = traineeToView.Class.TrainerId,
                     Fullname = traineeToView.Class.Trainer.Fullname,
                     Email = traineeToView.Class.Trainer.Email,
                     AvatarURL = traineeToView.Class.Trainer.AvatarURL
                 },
-                admin = new AdminInFeedbackResponse {
+                admin = new AdminInFeedbackResponse
+                {
                     AdminId = traineeToView.Class.AdminId,
                     Fullname = traineeToView.Class.Admin.Fullname,
                     Email = traineeToView.Class.Admin.Email,
