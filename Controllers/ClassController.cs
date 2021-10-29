@@ -199,20 +199,24 @@ namespace kroniiapi.Controllers
         /// Insert the request delete class to db
         /// </summary>
         /// <param name="requestDeleteClassInput">Request detail</param>
-        /// <returns>201: Request is created / 409: Class is already deactivated / 404: Fail to request delete class</returns>
+        /// <returns>201: Request is created / 404: Class/Admin is not exist / 409: Fail to request delete class</returns>
         [HttpPost("request")]
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateRequestDeleteClass(RequestDeleteClassInput requestDeleteClassInput)
         {
             DeleteClassRequest deleteClassRequest = _mapper.Map<DeleteClassRequest>(requestDeleteClassInput);
             int rs = await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
-            if (rs == -1)
+            if (rs == -2)
             {
-                return Conflict(new ResponseDTO(409, "Class is already deactivated"));
+                return NotFound(new ResponseDTO(404,"Admin is not exist"));
+            }
+            else if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404,"Class is not exist"));
             }
             else if (rs == 0)
             {
-                return NotFound(new ResponseDTO(404, "Fail to request delete class"));
+                return Conflict(new ResponseDTO(409,"Fail to request delete class"));
             }
             else
             {
