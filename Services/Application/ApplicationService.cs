@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -57,15 +59,41 @@ namespace kroniiapi.Services
         /// Get a list of application
         /// </summary>
         /// <param name="paginationParameter"></param>
-        /// <returns> Tuple List of application List </returns>
-        public async Task<Tuple<int, IEnumerable<Application>>> GetApplicationList(PaginationParameter paginationParameter)
+        /// <returns> Tuple List of application </returns>
+        public async Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationList(PaginationParameter paginationParameter)
         {
-            var applicationList = await _dataContext.Applications.ToListAsync();
-            int totalRecords = applicationList.Count();
-            var rs = applicationList.OrderBy(c => c.ApplicationId)
-                                            .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                                            .Take(paginationParameter.PageSize);
-            return Tuple.Create(totalRecords, rs);
+            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+                                                    .Select(a => new Application
+                                                    {
+                                                        TraineeId = a.TraineeId,
+                                                        Description = a.Description,
+                                                        ApplicationURL = a.ApplicationURL,
+                                                        ApplicationId = a.ApplicationId,
+                                                        ApplicationCategoryId = a.ApplicationCategoryId,
+                                                        ApplicationCategory = new ApplicationCategory
+                                                        {
+                                                            ApplicationCategoryId = a.ApplicationCategoryId,
+                                                            CategoryName = a.ApplicationCategory.CategoryName,
+                                                        },
+                                                        IsAccepted = a.IsAccepted,
+                                                    })
+                                                    .ToListAsync();
+            List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
+
+            foreach (var item in applicationList)
+            {
+                var itemToResponse = new TraineeApplicationResponse
+                {
+                    Description = item.Description,
+                    ApplicationURL = item.ApplicationURL,
+                    Type = item.ApplicationCategory.CategoryName,
+                    IsAccepted = item.IsAccepted
+                };
+                applicationReponse.Add(itemToResponse);
+            }
+
+            return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
         }
 
         public async Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList()
