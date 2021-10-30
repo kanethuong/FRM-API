@@ -100,7 +100,6 @@ namespace kroniiapi.Controllers
         /// <param name="token">Access token</param>
         /// <returns>200: Logout success</returns>
         [HttpPost("logout")]
-        [Authorize]
         public ActionResult Logout()
         {
             if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
