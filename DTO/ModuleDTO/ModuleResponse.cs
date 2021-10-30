@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.TraineeDTO
+namespace kroniiapi.DTO.ModuleDTO
 {
-    public class ModuleInTimeTable
+    public class ModuleResponse
     {
-        public int CalendarId { get; set; }
         public int ModuleId { get; set; }
         public string ModuleName { get; set; }
-        public DateTime Date { get; set; }
+        public string IconURL { get; set; }
+        public string SyllabusURL { get; set; }
+        public int NoOfSlot { get; set; }
         public TimeSpan SlotDuration { get; set; }
-        public TraineeClassInfo Class { get; set; }
+        public string Description { get; set; }
     }
 }

@@ -60,7 +60,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns>List of Trainer Feedback</returns>
-        public async Task<ICollection<TrainerFeedback>> GetTrainerFeedbacksByAdminId(int id)
+        public async Task<ICollection<TrainerFeedback>> GetTrainerFeedbacksByTrainerId(int id)
         {
             var feedTrainer = await _dataContext.TrainerFeedbacks.Where(a => a.TrainerId == id).ToListAsync();
             return feedTrainer;

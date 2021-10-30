@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Mvc;
 
