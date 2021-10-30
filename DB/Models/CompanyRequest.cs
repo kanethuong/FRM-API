@@ -12,6 +12,7 @@ namespace kroniiapi.DB.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string ReportURL { get; set; }
         public bool? IsAccepted { get; set; }
+        public DateTime? AcceptedAt { get; set; }
         public int CompanyId { get; set; }
         public Company Company { get; set; }
 
