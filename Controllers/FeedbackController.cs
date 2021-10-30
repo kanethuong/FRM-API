@@ -68,12 +68,12 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, message));
             }
-            TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
-            var (rs, feedbackMessage) = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
-            if (trainerFeedbackInput.Rate < 0 || trainerFeedback.Rate >5)
+            if (trainerFeedbackInput.Rate < 0 || trainerFeedbackInput.Rate >5)
             {
                 return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
             }
+            TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
+            var (rs, feedbackMessage) = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, feedbackMessage));

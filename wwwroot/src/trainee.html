@@ -26,7 +26,7 @@
             </div>
             <div class="col-4">
                 <h5>Status</h5>
-                <p>200</p>
+                <p>200 404</p>
             </div>
         </div>
         <!-- Parameter & file -->
@@ -60,15 +60,18 @@
         }
     ],
     "examInTraineeDashboards": [
-        {
+    {
         "examId": int,
         "examName": "string",
-        "moduleId": int,
-        "moduleName": "string",
-        "description": "string",
-        "examDay": "string",
-        "durationInMinute": int
-        }
+        "date": "string",
+        "durationInMinute": int,
+        "roomId": int,
+        "roomName": "string",
+        "adminId": int,
+        "adminName": "string",
+        "adminAvatarURL": "string",
+        "adminEmail": "string"
+    }
     ]
 }
                 
@@ -374,12 +377,18 @@
         }
     ],
     "examInTimeTables": [
-        {
+    {
         "examId": int,
         "examName": "string",
-        "examDay": "string",
-        "durationInMinute": int
-        }
+        "date": "string",
+        "durationInMinute": int,
+        "roomId": int,
+        "roomName": "string",
+        "adminId": int,
+        "adminName": "string",
+        "adminAvatarURL": "string",
+        "adminEmail": "string"
+    }
     ]
 }
     </code></pre>

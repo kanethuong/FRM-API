@@ -78,12 +78,13 @@ namespace kroniiapi.Controllers
         }
 
         [HttpPost("setSeen")]
-        public async Task<ActionResult> SetSeen(string email)
+        public async Task<ActionResult> SetSeen([FromBody] string email)
         {
             if(email == null)
             {
                 return BadRequest(new ResponseDTO(404, "email not found"));
             }
+            email = email.ToLower();
             List<NotifyMessage> history = new List<NotifyMessage>();
             history = await _cacheProvider.GetFromCache<List<NotifyMessage>>(email);
             if(history == null)
