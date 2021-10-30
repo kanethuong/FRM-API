@@ -32,17 +32,6 @@ namespace kroniiapi.Services
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
         public async Task<(int,string)> InsertNewAdminFeedback(AdminFeedback adminFeedback)
         {
-            var classId = await _dataContext.Trainees.Where(c => c.TraineeId == adminFeedback.TraineeId).FirstOrDefaultAsync();
-            if (_dataContext.Classes.Any(c => c.AdminId == adminFeedback.AdminId && c.ClassId == classId.ClassId))
-            {
-                return (-1, "Trainer doesn't train Trainee");
-            }
-            if (_dataContext.AdminFeedbacks.Any(
-                f => f.AdminId == adminFeedback.AdminId && f.TraineeId == adminFeedback.TraineeId
-            ))
-            {
-                return (-1,"Trainee has feedback this Admin");
-            }
             if (!_dataContext.Trainees.Any(t => t.TraineeId == adminFeedback.TraineeId))
             {
                 return (0,"Don't have this Trainee");
@@ -50,6 +39,17 @@ namespace kroniiapi.Services
             if (!_dataContext.Admins.Any(t => t.AdminId == adminFeedback.AdminId))
             {
                 return (0,"Don't have this Admin");
+            }
+            var classId = await _dataContext.Trainees.Where(c => c.TraineeId == adminFeedback.TraineeId).FirstOrDefaultAsync();
+            if (!_dataContext.Classes.Any(c => c.AdminId == adminFeedback.AdminId && c.ClassId == classId.ClassId))
+            {
+                return (-1, "Admin doesn't train Trainee");
+            }
+            if (_dataContext.AdminFeedbacks.Any(
+                f => f.AdminId == adminFeedback.AdminId && f.TraineeId == adminFeedback.TraineeId
+            ))
+            {
+                return (-1,"Trainee has feedback this Admin");
             }
             _dataContext.Add(adminFeedback);
             await _dataContext.SaveChangesAsync();
