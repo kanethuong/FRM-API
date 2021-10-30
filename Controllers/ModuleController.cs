@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ClassDetailDTO;
+using kroniiapi.DTO.ModuleDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Mvc;

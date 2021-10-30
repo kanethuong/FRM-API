@@ -16,5 +16,6 @@ namespace kroniiapi.Services
         Task<int> UpdateAdmin(int id, Admin admin);
         Task<int> DeleteAdmin(int id);
         Task<Admin> getAdminByClassId(int id);
+        bool CheckAdminExist(int id);
     }
 }
