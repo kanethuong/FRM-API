@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.CompanyRequestDTO
+namespace kroniiapi.DTO.CompanyDTO
 {
     public class CompanyReport
     {
