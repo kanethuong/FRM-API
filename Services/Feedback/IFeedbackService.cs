@@ -12,7 +12,7 @@ namespace kroniiapi.Services
 
         Task<(int,string)> InsertNewAdminFeedback(AdminFeedback adminFeedback);
 
-        Task<ICollection<TrainerFeedback>> GetTrainerFeedbacksByAdminId(int id);
+        Task<ICollection<TrainerFeedback>> GetTrainerFeedbacksByTrainerId(int id);
 
         Task<(int,string)> InsertNewTrainerFeedback(TrainerFeedback trainerFeedback);
 

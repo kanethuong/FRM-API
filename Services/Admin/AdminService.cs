@@ -131,5 +131,10 @@ namespace kroniiapi.Services
             return await _dataContext.Admins.Where(a => a.AdminId == class1.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
             
         }
+        public bool CheckAdminExist(int id)
+        {
+            return  _dataContext.Admins.Any(t => t.AdminId == id &&
+            t.IsDeactivated == false);
+        }
     }
 }
