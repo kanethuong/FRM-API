@@ -232,7 +232,6 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<List<Object>>> ViewTimeTable(int id, DateTime date)
         {
-
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(date.Year, date.Month, 1);
             var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
