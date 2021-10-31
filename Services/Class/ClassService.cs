@@ -140,6 +140,16 @@ namespace kroniiapi.Services
             }
             return -1;
         }
+        public async Task<int> DeleteTraineeClass(int deleteClassId){
+            var traineeList = await _dataContext.Trainees.Where(c => c.ClassId == deleteClassId).ToListAsync();
+            foreach (var item in traineeList)
+            {
+                item.ClassId = null;
+            }
+             int status = await _dataContext.SaveChangesAsync();
+             return status;
+        }
+
         public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId)
         {
             int classId = await _dataContext.DeleteClassRequests.Where(t => t.DeleteClassRequestId == deleteRequestId)
@@ -249,8 +259,6 @@ namespace kroniiapi.Services
             var isAdminExist = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId && a.IsDeactivated == false);
             var isClassExist = _dataContext.Classes.Any(c => c.ClassId == deleteClassRequest.ClassId && c.IsDeactivated == false);
 
-
-
             if (isAdminExist == false)
             {
                 return -2;
@@ -286,7 +294,8 @@ namespace kroniiapi.Services
             foreach (var traineeId in traineeIdList)
             {
                 if (await _traineeService.IsTraineeHasClass(traineeId)) continue;
-                var trainee = await _traineeService.GetTraineeById(traineeId);
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId &&
+                                                            t.IsDeactivated == false).FirstOrDefaultAsync();
                 trainee.ClassId = classId;
             }
         }

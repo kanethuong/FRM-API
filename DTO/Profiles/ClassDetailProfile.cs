@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.AdminDTO;
 using kroniiapi.DTO.ClassDetailDTO;
+using kroniiapi.DTO.ClassDTO;
+using kroniiapi.DTO.ModuleDTO;
 
 namespace kroniiapi.DTO.Profiles
 {
@@ -17,7 +20,7 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Admin,AdminResponse>();
             CreateMap<Trainer,TrainerFeedback>();
             CreateMap<Module,ModuleResponse>();
-            CreateMap<Trainer,TrainerResponse>();
+           
 
         }
     }

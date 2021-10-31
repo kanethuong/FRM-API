@@ -11,6 +11,7 @@ namespace kroniiapi.DB.Models
         public string ModuleName { get; set; }
         public string Description { get; set; }
         public int NoOfSlot { get; set; }
+        public TimeSpan SlotDuration { get; set; }
         public string IconURL { get; set; }
         public string SyllabusURL { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
