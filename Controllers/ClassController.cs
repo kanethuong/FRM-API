@@ -95,7 +95,7 @@ namespace kroniiapi.Controllers
         /// <param name="confirmDeleteClassInput">Confirm detail</param>
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
         [HttpPut("request")]
-        [Authorize(Policy = "ClassPut")]
+        //[Authorize(Policy = "ClassPut")]
         public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
         {
             int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
@@ -112,6 +112,7 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(400, "Request is rejected"));
             }
             int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
+            int deleteTraineeClass = await _classService.DeleteTraineeClass(confirmDeleteClassInput.ClassId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
 
@@ -208,15 +209,15 @@ namespace kroniiapi.Controllers
             int rs = await _classService.InsertNewRequestDeleteClass(deleteClassRequest);
             if (rs == -2)
             {
-                return NotFound(new ResponseDTO(404,"Admin is not exist"));
+                return NotFound(new ResponseDTO(404, "Admin is not exist"));
             }
             else if (rs == -1)
             {
-                return NotFound(new ResponseDTO(404,"Class is not exist"));
+                return NotFound(new ResponseDTO(404, "Class is not exist"));
             }
             else if (rs == 0)
             {
-                return Conflict(new ResponseDTO(409,"Fail to request delete class"));
+                return Conflict(new ResponseDTO(409, "Fail to request delete class"));
             }
             else
             {
@@ -233,6 +234,22 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
+            if (_adminService.CheckAdminExist(newClassInput.AdminId) is false)
+            {
+                return NotFound(new ResponseDTO
+                {
+                    Status = 404,
+                    Message = "Admin does not exist"
+                });
+            }
+            if (_trainerService.CheckTrainerExist(newClassInput.TrainerId) is false)
+            {
+                return NotFound(new ResponseDTO
+                {
+                    Status = 404,
+                    Message = "Trainer does not exist"
+                });
+            }
             foreach (var traineeId in newClassInput.TraineeIdList)
             {
                 if (_traineeService.CheckTraineeExist(traineeId) is false)

@@ -9,5 +9,6 @@ namespace kroniiapi.Services
     public interface IRoomService
     {
         Task<Room> GetRoomById(int id);
+        Task<Room> GetRoomByTraineeId(int traineeId);
     }
 }

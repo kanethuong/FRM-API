@@ -27,6 +27,7 @@ namespace kroniiapi.Services
         Task<Class> GetClassByClassID(int classId);
         Task<int> SaveChange();
         Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId);
+        Task<int> DeleteTraineeClass(int deleteRequestId);
         void DiscardChanges();
     }
 }
