@@ -14,6 +14,7 @@ using kroniiapi.Helper.UploadDownloadFile;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using kroniiapi.Helper;
 
 namespace kroniiapi.Controllers
 {
@@ -75,21 +76,30 @@ namespace kroniiapi.Controllers
         [HttpPost("certificate")]
         public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file, [FromForm] CertificateInput certificateInput)
         {
+            string message_img, message_pdf;
+            bool success_img, success_pdf;
+            (success_img, message_img) = FileHelper.CheckImageExtension(file);
+            (success_pdf, message_pdf) = FileHelper.CheckPDFExtension(file);
+            if (!success_img && !success_pdf)
+            {
+                return BadRequest(new ResponseDTO(400, "Your submission file must be PDF or image"));
+            }
             Stream stream = file.OpenReadStream();
             string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
             Certificate certificate = _mapper.Map<Certificate>(certificateInput);
             certificate.CertificateURL = Uri;
             int status = await _certificateService.InsertCertificate(certificate);
-            if (status == -1)
+            if (status == -1 || status == -2)
+            {
+                return NotFound(new ResponseDTO(404, "Cannot find module and trainee or trainee was deactivated!"));
+            }
+            else if (status == -3)
             {
                 return Conflict(new ResponseDTO(409, "You've already submited certificate for this module!"));
             }
             else if (status == 0)
             {
                 return BadRequest(new ResponseDTO(400, "Your submission failed!"));
-            }
-            else if (status == -2) {
-                return NotFound(new ResponseDTO(404, "Module or trainee not found!"));
             }
             return Ok(new ResponseDTO(201, "Your submission was successful!"));
         }
@@ -102,13 +112,18 @@ namespace kroniiapi.Controllers
         [HttpGet("class/{classId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int classId, [FromQuery] PaginationParameter paginationParameter)
         {
+            var class1 = await _classService.GetClassByClassID(classId);
+            if (class1 == null || class1.IsDeactivated == true)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found!"));
+            }
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
             List<MarkResponse> markResponses = new List<MarkResponse>();
             foreach (Trainee trainee in trainees)
             {
                 MarkResponse markResponse = new MarkResponse();
                 markResponse.TraineeName = trainee.Fullname;
-                IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, new DateTime(2021, 2, 5), new DateTime(2021, 7, 11));
+                IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, DateTime.MinValue, DateTime.Now);
                 foreach (Mark m in markList)
                 {
                     m.Module = await _moduleService.GetModuleById(m.ModuleId);
