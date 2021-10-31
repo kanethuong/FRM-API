@@ -317,11 +317,28 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">id of trainee</param>
         /// <param name="wage"></param>
-        /// <returns></returns>
+        /// <returns>200: Update wage success / 404: Trainee profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/wage")]
-        public async Task<ActionResult> UpdateTraineeWage(int id, decimal wage)
+        public async Task<ActionResult> UpdateTraineeWage(int id, [FromBody]decimal wage)
         {
-            return null;
+            Trainee trainee = await _traineeService.GetTraineeById(id);
+            if(trainee is null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
+            }
+            if(wage <= 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Fail to update trainee wage"));
+            }
+            trainee.Wage = wage;
+            if(await _traineeService.UpdateTrainee(id, trainee) == 1)
+            {
+                return Ok(new ResponseDTO(200, "Update trainee's wage success"));
+            }
+            else
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update trainee wage"));
+            }
         }
     }
 }
