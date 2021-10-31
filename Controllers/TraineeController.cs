@@ -8,7 +8,6 @@ using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ApplicationDTO;
-using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
@@ -284,6 +283,11 @@ namespace kroniiapi.Controllers
             }
             return Ok(listObject);
         }
+        /// <summary>
+        /// Get all trainee not have class
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
         [HttpGet("free_trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
         {
@@ -298,8 +302,24 @@ namespace kroniiapi.Controllers
 
             return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, trainees));
         }
+        /// <summary>
+        /// Get all trainee List with pagination
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
         [HttpGet("page")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeList([FromQuery]PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationParameter paginationParameter)
+        {
+            return null;
+        }
+        /// <summary>
+        /// Update trainee wage
+        /// </summary>
+        /// <param name="id">id of trainee</param>
+        /// <param name="wage"></param>
+        /// <returns></returns>
+        [HttpPut("{id:int}/wage")]
+        public async Task<ActionResult> UpdateTraineeWage(int id, decimal wage)
         {
             return null;
         }
