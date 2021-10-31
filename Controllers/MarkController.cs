@@ -47,7 +47,7 @@ namespace kroniiapi.Controllers
             _classService = classService;
         }
 
-         /// <summary>
+        /// <summary>
         /// View trainee mark and skill
         /// </summary>
         /// <param name="id">trainee id</param>
@@ -71,18 +71,25 @@ namespace kroniiapi.Controllers
         /// submit trainee certificate (upload to mega)
         /// </summary>
         /// <param name="certificateInput">detail of certificate input</param>
-        /// <returns>201: created / 400: bad request</returns>
+        /// <returns>201: Created / 400: Bad request / 409: Certificate existed / 404: Module or Trainee not found</returns>
         [HttpPost("certificate")]
-        public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file,[FromForm] CertificateInput certificateInput)
+        public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file, [FromForm] CertificateInput certificateInput)
         {
             Stream stream = file.OpenReadStream();
             string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
             Certificate certificate = _mapper.Map<Certificate>(certificateInput);
             certificate.CertificateURL = Uri;
             int status = await _certificateService.InsertCertificate(certificate);
-            if (status == 0)
+            if (status == -1)
             {
-                return BadRequest(new ResponseDTO(400, "Your submit failed!"));
+                return Conflict(new ResponseDTO(409, "You've already submited certificate for this module!"));
+            }
+            else if (status == 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Your submission failed!"));
+            }
+            else if (status == -2) {
+                return NotFound(new ResponseDTO(404, "Module or trainee not found!"));
             }
             return Ok(new ResponseDTO(201, "Your submission was successful!"));
         }
