@@ -197,5 +197,17 @@ namespace kroniiapi.Services
             return Tuple.Create(companyRequestResponses.Count(), PaginationHelper.GetPage(companyRequestResponses,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
+        public async Task<CompanyRequest> GetCompanyRequestDetail(int requestId){
+            var CompanyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId)
+            .Select(comreq => new CompanyRequest {
+                CompanyRequestId = comreq.CompanyRequestId,
+                Company = new Company {
+                    Fullname = comreq.Company.Fullname
+                },
+                Content = comreq.Content,
+                CreatedAt = comreq.CreatedAt
+            }).FirstOrDefaultAsync();
+            return CompanyRequest;
+        }
     }
 }
