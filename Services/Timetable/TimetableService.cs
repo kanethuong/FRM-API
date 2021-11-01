@@ -332,7 +332,7 @@ namespace kroniiapi.Services
                         slotModuleInDay += 1;
                         slotInDay += 1;
                         slotInWeek += 1;
-                        _datacontext.Calendars.Add(calendarToAdd);
+                        _datacontext.Calendars.AddRange(calendarToAdd);
                     };
                 }
                 dateCount = dateCount.AddDays(1);
