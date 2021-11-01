@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using kroniiapi.DB.Models;
+using kroniiapi.DTO;
 using kroniiapi.DTO.CompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
@@ -12,9 +16,15 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
-        public CompanyController()
-        {
 
+        private readonly ICompanyService _companyService;
+        private readonly IMapper _mapper;
+        public CompanyController(IMapper mapper,
+
+                                 ICompanyService companyService)
+        {
+            _mapper = mapper;
+            _companyService = companyService;
         }
         /// <summary>
         /// View all company request with pagination
@@ -24,7 +34,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<CompanyRequestResponse>>>> ViewCompanyRequestList([FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<CompanyRequestResponse> companyRequestResponses) = await _companyService.GetCompanyRequestList(paginationParameter);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<CompanyRequestResponse>>(totalRecords, companyRequestResponses));
         }
         /// <summary>
         /// View all company report with pagination (CompanyRequest with isAccepted == true)
