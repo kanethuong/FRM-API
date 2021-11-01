@@ -101,7 +101,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Your submission failed!"));
             }
-            return Ok(new ResponseDTO(201, "Your submission was successful!"));
+            return Created("",new ResponseDTO(201, "Your submission was successful!"));
         }
         /// <summary>
         /// Get the student mark with pagination of a class
