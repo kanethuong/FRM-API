@@ -42,7 +42,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list/ 400: Not found</returns>
-        [HttpGet("{traineeId:int}")]
+        [HttpGet("trainee/{traineeId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
             if (_traineeService.CheckTraineeExist(traineeId) is false)
@@ -75,11 +75,12 @@ namespace kroniiapi.Controllers
             if (rs == -1)
             {
                 return BadRequest(new ResponseDTO(400, "Trainee is not found"));
-            }else if(rs==-2)
+            }
+            else if (rs == -2)
             {
                 return BadRequest(new ResponseDTO(400, "Application category is not found"));
             }
-            return Created("", new ResponseDTO(201, "Successfully inserted")); ;
+            return Created("", new ResponseDTO(201, "Successfully inserted")); 
         }
 
         /// <summary>
@@ -95,20 +96,64 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// Get all application
+        /// Get all application with pagination
         /// </summary>
         /// <param name="paginationParameter"></param>
-        /// <returns>Tuple of all application</returns>
-        [HttpGet]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
+        /// <returns>Pagination of all ApplicationResponse, not TraineeApplicationResponse</returns>
+        [HttpGet("page")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecord, IEnumerable<TraineeApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
+            (int totalRecord, IEnumerable<ApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
             //IEnumerable<TraineeApplicationResponse> appListDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<TraineeApplicationResponse>>(appList);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "List empty"));
             }
-            return Ok(new PaginationResponse<IEnumerable<TraineeApplicationResponse>>(totalRecord, appList));
+            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, appList));
         }
+
+        /// <summary>
+        /// Get applcation detail
+        /// </summary>
+        /// <param name="id">applcation id</param>
+        /// <returns>200: An applcation detail with corresponding id / 404: not found</returns>
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ApplicationDetail>> ViewApplicationDetail(int id)
+        {
+            Application app = await _applicationService.GetApplicationDetail(id);
+            if (app == null)
+            {
+                return NotFound(new ResponseDTO(404, "Application not found"));
+            }
+
+            var appDTO = _mapper.Map<ApplicationDetail>(app);
+            return Ok(appDTO);
+        }
+
+        /// <summary>
+        /// Send accept or reject to application form
+        /// </summary>
+        /// <param name="id">application id</param>
+        /// <param name="response">Response to application form</param>
+        /// <param name="isAccepted">accept or reject</param>
+        /// <returns></returns>
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> ConfirmApplication(int id, string response, bool isAccepted)
+        {
+            int rs = await _applicationService.ConfirmApplication(id,response,isAccepted);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Application not found"));
+            }
+            else if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to confirm"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Application confirmed!"));
+            }
+        }
+
     }
 }

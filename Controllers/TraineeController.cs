@@ -8,7 +8,6 @@ using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ApplicationDTO;
-using kroniiapi.DTO.ClassDetailDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
@@ -284,6 +283,11 @@ namespace kroniiapi.Controllers
             }
             return Ok(listObject);
         }
+        /// <summary>
+        /// Get all trainee not have class
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
         [HttpGet("free_trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
         {
@@ -298,10 +302,43 @@ namespace kroniiapi.Controllers
 
             return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecord, trainees));
         }
+        /// <summary>
+        /// Get all trainee List with pagination
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns></returns>
         [HttpGet("page")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeList([FromQuery]PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationParameter paginationParameter)
         {
             return null;
+        }
+        /// <summary>
+        /// Update trainee wage
+        /// </summary>
+        /// <param name="id">id of trainee</param>
+        /// <param name="wage"></param>
+        /// <returns>200: Update wage success / 404: Trainee profile cannot be found / 409: Conflict</returns>
+        [HttpPut("{id:int}/wage")]
+        public async Task<ActionResult> UpdateTraineeWage(int id, [FromBody]decimal wage)
+        {
+            Trainee trainee = await _traineeService.GetTraineeById(id);
+            if(trainee is null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
+            }
+            if(wage <= 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Fail to update trainee wage"));
+            }
+            trainee.Wage = wage;
+            if(await _traineeService.UpdateTrainee(id, trainee) == 1)
+            {
+                return Ok(new ResponseDTO(200, "Update trainee's wage success"));
+            }
+            else
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update trainee wage"));
+            }
         }
     }
 }
