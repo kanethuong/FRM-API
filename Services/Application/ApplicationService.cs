@@ -167,7 +167,6 @@ namespace kroniiapi.Services
             return appDetail;
         }
 
-<<<<<<< HEAD
         /// <summary>
         /// Confirm application method
         /// </summary>
@@ -190,7 +189,5 @@ namespace kroniiapi.Services
             return rowUpdated;
         }
 
-=======
->>>>>>> c7d153a0a818166fad55d694f6b96d9966cab0a0
     }
 }
