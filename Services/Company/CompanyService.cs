@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.CompanyDTO;
+using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -131,6 +134,7 @@ namespace kroniiapi.Services
             rowDeleted = await _dataContext.SaveChangesAsync();
             return rowDeleted;
         }
+<<<<<<< HEAD
         public async Task<CompanyRequest> GetCompanyRequestById(int id)
         {
             var cr = await _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == id).FirstOrDefaultAsync();
@@ -152,6 +156,50 @@ namespace kroniiapi.Services
             int rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();
             return rowUpdated;
+=======
+
+
+        public async Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter)
+        {
+            var listRequest = await _dataContext.CompanyRequests
+                                    .Where(c => c.IsAccepted == null && c.Company.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) && c.Company.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+                                    .Select(c => new CompanyRequest
+                                    {
+                                        CompanyRequestId = c.CompanyRequestId,
+                                        Content = c.Content,
+                                        CreatedAt = c.CreatedAt,
+                                        ReportURL = c.ReportURL,
+                                        IsAccepted = c.IsAccepted,
+                                        AcceptedAt = c.AcceptedAt,
+                                        Company = new Company
+                                        {
+                                            CompanyId = c.CompanyId,
+                                            Email = c.Company.Email,
+                                            Fullname = c.Company.Fullname,
+                                            AvatarURL = c.Company.AvatarURL
+                                        },
+                                        CompanyRequestDetails = c.CompanyRequestDetails.ToList()
+                                    }
+                                    )
+                                    .OrderByDescending(c => c.CreatedAt)
+                                    .ToListAsync();
+
+            List<CompanyRequestResponse> companyRequestResponses = new List<CompanyRequestResponse>();
+            foreach (var item in listRequest)
+            {
+                var itemToResponse = new CompanyRequestResponse
+                {
+                    CompanyRequestId = item.CompanyRequestId,
+                    CompanyName = item.Company.Fullname,
+                    NumberOfTrainee = item.CompanyRequestDetails.Count(),
+                    Content = item.Content,
+                    CreatedAt = item.CreatedAt
+                };
+                companyRequestResponses.Add(itemToResponse);
+            }
+            return Tuple.Create(companyRequestResponses.Count(), PaginationHelper.GetPage(companyRequestResponses,
+                paginationParameter.PageSize, paginationParameter.PageNumber));
+>>>>>>> bbf98e2f5ff18ccfbb3d7aed3e138c10a4803144
         }
     }
 }

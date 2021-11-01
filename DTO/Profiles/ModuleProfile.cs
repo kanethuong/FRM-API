@@ -13,7 +13,12 @@ namespace kroniiapi.DTO.Profiles
         public ModuleProfile()
         {
             CreateMap<Module,ModuleResponse>();
-            CreateMap<ModuleInput,Module>();
+            CreateMap<ModuleInput,Module>()
+                .ForSourceMember(input => input.Syllabus, opt => opt.DoNotValidate())
+                .ForSourceMember(input => input.Icon, opt => opt.DoNotValidate());
+            CreateMap<ModuleUpdateInput,Module>()
+                .ForSourceMember(input => input.Syllabus, opt => opt.DoNotValidate())
+                .ForSourceMember(input => input.Icon, opt => opt.DoNotValidate());
         }
     }
 }

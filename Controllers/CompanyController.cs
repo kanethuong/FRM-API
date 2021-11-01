@@ -16,12 +16,24 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
+<<<<<<< HEAD
         private readonly ICompanyService _companyService;
         private readonly IMapper _mapper;
         public CompanyController(ICompanyService companyService, IMapper mapper)
         {
             _companyService = companyService;
             _mapper = mapper;
+=======
+
+        private readonly ICompanyService _companyService;
+        private readonly IMapper _mapper;
+        public CompanyController(IMapper mapper,
+
+                                 ICompanyService companyService)
+        {
+            _mapper = mapper;
+            _companyService = companyService;
+>>>>>>> bbf98e2f5ff18ccfbb3d7aed3e138c10a4803144
         }
         /// <summary>
         /// View all company request with pagination
@@ -31,7 +43,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<CompanyRequestResponse>>>> ViewCompanyRequestList([FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<CompanyRequestResponse> companyRequestResponses) = await _companyService.GetCompanyRequestList(paginationParameter);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<CompanyRequestResponse>>(totalRecords, companyRequestResponses));
         }
         /// <summary>
         /// View all company report with pagination (CompanyRequest with isAccepted == true)

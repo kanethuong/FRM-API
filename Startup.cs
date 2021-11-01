@@ -30,6 +30,10 @@ using kroniiapi.DTO.Email;
 using OfficeOpenXml;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Helper.UploadDownloadFile;
+using kroniiapi.Helper.Converter;
+using Microsoft.OpenApi.Any;
+using kroniiapi.Services.Attendance;
+using kroniiapi.AttendanceServicesss;
 
 namespace kroniiapi
 {
@@ -149,7 +153,12 @@ namespace kroniiapi
             services.AddScoped<ICalendarService, CalendarService>();
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<ICertificateService, CertificateService>();
+<<<<<<< HEAD
             services.AddScoped<ICostService, CostService>();
+=======
+            services.AddScoped<ITimetableService, TimetableService>();
+            services.AddScoped<IAttendanceService, AttendanceService>();
+>>>>>>> bbf98e2f5ff18ccfbb3d7aed3e138c10a4803144
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
@@ -167,6 +176,7 @@ namespace kroniiapi
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
             }).ConfigureApiBehaviorOptions(opt => // Custome Model State response object
             {
                 opt.InvalidModelStateResponseFactory = actionContext =>
@@ -185,6 +195,11 @@ namespace kroniiapi
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "kroniiapi", Version = "v1" });
+                c.MapType(typeof(TimeSpan), () => new OpenApiSchema
+                {
+                    Type = "string",
+                    Example = new OpenApiString("00:00:00")
+                });
             });
         }
 
