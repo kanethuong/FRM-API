@@ -84,7 +84,7 @@ namespace kroniiapi.Controllers
         /// <param name="isAccepted">accept or reject</param>
         /// <returns></returns>
         [HttpPut("request/{id:int}")]
-        public async Task<ActionResult> ConfirmCompanyRequest(int id, bool isAccepted)
+        public async Task<ActionResult> ConfirmCompanyRequest(int id,[FromBody] bool isAccepted)
         {
             var rs = await _companyService.ConfirmCompanyRequest(id, isAccepted);
             if (rs == -1)

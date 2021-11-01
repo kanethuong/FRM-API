@@ -17,11 +17,13 @@ namespace kroniiapi.Controllers
     public class CostController : ControllerBase
     {
         private readonly ICostService _costService;
+        private readonly IAdminService _adminService;
         private readonly IMapper _mapper;
-        public CostController(ICostService costService, IMapper mapper)
+        public CostController(ICostService costService, IMapper mapper,IAdminService adminService)
         {
             _costService = costService;
             _mapper = mapper;
+            _adminService = adminService;
         }
         /// <summary>
         /// Get all cost with pagination
@@ -41,6 +43,14 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewCost([FromBody]CostInput costInput)
         {
+            if (_adminService.CheckAdminExist(costInput.AdminId) is false)
+            {
+                return NotFound(new ResponseDTO
+                {
+                    Status = 404,
+                    Message = "Admin does not exist"
+                });
+            }
             if (costInput.Amount <= 0)
             {
                 return BadRequest(new ResponseDTO(400, "Cost must be greater than 0"));
