@@ -194,5 +194,10 @@ namespace kroniiapi.Services
             return Tuple.Create(trainerList.Count(), PaginationHelper.GetPage(trainerList,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
+        public bool CheckTrainerExist(int id)
+        {
+            return  _dataContext.Trainers.Any(t => t.TrainerId == id &&
+            t.IsDeactivated == false);
+        }
     }
 }

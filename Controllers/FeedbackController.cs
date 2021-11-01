@@ -130,29 +130,35 @@ namespace kroniiapi.Controllers
         [HttpGet("{classId:int}")]
         public async Task<ActionResult<FeedbackResponse>> ViewClassFeedback(int classId)
         {
-            Admin admin1 = await _adminService.getAdminByClassId(classId);
-            Trainer trainer1 = await _trainerService.getTrainerByClassId(classId);
-
-            if (admin1 == null || trainer1 == null)
+            var class1 = await _classService.GetClassByClassID(classId);
+            if (class1.IsDeactivated == true)
             {
-                return NotFound(new ResponseDTO(404, "Class not found"));
+                return NotFound(new ResponseDTO(404, "Class not found!"));
+            }
+            Admin admin = await _adminService.getAdminByClassId(classId);
+            Trainer trainer = await _trainerService.getTrainerByClassId(classId);
+
+            if ((admin == null || trainer == null) || (admin.IsDeactivated == true || trainer.IsDeactivated == true))
+            {
+                return NotFound(new ResponseDTO(404, "Admin or trainer not found!"));
             }
 
             FeedbackResponse feedbackResponses = new FeedbackResponse();
 
-            IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByAdminId(trainer1.TrainerId);
-            IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByAdminId(admin1.AdminId);
+            IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByClassId(classId);
+            IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByClassId(classId);
 
+            
             IEnumerable<FeedbackContent> TrainerfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(trainerFeedbacks);
             IEnumerable<FeedbackContent> AdminfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
 
 
             TrainerFeedbackResponse trainerFeedbackResponse = new();
-            trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer1);
+            trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer);
             trainerFeedbackResponse.Feedbacks = TrainerfeedbackContents;
 
             AdminFeedbackResponse adminFeedbackResponse = new();
-            adminFeedbackResponse.Admin = _mapper.Map<AdminInFeedbackResponse>(admin1);
+            adminFeedbackResponse.Admin = _mapper.Map<AdminInFeedbackResponse>(admin);
             adminFeedbackResponse.Feedbacks = AdminfeedbackContents;
 
             feedbackResponses.TrainerFeedback = trainerFeedbackResponse;

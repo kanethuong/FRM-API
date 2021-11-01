@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.TraineeDTO
+namespace kroniiapi.DTO.AdminDTO
 {
-    public class TraineeProfileDetail
+    public class AdminProfileDetail
     {
         public string Fullname { get; set; }
         public string AvatarURL { get; set; }

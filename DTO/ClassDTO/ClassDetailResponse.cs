@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using kroniiapi.DTO.AdminDTO;
+using kroniiapi.DTO.ModuleDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TrainerDTO;
 
-namespace kroniiapi.DTO.ClassDetailDTO
+namespace kroniiapi.DTO.ClassDTO
 {
     public class ClassDetailResponse
     {
