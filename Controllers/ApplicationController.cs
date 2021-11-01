@@ -42,7 +42,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list/ 400: Not found</returns>
-        [HttpGet("{traineeId:int}")]
+        [HttpGet("trainee/{traineeId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
             if (_traineeService.CheckTraineeExist(traineeId) is false)
@@ -103,14 +103,13 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
         {
-            // (int totalRecord, IEnumerable<TraineeApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
-            // //IEnumerable<TraineeApplicationResponse> appListDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<TraineeApplicationResponse>>(appList);
-            // if (totalRecord == 0)
-            // {
-            //     return NotFound(new ResponseDTO(404, "List empty"));
-            // }
-            // return Ok(new PaginationResponse<IEnumerable<TraineeApplicationResponse>>(totalRecord, appList));
-            return null;
+            (int totalRecord, IEnumerable<ApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
+            //IEnumerable<TraineeApplicationResponse> appListDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<TraineeApplicationResponse>>(appList);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "List empty"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, appList));
         }
 
         /// <summary>
@@ -121,7 +120,14 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApplicationDetail>> ViewApplicationDetail(int id)
         {
-            return null;
+            Application app = await _applicationService.GetApplicationDetail(id);
+            if (app == null)
+            {
+                return NotFound(new ResponseDTO(404, "Application not found"));
+            }
+
+            var appDTO = _mapper.Map<ApplicationDetail>(app);
+            return Ok(appDTO);
         }
 
         /// <summary>
@@ -134,7 +140,19 @@ namespace kroniiapi.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult> ConfirmApplication(int id, string response, bool isAccepted)
         {
-            return null;
+            int rs = await _applicationService.ConfirmApplication(id,response,isAccepted);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Application not found"));
+            }
+            else if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to confirm"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Application confirmed!"));
+            }
         }
 
     }
