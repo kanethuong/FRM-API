@@ -16,14 +16,6 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
-<<<<<<< HEAD
-        private readonly ICompanyService _companyService;
-        private readonly IMapper _mapper;
-        public CompanyController(ICompanyService companyService, IMapper mapper)
-        {
-            _companyService = companyService;
-            _mapper = mapper;
-=======
 
         private readonly ICompanyService _companyService;
         private readonly IMapper _mapper;
@@ -33,7 +25,6 @@ namespace kroniiapi.Controllers
         {
             _mapper = mapper;
             _companyService = companyService;
->>>>>>> bbf98e2f5ff18ccfbb3d7aed3e138c10a4803144
         }
         /// <summary>
         /// View all company request with pagination

@@ -17,11 +17,8 @@ namespace kroniiapi.Services
         bool InsertNewCompanyNoSaveChange(Company company);
         Task<int> UpdateCompany(int id, Company company);
         Task<int> DeleteCompany(int id);
-<<<<<<< HEAD
         Task<CompanyRequest> GetCompanyRequestById(int id);
         Task<int> ConfirmCompanyRequest(int id, bool isAccepted);
-=======
         Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter);
->>>>>>> bbf98e2f5ff18ccfbb3d7aed3e138c10a4803144
     }
 }
