@@ -140,7 +140,19 @@ namespace kroniiapi.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult> ConfirmApplication(int id, string response, bool isAccepted)
         {
-            return null;
+            int rs = await _applicationService.ConfirmApplication(id,response,isAccepted);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Application not found"));
+            }
+            else if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to confirm"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Application confirmed!"));
+            }
         }
 
     }

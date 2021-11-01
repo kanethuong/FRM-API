@@ -167,5 +167,27 @@ namespace kroniiapi.Services
             return appDetail;
         }
 
+        /// <summary>
+        /// Confirm application method
+        /// </summary>
+        /// <param name="id">application id</param>
+        /// <param name="response">message of admin to response</param>
+        /// <param name="isAccepted">true/false/null</param>
+        /// <returns>-1:Not found / 0:Fail to confirm / 1:Confirmed</returns>
+        public async Task<int> ConfirmApplication(int id, string response, bool isAccepted)
+        {
+            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == id).FirstOrDefaultAsync();
+            if (existedApplication == null)
+            {
+                return -1;
+            }
+            existedApplication.Response = response;
+            existedApplication.IsAccepted = isAccepted;
+            existedApplication.AcceptedAt = DateTime.Now;
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+
     }
 }
