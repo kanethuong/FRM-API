@@ -30,7 +30,7 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(md => md.ModuleId,c => c.MapFrom(s => s.Module.ModuleId))
                 .ForMember(md => md.ModuleName,c => c.MapFrom(s => s.Module.ModuleName));
             CreateMap<TraineeProfileDetailInput,Trainee>();
-
+            CreateMap<Trainee,TraineeResponse>();
         }
     }
 }

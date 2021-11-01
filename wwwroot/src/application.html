@@ -180,7 +180,7 @@
         <p>By DanhLPT</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/Application</p>
+            <p>/api/Application/page</p>
         </div>
 
         <!-- Role, Method and Status code -->
@@ -204,7 +204,7 @@
                 <h5>Parameter</h5>
                 <p>pageNumber: Position of page</p>
                 <p>pageSize: Number items per page</p>
-                <p>searchName: Application Category Name</p>
+                <p>searchName: Application Category Name/Trainee Name</p>
             </div>
         </div>
 
@@ -221,10 +221,12 @@
     "totalRecords": int,
     "payload": [
         {
-            "description": "string",
-            "applicationURL": "string",
-            "type": "string",
-            "isAccepted": boolean
+            "applicationId": int,
+            "traineeName": "string",
+            "category": "string",
+            "isAccepted": boolean,
+            "acceptedAt": "datetime",
+            "createdAt": "datetime"
         }
                ]
 }</code></pre>
