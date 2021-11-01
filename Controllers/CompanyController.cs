@@ -59,7 +59,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request/{id:int}")]
         public async Task<ActionResult<RequestDetail>> ViewCompanyRequestDetail(int id)
         {
-            return null;
+            var companyRequest = await _companyService.GetCompanyRequestDetail(id);
+            if (companyRequest == null) {
+                return NotFound(new ResponseDTO(404, "Company request not found!"));
+            }
+            RequestDetail requestDetail = _mapper.Map<RequestDetail>(companyRequest);
+            return Ok(requestDetail);
         }
         /// <summary>
         /// View all trainee in company request with pagination
