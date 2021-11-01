@@ -72,7 +72,7 @@ namespace kroniiapi.Controllers
         /// submit trainee certificate (upload to mega)
         /// </summary>
         /// <param name="certificateInput">detail of certificate input</param>
-        /// <returns>201: Created / 400: Bad request / 409: Certificate existed / 404: Module or Trainee not found</returns>
+        /// <returns>201: Created / 400: Bad request / 404: Module or Trainee not found</returns>
         [HttpPost("certificate")]
         public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file, [FromForm] CertificateInput certificateInput)
         {
@@ -92,10 +92,6 @@ namespace kroniiapi.Controllers
             if (status == -1 || status == -2)
             {
                 return NotFound(new ResponseDTO(404, "Cannot find module and trainee or trainee was deactivated!"));
-            }
-            else if (status == -3)
-            {
-                return Conflict(new ResponseDTO(409, "You've already submited certificate for this module!"));
             }
             else if (status == 0)
             {

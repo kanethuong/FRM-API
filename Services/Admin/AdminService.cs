@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -45,6 +46,25 @@ namespace kroniiapi.Services
         {
             return await _dataContext.Admins.Where(a => a.Email.ToLower().Equals(email.ToLower()) && a.IsDeactivated == false).FirstOrDefaultAsync();
         }
+        /// <summary>
+        /// Get admin list
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns> Tuple list of all admin</returns>
+        public async Task<Tuple<int, IEnumerable<Admin>>> GetAdminList(PaginationParameter paginationParameter)
+        {
+            var listAdmin = await _dataContext.Admins.Where(a => a.IsDeactivated == false && a.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+                .OrderByDescending(c => c.CreatedAt).ToListAsync();
+
+            int totalRecords = listAdmin.Count();
+
+            var rs = listAdmin.OrderBy(a => a.CreatedAt)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+
+            return Tuple.Create(totalRecords, rs);
+        }
+
         /// <summary>
         /// Insert new admin to database
         /// </summary>
@@ -123,18 +143,43 @@ namespace kroniiapi.Services
             _dataContext.Admins.Add(admin);
             return true;
         }
-        public async Task<Admin> getAdminByClassId(int id){
+        /// <summary>
+        /// Get Admin by ClassID
+        /// </summary>
+        /// <param name="id">Admin ID</param>
+        /// <returns>Admin data</returns>
+        public async Task<Admin> getAdminByClassId(int id)
+        {
             Class class1 = await _classService.GetClassByClassID(id);
-            if (class1 == null) {
+            if (class1 == null)
+            {
                 return null;
             }
             return await _dataContext.Admins.Where(a => a.AdminId == class1.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
-            
+
         }
+        /// <summary>
+        /// Check admin existed in DB and isDeactivated == false
+        /// </summary>
+        /// <param name="id">Admin ID</param>
+        /// <returns>true: Admin exist in DB and isDeactivated == false / false: Admin doesn't exist in DB or isDeactivated == true</returns>
         public bool CheckAdminExist(int id)
         {
-            return  _dataContext.Admins.Any(t => t.AdminId == id &&
-            t.IsDeactivated == false);
+            return _dataContext.Admins.Any(t => t.AdminId == id &&
+           t.IsDeactivated == false);
+        }
+        /// <summary>
+        /// Get Admin feedbacks by Admin ID
+        /// </summary>
+        /// <param name="adminId">Admin ID</param>
+        /// <returns>All admin feedbacks</returns>
+        public async Task<ICollection<AdminFeedback>> GetAdminFeedbacksByAdminId(int adminId)
+        {
+            if(!CheckAdminExist(adminId)) {
+                return null;
+            }
+            var adminFeedbacks = await _dataContext.AdminFeedbacks.Where(a => a.AdminId == adminId).ToListAsync();
+            return adminFeedbacks;
         }
     }
 }

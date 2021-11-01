@@ -316,14 +316,14 @@ namespace kroniiapi.Services
                         if (slotInWeek == numSlotWeek)
                         {
                             slotInWeek = 0;
-                            dateCount = TimetableHelper.NextMonday(dateCount); 
+                            dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1); 
                         }
                         break;
                     }
                     if (slotInWeek == numSlotWeek)
                     {
                         slotInWeek = 0;
-                        dateCount = TimetableHelper.NextMonday(dateCount);
+                        dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
                         break;
                     }
                     if (DayCheck(calendarToAdd, classGet.RoomId) && TrainerCheck(calendarToAdd,classGet.TrainerId))
@@ -332,7 +332,7 @@ namespace kroniiapi.Services
                         slotModuleInDay += 1;
                         slotInDay += 1;
                         slotInWeek += 1;
-                        _datacontext.Calendars.Add(calendarToAdd);
+                        _datacontext.Calendars.AddRange(calendarToAdd);
                     };
                 }
                 dateCount = dateCount.AddDays(1);
