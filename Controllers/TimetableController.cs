@@ -39,7 +39,7 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(404, "Hoc it thoi"));
             }
             int slotsNeed = _timetableService.GetTotalSlotsNeed(moduleList);
-            if (_timetableService.CheckAvailabeSlotsForRoom(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay))
+            if (!_timetableService.CheckAvailabeSlotsForRoom(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay))
             {
                 var otherRooms = await _timetableService.GetOtherRoomsForClass(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay);
                 string message = "Room is already full of slot, Recommend:";
@@ -62,11 +62,11 @@ namespace kroniiapi.Controllers
                 {
                     return BadRequest(new ResponseDTO(404, "Can not Insert Modules To Class"));
                 }
-                var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
-                foreach (var id in idList)
-                {
-                    await _attendanceService.AddNewAttendance(id, classGet.Trainees);
-                }
+                // var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
+                // foreach (var id in idList)
+                // {
+                //     await _attendanceService.AddNewAttendance(id, classGet.Trainees);
+                // }
             }
             return Ok(new ResponseDTO(200, "Successfully"));
         }
