@@ -62,11 +62,11 @@ namespace kroniiapi.Controllers
                 {
                     return BadRequest(new ResponseDTO(404, "Can not Insert Modules To Class"));
                 }
-                // var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
-                // foreach (var id in idList)
-                // {
-                //     await _attendanceService.AddNewAttendance(id, classGet.Trainees);
-                // }
+                var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
+                foreach (var id in idList)
+                {
+                    await _attendanceService.AddNewAttendance(id, classGet.Trainees);
+                }
             }
             return Ok(new ResponseDTO(200, "Successfully"));
         }
