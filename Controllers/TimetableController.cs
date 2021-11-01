@@ -6,6 +6,7 @@ using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
+using kroniiapi.Services.Attendance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,14 @@ namespace kroniiapi.Controllers
     {
         private readonly ITimetableService _timetableService;
         private readonly IClassService _classService;
-        public TimetableController(ITimetableService timetableService, IClassService classService)
+        private readonly IAttendanceService _attendanceService;
+        private readonly ICalendarService _calendarService;
+        public TimetableController(ITimetableService timetableService, IClassService classService, IAttendanceService attendanceService, ICalendarService calendarService)
         {
             _timetableService = timetableService;
             _classService = classService;
+            _attendanceService = attendanceService;
+            _calendarService = calendarService;
         }
         [HttpPost("create")]
         public async Task<ActionResult> CreateTimetableForClass( int classId)
@@ -56,6 +61,11 @@ namespace kroniiapi.Controllers
                 if (status == -1)
                 {
                     return BadRequest(new ResponseDTO(404, "Can not Insert Modules To Class"));
+                }
+                var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
+                foreach (var id in idList)
+                {
+                    await _attendanceService.AddNewAttendance(id, classGet.Trainees);
                 }
             }
             return Ok(new ResponseDTO(200, "Successfully"));
