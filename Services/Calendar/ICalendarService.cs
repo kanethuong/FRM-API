@@ -9,5 +9,6 @@ namespace kroniiapi.Services
     public interface ICalendarService
     {
         Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId,DateTime startDate, DateTime endDate);
+        Task<List<int>> GetCalendarsIdListByModuleAndClassId(int moduleId, int classId);
     }
 }
