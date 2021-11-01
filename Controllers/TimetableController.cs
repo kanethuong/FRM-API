@@ -49,7 +49,7 @@ namespace kroniiapi.Controllers
                 }
                 return Conflict(new ResponseDTO(409, message));
             }
-            if (_timetableService.CheckAvailabeSlotsForTrainer(slotsNeed, classGet.TrainerId, classGet.StartDay, classGet.EndDay))
+            if (!_timetableService.CheckAvailabeSlotsForTrainer(slotsNeed, classGet.TrainerId, classGet.StartDay, classGet.EndDay))
             {
                 return Conflict(new ResponseDTO(409, "This Trainer is bussy in that among of time"));
             }
