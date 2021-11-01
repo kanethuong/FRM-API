@@ -75,7 +75,8 @@ namespace kroniiapi.Controllers
             if (rs == -1)
             {
                 return BadRequest(new ResponseDTO(400, "Trainee is not found"));
-            }else if(rs==-2)
+            }
+            else if (rs == -2)
             {
                 return BadRequest(new ResponseDTO(400, "Application category is not found"));
             }
@@ -95,20 +96,45 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// Get all application
+        /// Get all application with pagination
         /// </summary>
         /// <param name="paginationParameter"></param>
-        /// <returns>Tuple of all application</returns>
-        [HttpGet]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
+        /// <returns>Pagination of all ApplicationResponse, not TraineeApplicationResponse</returns>
+        [HttpGet("page")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
         {
-            (int totalRecord, IEnumerable<TraineeApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
+            (int totalRecord, IEnumerable<ApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
             //IEnumerable<TraineeApplicationResponse> appListDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<TraineeApplicationResponse>>(appList);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "List empty"));
             }
-            return Ok(new PaginationResponse<IEnumerable<TraineeApplicationResponse>>(totalRecord, appList));
+            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, appList));
         }
+
+        /// <summary>
+        /// Get applcation detail
+        /// </summary>
+        /// <param name="id">applcation id</param>
+        /// <returns>200: An applcation detail with corresponding id / 404: not found</returns>
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ApplicationDetail>> ViewApplicationDetail(int id)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Send accept or reject to application form
+        /// </summary>
+        /// <param name="id">application id</param>
+        /// <param name="response">Response to application form</param>
+        /// <param name="isAccepted">accept or reject</param>
+        /// <returns></returns>
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> ConfirmApplication(int id, string response, bool isAccepted)
+        {
+            return null;
+        }
+
     }
 }
