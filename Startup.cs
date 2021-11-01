@@ -30,6 +30,8 @@ using kroniiapi.DTO.Email;
 using OfficeOpenXml;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Helper.UploadDownloadFile;
+using kroniiapi.Helper.Converter;
+using Microsoft.OpenApi.Any;
 using kroniiapi.Services.Attendance;
 using kroniiapi.AttendanceServicesss;
 
@@ -170,6 +172,7 @@ namespace kroniiapi
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
             }).ConfigureApiBehaviorOptions(opt => // Custome Model State response object
             {
                 opt.InvalidModelStateResponseFactory = actionContext =>
@@ -188,6 +191,11 @@ namespace kroniiapi
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "kroniiapi", Version = "v1" });
+                c.MapType(typeof(TimeSpan), () => new OpenApiSchema
+                {
+                    Type = "string",
+                    Example = new OpenApiString("00:00:00")
+                });
             });
         }
 
