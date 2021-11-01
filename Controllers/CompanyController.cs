@@ -16,9 +16,12 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
+
         private readonly ICompanyService _companyService;
         private readonly IMapper _mapper;
-        public CompanyController(IMapper mapper, ICompanyService companyService)
+        public CompanyController(IMapper mapper,
+
+                                 ICompanyService companyService)
         {
             _mapper = mapper;
             _companyService = companyService;
@@ -31,7 +34,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<CompanyRequestResponse>>>> ViewCompanyRequestList([FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<CompanyRequestResponse> companyRequestResponses) = await _companyService.GetCompanyRequestList(paginationParameter);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<CompanyRequestResponse>>(totalRecords, companyRequestResponses));
         }
         /// <summary>
         /// View all company report with pagination (CompanyRequest with isAccepted == true)
@@ -79,9 +87,22 @@ namespace kroniiapi.Controllers
         /// <param name="isAccepted">accept or reject</param>
         /// <returns></returns>
         [HttpPut("request/{id:int}")]
-        public async Task<ActionResult> ConfirmCompanyRequest(int id, bool isAccepted)
+        public async Task<ActionResult> ConfirmCompanyRequest(int id,[FromBody] bool isAccepted)
         {
-            return null;
+            var rs = await _companyService.ConfirmCompanyRequest(id, isAccepted);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Company request cannot be found"));
+            }
+            else if (rs == -2)
+            {
+                return BadRequest(new ResponseDTO(400, "Company request had been confirmed before"));
+            }
+            else if (rs == 1)
+            {
+                return Ok(new ResponseDTO(200, "The company request is comfirmed"));
+            }
+            else return BadRequest(new ResponseDTO(400, "Fail to update"));
         }
 
     }

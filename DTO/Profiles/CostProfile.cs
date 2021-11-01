@@ -16,7 +16,7 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(ti => ti.Creator, c => c.MapFrom(s => s.Admin.Fullname))
                 .ForMember(ti => ti.CostType, c => c.MapFrom(s => s.CostType.CostTypeName));
             CreateMap<CostInput, Cost>();
-
+            CreateMap<CostType,CostTypeResponse>();
         }
     }
 }
