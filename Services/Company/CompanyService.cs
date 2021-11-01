@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -48,6 +50,32 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Get a report list of companies
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Total record, report list</returns>
+        public async Task<Tuple<int, IEnumerable<CompanyRequest>>> GetCompanyReportList(PaginationParameter paginationParameter)
+        {
+            var reportList = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
+              && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
+                  c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
+                  c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
+                .Select(c => new CompanyRequest{
+                            CompanyRequestId=c.CompanyRequestId,
+                            Company=new Company{
+                                Fullname=c.Company.Fullname
+                            }
+
+
+                })
+                .OrderByDescending(c => c.AcceptedAt)
+                .ToListAsync();
+
+            return Tuple.Create(reportList.Count(),
+                                PaginationHelper.GetPage(reportList, paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
+
+        /// <summary>
         /// Insert new company to database
         /// </summary>
         /// <param name="company">Company data</param>
@@ -66,7 +94,7 @@ namespace kroniiapi.Services
 
             return rowInserted;
         }
-        
+
         /// <summary>
         /// Insert new (company) account to DbContext without save change to DB
         /// </summary>
