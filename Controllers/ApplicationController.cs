@@ -103,14 +103,13 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
         {
-            // (int totalRecord, IEnumerable<TraineeApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
-            // //IEnumerable<TraineeApplicationResponse> appListDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<TraineeApplicationResponse>>(appList);
-            // if (totalRecord == 0)
-            // {
-            //     return NotFound(new ResponseDTO(404, "List empty"));
-            // }
-            // return Ok(new PaginationResponse<IEnumerable<TraineeApplicationResponse>>(totalRecord, appList));
-            return null;
+            (int totalRecord, IEnumerable<ApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
+            //IEnumerable<TraineeApplicationResponse> appListDTO = _mapper.Map<IEnumerable<Application>, IEnumerable<TraineeApplicationResponse>>(appList);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "List empty"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<ApplicationResponse>>(totalRecord, appList));
         }
 
         /// <summary>
