@@ -258,8 +258,6 @@ namespace kroniiapi.Services
             var isAdminExist = _dataContext.Admins.Any(a => a.AdminId == deleteClassRequest.AdminId && a.IsDeactivated == false);
             var isClassExist = _dataContext.Classes.Any(c => c.ClassId == deleteClassRequest.ClassId && c.IsDeactivated == false);
 
-
-
             if (isAdminExist == false)
             {
                 return -2;
