@@ -60,12 +60,16 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="paginationParameter"></param>
         /// <returns> Tuple List of application </returns>
-        public async Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationList(PaginationParameter paginationParameter)
+        public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationList(PaginationParameter paginationParameter)
         {
-            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())&& app.Trainee.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                     .Select(a => new Application
                                                     {
                                                         TraineeId = a.TraineeId,
+                                                        Trainee = new Trainee{
+                                                            TraineeId = a.TraineeId,
+                                                            Fullname = a.Trainee.Fullname
+                                                        },
                                                         Description = a.Description,
                                                         ApplicationURL = a.ApplicationURL,
                                                         ApplicationId = a.ApplicationId,
@@ -76,18 +80,24 @@ namespace kroniiapi.Services
                                                             CategoryName = a.ApplicationCategory.CategoryName,
                                                         },
                                                         IsAccepted = a.IsAccepted,
+                                                        CreatedAt = a.CreatedAt,
+                                                        AcceptedAt = a.AcceptedAt
                                                     })
+                                                    .OrderByDescending(c => c.CreatedAt)
                                                     .ToListAsync();
-            List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
+            List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
 
             foreach (var item in applicationList)
             {
-                var itemToResponse = new TraineeApplicationResponse
+                var itemToResponse = new ApplicationResponse
                 {
-                    Description = item.Description,
-                    ApplicationURL = item.ApplicationURL,
-                    Type = item.ApplicationCategory.CategoryName,
-                    IsAccepted = item.IsAccepted
+                    ApplicationId = item.ApplicationId,
+                    TraineeName = item.Trainee.Fullname,
+                    Category = item.ApplicationCategory.CategoryName,
+                    IsAccepted = item.IsAccepted,
+                    AcceptedAt = item.AcceptedAt,
+                    CreatedAt = item.CreatedAt
+
                 };
                 applicationReponse.Add(itemToResponse);
             }

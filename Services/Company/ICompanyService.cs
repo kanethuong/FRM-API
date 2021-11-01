@@ -15,5 +15,7 @@ namespace kroniiapi.Services
         bool InsertNewCompanyNoSaveChange(Company company);
         Task<int> UpdateCompany(int id, Company company);
         Task<int> DeleteCompany(int id);
+        Task<CompanyRequest> GetCompanyRequestById(int id);
+        Task<int> ConfirmCompanyRequest(int id, bool isAccepted);
     }
 }
