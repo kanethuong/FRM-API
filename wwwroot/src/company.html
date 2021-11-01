@@ -1,17 +1,19 @@
 <div class="mb-5">
-    <h2 class="fw-bold">Trainer</h2>
-    <p>Trainer details</p>
+    <h2 class="fw-bold">Company</h2>
+    <p>
+        Manipulate company information, include company request, report
+    </p>
 
-    <!-- Get trainers in create new class form -->
-    <div id="allTrainer">
+    <!-- Get company request list -->
+    <div id="viewCompanyRequestList">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>Get all trainers </h3>
+            <h3>View Company Request List</h3>
         </div>
-        <p>By ToanTK</p>
+        <p>By DanhLPT</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/Trainer/page</p>
+            <p>/api/Company/request</p>
         </div>
 
         <!-- Role, Method and Status code -->
@@ -35,8 +37,8 @@
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
                 <p>pageNumber: Position of page</p>
-                <p>pageSize: Numbers item per page</p>
-                <p>searchName: Trainer email, fullname and username</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Company Name/Email</p>
             </div>
         </div>
 
@@ -48,21 +50,22 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>
-                    {
-                        "totalRecords": int,
-                        "payload": [
-                          {
-                            "trainerId": int,
-                            "fullname": "string",
-                            "avatarURL": "string",
-                            "email": "string"
-                          }
-                        ]
-                      }
-</code></pre></p>
+                <p>
+                <pre><code>{ 
+    "totalRecords": int,
+    "payload": [
+        {
+            "companyRequestId": int,
+            "companyName": "string",
+            "numberOfTrainee": int,
+            "content": "string",
+            "createdAt": "datetime"
+        }
+               ]
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
-
-</div>    
+    
+</div>
