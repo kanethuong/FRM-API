@@ -1,0 +1,119 @@
+<div class="mb-5">
+    <h2 class="fw-bold">Company</h2>
+    <p>
+        Manipulate company information, include company request, report
+    </p>
+
+    <!-- Get company request list -->
+    <div id="viewCompanyRequestList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Company Request List</h3>
+        </div>
+        <p>By DanhLPT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/request</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Company Name/Email</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>{ 
+    "totalRecords": int,
+    "payload": [
+        {
+            "companyRequestId": int,
+            "companyName": "string",
+            "numberOfTrainee": int,
+            "content": "string",
+            "createdAt": "datetime"
+        }
+               ]
+}</code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Company Request -->
+    <div id="ConfirmCompanyRequest">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Confirm Company Request</h3>
+        </div>
+        <p>By ToanTK</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/request/{id}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: id of company request</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>isAccepted: boolean type</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
+</div>

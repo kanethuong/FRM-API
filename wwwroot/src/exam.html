@@ -1,0 +1,169 @@
+<div class="mb-5">
+    <h2 class="fw-bold">Exam</h2>
+    <p>
+        Help you to view, create, update and cancel exam
+    </p>
+
+    <div id="viewExamList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Exam List</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/exam/page</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Anonymous</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>PageNumber: Position of page</p>
+                <p>PageSize: Number items per page</p>
+                <p>SearchName: Exam name</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>None</p>
+            </div>
+            <div class="col-6">
+                <h5>Request sponse</h5>
+                <p><pre><code>{
+    "totalRecords": int,
+    "payload": [
+        {
+        "examId": int,
+        "examName": "string",
+        "moduleName": "string",
+        "description": "string",
+        "examDay": "DateTime",
+        "durationInMinute": int,
+        "adminName": "string",
+        "isCancelled": boolean
+        }
+    ]
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="updateExam">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Update exam information</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/exam/{id}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Anonymous</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: exam id</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "duration": int,
+    "examDay": "DateTime"
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Request sponse</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="cancelExam">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Cancel exam</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/exam/{id}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Anonymous</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>DELETE</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: exam id</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>None</p>
+            </div>
+            <div class="col-6">
+                <h5>Request sponse</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
+</div>

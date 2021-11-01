@@ -80,7 +80,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Application category is not found"));
             }
-            return Created("", new ResponseDTO(201, "Successfully inserted")); ;
+            return Created("", new ResponseDTO(201, "Successfully inserted")); 
         }
 
         /// <summary>
