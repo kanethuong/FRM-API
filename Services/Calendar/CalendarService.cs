@@ -32,5 +32,36 @@ namespace kroniiapi.Services
             ).OrderBy(c => c.Date).ToListAsync();
             return calendars;
         }
+        public async Task<string> GetRoomNameByCalendarId(int calendarId)
+        {
+            var calendarRoom = await _dataContext.Calendars
+                                .Where(c => c.CalendarId == calendarId)
+                                .Select(c => new Calendar {
+                                    CalendarId = c.CalendarId,
+                                    SyllabusSlot = c.SyllabusSlot,
+                                    SlotInDay = c.SlotInDay,
+                                    Class = new Class {
+                                        ClassId = c.ClassId,
+                                        ClassName = c.Class.ClassName,
+                                        Room = new Room {
+                                            RoomId = c.Class.RoomId,
+                                            RoomName = c.Class.Room.RoomName,
+                                        }
+                                    }
+                                })
+                                .FirstOrDefaultAsync();
+            return calendarRoom.Class.Room.RoomName;
+        }
+        /// <summary>
+        /// Get Calendars Id List using Module Id and Class Id
+        /// </summary>
+        /// <param name="moduleId"></param>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public async Task<List<int>> GetCalendarsIdListByModuleAndClassId(int moduleId, int classId)
+        {
+            var idList = await _dataContext.Calendars.Where(c => c.ModuleId == moduleId && c.ClassId == classId).Select(c => c.CalendarId).ToListAsync();
+            return idList;
+        }
     }
 }
