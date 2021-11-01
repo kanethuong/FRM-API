@@ -18,5 +18,6 @@ namespace kroniiapi.Services
         Task<int> DeleteTrainer(int id);
         Task<Trainer> getTrainerByClassId(int id);
         Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter);
+        bool CheckTrainerExist(int id);
     }
 }

@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.ClassDetailDTO
+namespace kroniiapi.DTO.CompanyDTO
 {
-    public class AdminResponse
+    public class TraineeInRequest
     {
-        public int AdminId { get; set; }
+        public int TraineeId { get; set; }
         public string Fullname { get; set; }
-        public string AvatarURL { get; set; }
         public string Email { get; set; }
-        public decimal Wage { get; set; }
+
     }
 }
