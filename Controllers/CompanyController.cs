@@ -81,8 +81,21 @@ namespace kroniiapi.Controllers
         [HttpPut("request/{id:int}")]
         public async Task<ActionResult> ConfirmCompanyRequest(int id, bool isAccepted)
         {
-            return null;
+            var rs = await _companyService.ConfirmCompanyRequest(id, isAccepted);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Company request cannot be found"));
+            }
+            else if (rs == -2)
+            {
+                return BadRequest(new ResponseDTO(400, "Company request had been confirmed before"));
+            }
+            else if (rs == 1)
+            {
+                return Ok(new ResponseDTO(200, "The company request is comfirmed"));
+            }
+            else return BadRequest(new ResponseDTO(400, "Fail to update"));
         }
-        
+
     }
 }

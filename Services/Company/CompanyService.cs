@@ -134,8 +134,28 @@ namespace kroniiapi.Services
             rowDeleted = await _dataContext.SaveChangesAsync();
             return rowDeleted;
         }
-
-
+        public async Task<CompanyRequest> GetCompanyRequestById(int id)
+        {
+            var cr = await _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == id).FirstOrDefaultAsync();
+            return cr;
+        }
+        public async Task<int> ConfirmCompanyRequest(int id, bool isAccepted)
+        {
+            var cr = await _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == id).FirstOrDefaultAsync();
+            if (cr == null)
+            {
+                return -1;
+            }
+            if (cr.IsAccepted is not null)
+            {
+                return -2;
+            }
+            cr.IsAccepted = isAccepted;
+            cr.AcceptedAt = DateTime.Now;
+            int rowUpdated = 0;
+            rowUpdated = await _dataContext.SaveChangesAsync();
+            return rowUpdated;
+        }
         public async Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter)
         {
             var listRequest = await _dataContext.CompanyRequests
