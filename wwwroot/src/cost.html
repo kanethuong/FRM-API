@@ -4,5 +4,100 @@
         Manipulate cost information
     </p>
 
-    
+    <!-- create new cost  -->
+    <div id="createNewCost">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create new cost</h3>
+        </div>
+        <p>By ToanTK</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Cost</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 400 404</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+"content": "string",
+"amount": decimal,
+"costTypeId": int,
+"adminId": int
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Get application type -->
+    <div id="costType">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Get cost type</h3>
+        </div>
+        <p>By ToanTK</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Cost/type</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+[
+    {
+        "costTypeId": int,
+        "costTypeName": "string"
+    }
+]
+</code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+   
 </div>

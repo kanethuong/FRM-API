@@ -10,5 +10,6 @@ namespace kroniiapi.DTO.CostDTO
         public string Content { get; set; }
         public decimal Amount { get; set; }
         public int CostTypeId { get; set; }
+        public int AdminId { get; set; }
     }
 }

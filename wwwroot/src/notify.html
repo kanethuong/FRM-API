@@ -215,6 +215,51 @@
             </div>
         </div>
 
+        <div id="SendListTraineeNotify">
+            <!-- Function Title -->
+            <div class="w-75 border-bottom mb-3">
+                <h3>Send Trainee notify (list)</h3>
+            </div>
+            <p>By ThoTA</p>
+            <div>
+                <h5>Endpoint</h5>
+                <p>/api/Notify/listTrainee</p>
+            </div>
+    
+            <!-- Role, Method and Status code -->
+            <div class="row mb-3">
+                <div class="col-4 border-end">
+                    <h5>Allow</h5>
+                    <p>Admin</p>
+                </div>
+                <div class="col-4 border-end">
+                    <h5>Method</h5>
+                    <p>POST</p>
+                </div>
+                <div class="col-4">
+                    <h5>Status</h5>
+                    <p>204 400</p>
+                </div>
+            </div>
+    
+            <!-- Request body and Response body  -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Request Body</h5>
+                    <p><pre><code>[
+    {
+        "user": "string",
+        "sendTo": "string",
+        "message": "string",
+    }
+]</code></pre></p>
+                </div>
+                <div class="col-6">
+                    <h5>Response Body</h5>
+                    <p>Error Reponse</p>
+                </div>
+            </div>
+        
         <div id="setSeen">
             <!-- Function Title -->
             <div class="w-75 border-bottom mb-3">

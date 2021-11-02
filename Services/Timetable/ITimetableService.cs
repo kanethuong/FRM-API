@@ -16,6 +16,6 @@ namespace kroniiapi.Services
         Task<IEnumerable<string>> GetOtherRoomsForClass(int slotsNeed, int roomId, DateTime startDay, DateTime endDay);
         int GetTotalSlotsNeed(ICollection<Module> modulesList);
         bool CheckAvailabeSlotsForTrainer(int slotsNeed, int trainerId, DateTime startDay, DateTime endDay);
-        void SaveChangeTimeTable();
+        Task<(int, string)> GenerateTimetable(int classId);
     }
 }

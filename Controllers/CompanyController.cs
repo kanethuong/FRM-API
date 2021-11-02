@@ -59,7 +59,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request/{id:int}")]
         public async Task<ActionResult<RequestDetail>> ViewCompanyRequestDetail(int id)
         {
-            return null;
+            var companyRequest = await _companyService.GetCompanyRequestDetail(id);
+            if (companyRequest == null) {
+                return NotFound(new ResponseDTO(404, "Company request not found!"));
+            }
+            RequestDetail requestDetail = _mapper.Map<RequestDetail>(companyRequest);
+            return Ok(requestDetail);
         }
         /// <summary>
         /// View all trainee in company request with pagination
@@ -79,7 +84,7 @@ namespace kroniiapi.Controllers
         /// <param name="isAccepted">accept or reject</param>
         /// <returns></returns>
         [HttpPut("request/{id:int}")]
-        public async Task<ActionResult> ConfirmCompanyRequest(int id, bool isAccepted)
+        public async Task<ActionResult> ConfirmCompanyRequest(int id,[FromBody] bool isAccepted)
         {
             var rs = await _companyService.ConfirmCompanyRequest(id, isAccepted);
             if (rs == -1)
