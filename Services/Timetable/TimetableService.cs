@@ -353,7 +353,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <returns></returns>
-        public async Task<(int, string)> GenerateTimetable(int classId)
+        public async Task<(int, string )> GenerateTimetable(int classId)
         {
             var moduleList = await GetModuleListlByClassId(classId);
             var classGet = await _classService.GetClassByClassID(classId);
