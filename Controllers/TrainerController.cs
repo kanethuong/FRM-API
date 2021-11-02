@@ -38,7 +38,7 @@ namespace kroniiapi.Controllers
 
             if (totalRecord == 0)
             {
-                return NotFound(new ResponseDTO(404, "Search trainer email not found"));
+                return NotFound(new ResponseDTO(404, "Search trainer not found"));
             }
             var trainers = _mapper.Map<IEnumerable<TrainerResponse>>(listTrainer);
 
