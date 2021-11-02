@@ -3,7 +3,7 @@
     <p>Module details</p>
 
     <!-- Get trainers in create new class form -->
-    <div id="moduleInForm">
+    <div id="allModule">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
             <h3>Get modules in create new class form</h3>
@@ -65,4 +65,130 @@
         </div>
     </div>
 
+    <!-- Create new module -->
+    <div id="createModule">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create New Module</h3>
+        </div>
+        <p>By TienHQ</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Module</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 400 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>ModuleName: the module name</p>
+                <p>NoOfSlot: the number of slots</p>
+                <p>Description: the description</p>
+                <p>SlotDuration: The duration of a slot (HH:mm:ss)</p>
+                <p>Syllabus: The syllabus (Excel File)</p>
+                <p>Icon: The display icon (Image File)</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><code><pre>
+                    {
+                        "moduleName": "string",
+                        "noOfSlot": int,
+                        "description": "string",
+                        "slotDuration": "HH:mm:ss",
+                        "syllabus": "string$bynary",
+                        "icon": "string$bynary"
+                    }
+                </pre></code></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create new module -->
+    <div id="updateModule">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Update Module</h3>
+        </div>
+        <p>By TienHQ</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Module/{moduleId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>ModuleId: the id of the module</p>
+                <p>ModuleName: the module name</p>
+                <p>NoOfSlot: the number of slots</p>
+                <p>Description: the description</p>
+                <p>SlotDuration: The duration of a slot (HH:mm:ss)</p>
+                <p>Syllabus: The syllabus (Excel File)</p>
+                <p>Icon: The display icon (Image File)</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><code><pre>
+                    {
+                        "moduleName": "string",
+                        "noOfSlot": int,
+                        "description": "string",
+                        "slotDuration": "HH:mm:ss",
+                        "syllabus": "string$bynary",
+                        "icon": "string$bynary"
+                    }
+                </pre></code></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
 </div>    

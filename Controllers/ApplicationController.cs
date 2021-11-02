@@ -80,7 +80,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Application category is not found"));
             }
-            return Created("", new ResponseDTO(201, "Successfully inserted")); ;
+            return Created("", new ResponseDTO(201, "Successfully inserted")); 
         }
 
         /// <summary>
@@ -133,17 +133,19 @@ namespace kroniiapi.Controllers
         /// <summary>
         /// Send accept or reject to application form
         /// </summary>
-        /// <param name="id">application id</param>
-        /// <param name="response">Response to application form</param>
-        /// <param name="isAccepted">accept or reject</param>
+        /// <param name="confirmApplicationInput">Confirm Application Input DTO</param>
         /// <returns></returns>
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult> ConfirmApplication(int id, string response, bool isAccepted)
+        [HttpPut]
+        public async Task<ActionResult> ConfirmApplication([FromBody] ConfirmApplicationInput confirmApplicationInput)
         {
-            int rs = await _applicationService.ConfirmApplication(id,response,isAccepted);
+            int rs = await _applicationService.ConfirmApplication(confirmApplicationInput);
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, "Application not found"));
+            }
+            else if (rs == -2)
+            {
+                return NotFound(new ResponseDTO(404, "Admin not found"));
             }
             else if (rs == 0)
             {

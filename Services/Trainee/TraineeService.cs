@@ -250,8 +250,10 @@ namespace kroniiapi.Services
                 });
             }
 
-            return Tuple.Create(resultList.Count(), PaginationHelper.GetPage(resultList.Where(t =>
-                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower())), paginationParameter));
+            IEnumerable<TraineeAttendanceReport> filterResultList = resultList.Where(t =>
+                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower()));
+
+            return Tuple.Create(filterResultList.Count(), PaginationHelper.GetPage(filterResultList, paginationParameter));
         }
 
         /// <summary>
@@ -371,7 +373,8 @@ namespace kroniiapi.Services
         private async Task<string> GetCertificatesURLByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
             var certificate = await _dataContext.Certificates.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
-            if(certificate == null){
+            if (certificate == null)
+            {
                 return null;
             }
             return certificate.CertificateURL;
@@ -386,7 +389,8 @@ namespace kroniiapi.Services
         private async Task<float> GetScoreByTraineeIdAndModuleId(int Traineeid, int Moduleid)
         {
             var score = await _dataContext.Marks.Where(m => m.TraineeId == Traineeid && m.ModuleId == Moduleid).FirstOrDefaultAsync();
-            if(score == null){
+            if (score == null)
+            {
                 return 0;
             }
             return score.Score;
@@ -405,8 +409,22 @@ namespace kroniiapi.Services
         }
         public bool CheckTraineeExist(int id)
         {
-            return  _dataContext.Trainees.Any(t => t.TraineeId == id &&
-            t.IsDeactivated == false);
+            return _dataContext.Trainees.Any(t => t.TraineeId == id &&
+           t.IsDeactivated == false);
+        }
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationParameter paginationParameter)
+        {
+            var traineeList = await _dataContext.Trainees.Where(t
+                 => t.IsDeactivated == false  &&
+                                                (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
+                                                .ToListAsync();
+            int totalRecords = traineeList.Count();                                    
+            var rs = traineeList.OrderBy(c => c.CreatedAt)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
         }
     }
 }

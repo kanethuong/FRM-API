@@ -95,11 +95,62 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="moduleId">module id to update</param>
         /// <param name="moduleInput">module input to update</param>
-        /// <returns></returns>
+        /// <returns>404 : The module is not found / 409 : Fail to create / 200 : Updated</returns>
         [HttpPut("{moduleId:int}")]
         public async Task<ActionResult> UpdateModule(int moduleId, [FromForm] ModuleUpdateInput moduleInput)
         {
-            return null;
+            List<string> errors = new();
+            Module module = await _moduleService.GetModuleById(moduleId);
+            if (module is null)
+                return NotFound(new ResponseDTO(404, "The module id is not found"));
+            _mapper.Map(moduleInput, module);
+
+            bool success;
+            string message;
+            if (moduleInput.Syllabus is not null)
+            {
+                var syllabus = moduleInput.Syllabus;
+                (success, message) = FileHelper.CheckExcelExtension(syllabus);
+                if (success)
+                {
+                    using (var stream = syllabus.OpenReadStream())
+                    {
+                        module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
+                    }
+                }
+                else
+                {
+                    errors.Add($"Error on Syllabus: {message}");
+                }
+            }
+            if (moduleInput.Icon is not null)
+            {
+                var icon = moduleInput.Icon;
+                (success, message) = FileHelper.CheckImageExtension(icon);
+                if (success)
+                {
+                    using (var stream = icon.OpenReadStream())
+                    {
+                        module.IconURL = await _imgHelper.Upload(stream, icon.FileName, icon.Length, icon.ContentType);
+                    }
+                }
+                else
+                {
+                    errors.Add($"Error on Icon: {message}");
+                }
+            }
+
+            int result = await _moduleService.UpdateModule(moduleId, module);
+            if (result > 0)
+                return Ok(new ResponseDTO(200, "Successfully updated")
+                {
+                    Errors = errors
+                });
+            else
+                return Conflict(new ResponseDTO(409, "Fail to update the module")
+                {
+                    Errors = errors
+                });
         }
     }
 }

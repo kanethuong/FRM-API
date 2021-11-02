@@ -6,6 +6,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.PaginationDTO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Services
 {
@@ -18,6 +19,6 @@ namespace kroniiapi.Services
         Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList ();
         Task<ApplicationCategory> GetApplicationCategory(int id);
         Task<Application> GetApplicationDetail(int id);
-        Task<int> ConfirmApplication(int id, string response, bool isAccepted);
+        Task<int> ConfirmApplication([FromBody]ConfirmApplicationInput confirmApplicationInput);
     }
 }

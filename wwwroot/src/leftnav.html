@@ -249,6 +249,13 @@
                         >
                     </li>
                     <li>
+                        <a
+                            href="#SendListTraineeNotify"
+                            class="link-dark rounded"
+                            >Send Trainee notify (List)
+                        </a>
+                    </li>
+                    <li>
                         <a href="#setSeen" class="link-dark rounded"
                             >Set Seen</a
                         >
@@ -291,7 +298,9 @@
                         >
                     </li>
                     <li>
-                        <a href="#getApplicationDetail" class="link-dark rounded"
+                        <a
+                            href="#getApplicationDetail"
+                            class="link-dark rounded"
                             >Get Application Detail</a
                         >
                     </li>
@@ -482,9 +491,9 @@
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                     <!-- Dupplicate this to add more sub menu -->
                     <li>
-                        <a href="#trainerInForm" class="link-dark rounded"
-                            >Get trainers in new class form</a
-                        >
+                        <a href="#allTrainer" class="link-dark rounded"
+                            >Get all trainers
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -504,8 +513,75 @@
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                     <!-- Dupplicate this to add more sub menu -->
                     <li>
-                        <a href="#moduleInForm" class="link-dark rounded"
-                            >Get modules in new class form</a
+                        <a href="#allModule" class="link-dark rounded"
+                            >Get all modules
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#createModule" class="link-dark rounded"
+                            >Create New Module
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#updateModule" class="link-dark rounded"
+                            >Update Module
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Company -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#company-collapse"
+                aria-expanded="false"
+            >
+                Company
+            </button>
+            <div class="collapse" id="company-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <!-- Dupplicate this to add more sub menu -->
+                    <li>
+                        <a
+                            href="#viewCompanyRequestList"
+                            class="link-dark rounded"
+                            >View Company Request List</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="#ConfirmCompanyRequest"
+                            class="link-dark rounded"
+                            >Confirm Company Request</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <!-- Company -->
+        <li class="mb-1">
+            <button
+                class="btn btn-toggle align-items-center rounded collapsed"
+                data-bs-toggle="collapse"
+                data-bs-target="#cost-collapse"
+                aria-expanded="false"
+            >
+                Cost
+            </button>
+            <div class="collapse" id="cost-collapse">
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                    <!-- Dupplicate this to add more sub menu -->
+                    <li>
+                        <a href="#createNewCost" class="link-dark rounded"
+                            >Create New Cost</a
+                        >
+                    </li>
+                    <li>
+                        <a href="#costType" class="link-dark rounded"
+                            >View cost type</a
                         >
                     </li>
                 </ul>

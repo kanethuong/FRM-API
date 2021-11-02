@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 
 namespace kroniiapi.DTO.CostDTO
 {
-    public class CostInput
+    public class CostTypeResponse
     {
-        public string Content { get; set; }
-        public decimal Amount { get; set; }
         public int CostTypeId { get; set; }
-        public int AdminId { get; set; }
+        public string CostTypeName { get; set; }
     }
 }
