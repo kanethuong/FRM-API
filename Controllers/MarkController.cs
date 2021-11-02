@@ -114,17 +114,35 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Class not found!"));
             }
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
+            var moduleList = await _moduleService.GetModulesByClassId(classId);
             List<MarkResponse> markResponses = new List<MarkResponse>();
             foreach (Trainee trainee in trainees)
             {
                 MarkResponse markResponse = new MarkResponse();
                 markResponse.TraineeName = trainee.Fullname;
-                IEnumerable<Mark> markList = await _markService.GetMarkByTraineeId(trainee.TraineeId, DateTime.MinValue, DateTime.Now);
+                
+                var mark_empty = new List<Mark>();
+                var markList = new List<Mark>();
+                foreach (var module in moduleList)
+                {
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId,module.ModuleId,DateTime.MinValue,DateTime.Now);
+                    if (traineeMark == null) {
+                        Mark mark_zero = new Mark();
+                        mark_zero.TraineeId = trainee.TraineeId;
+                        mark_zero.ModuleId = module.ModuleId;
+                        mark_zero.Score = 0;
+                        markList.Add(mark_zero);
+                    }
+                    else {
+                    markList.Add(traineeMark);
+                    }
+                }
                 foreach (Mark m in markList)
                 {
                     m.Module = await _moduleService.GetModuleById(m.ModuleId);
                 }
-                markResponse.ScoreList = _mapper.Map<IEnumerable<ModuleMark>>(markList);
+                markList.OrderBy(m => m.Module.ModuleId);
+                markResponse.ScoreList = _mapper.Map<List<ModuleMark>>(markList);
                 markResponses.Add(markResponse);
             }
             if (totalRecords == 0)
