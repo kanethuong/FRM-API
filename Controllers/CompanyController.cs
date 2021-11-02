@@ -65,7 +65,12 @@ namespace kroniiapi.Controllers
         [HttpGet("request/{id:int}")]
         public async Task<ActionResult<RequestDetail>> ViewCompanyRequestDetail(int id)
         {
-            return null;
+            var companyRequest = await _companyService.GetCompanyRequestDetail(id);
+            if (companyRequest == null) {
+                return NotFound(new ResponseDTO(404, "Company request not found!"));
+            }
+            RequestDetail requestDetail = _mapper.Map<RequestDetail>(companyRequest);
+            return Ok(requestDetail);
         }
         /// <summary>
         /// View all trainee in company request with pagination
@@ -76,7 +81,13 @@ namespace kroniiapi.Controllers
         [HttpGet("request/{id:int}/trainee")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeInRequest>>>> ViewTraineeListInRequest(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _companyService.GetTraineesByCompanyRequestId(id, paginationParameter);
+            IEnumerable<TraineeInRequest> traineeDTO = _mapper.Map<IEnumerable<TraineeInRequest>>(trainees);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search trainee name not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeInRequest>>(totalRecords, traineeDTO));
         }
         /// <summary>
         /// Send accept or reject company request

@@ -234,6 +234,8 @@ namespace kroniiapi.Controllers
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(date.Year, date.Month, 1);
             var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            startDate = startDate.AddMonths(-1);
+            endDate = endDate.AddMonths(1);
             endDate = endDate.Add(oneday);
 
             var checkTrainee = await _traineeService.GetTraineeById(id);
@@ -310,7 +312,13 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _traineeService.GetAllTrainee(paginationParameter);
+            IEnumerable<TraineeResponse> traineesDto = _mapper.Map<IEnumerable<TraineeResponse>>(trainees);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search trainee name not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecords, traineesDto));
         }
         /// <summary>
         /// Update trainee wage

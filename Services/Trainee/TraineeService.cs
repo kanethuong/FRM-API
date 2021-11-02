@@ -96,6 +96,7 @@ namespace kroniiapi.Services
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
+            existedTrainee.Wage = trainee.Wage;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -411,6 +412,20 @@ namespace kroniiapi.Services
         {
             return _dataContext.Trainees.Any(t => t.TraineeId == id &&
            t.IsDeactivated == false);
+        }
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationParameter paginationParameter)
+        {
+            var traineeList = await _dataContext.Trainees.Where(t
+                 => t.IsDeactivated == false  &&
+                                                (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
+                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
+                                                .ToListAsync();
+            int totalRecords = traineeList.Count();                                    
+            var rs = traineeList.OrderBy(c => c.CreatedAt)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
         }
     }
 }

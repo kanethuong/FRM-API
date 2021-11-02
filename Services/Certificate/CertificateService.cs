@@ -30,7 +30,8 @@ namespace kroniiapi.Services
             //check duplicate traineeId vs moduleId in Certificate
             if (_dataContext.Certificates.Any(cert => cert.ModuleId == certificate.ModuleId && cert.TraineeId == certificate.TraineeId))
             {
-                return -3;
+                _dataContext.Certificates.Update(certificate);
+                return await _dataContext.SaveChangesAsync();
             }  
             _dataContext.Certificates.Add(certificate);
             return await _dataContext.SaveChangesAsync();

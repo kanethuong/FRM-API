@@ -16,7 +16,7 @@ namespace kroniiapi.Services
             _dataContext = dataContext;
         }
         /// <summary>
-        /// Get Admin Feddback By Admin ID
+        /// Get Admin Feddback By Class ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns>List of adminfeedback</returns>
