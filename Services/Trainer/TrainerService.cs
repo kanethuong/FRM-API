@@ -104,7 +104,7 @@ namespace kroniiapi.Services
             existedTrainer.DOB = trainer.DOB;
             existedTrainer.Address = trainer.Address;
             existedTrainer.Gender = trainer.Gender;
-
+            existedTrainer.Wage = trainer.Wage;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
