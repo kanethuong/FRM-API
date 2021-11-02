@@ -33,18 +33,8 @@ namespace kroniiapi.Services
         /// <returns>-1:existed / 0:fail / 1:success</returns>
         public async Task<int> InsertNewExam(Exam exam)
         {
-            if (_dataContext.Exams.Any(e =>
-                 e.ExamId == exam.ExamId
-            ))
-            {
-                return -1;
-            }
-            int rowInserted = 0;
-
             _dataContext.Exams.Add(exam);
-
-            rowInserted = await _dataContext.SaveChangesAsync();
-
+            int rowInserted = await _dataContext.SaveChangesAsync();
             return rowInserted;
         }
 
