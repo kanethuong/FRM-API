@@ -13,7 +13,7 @@ namespace kroniiapi.Services
         Task<Company> GetCompanyById(int id);
         Task<Company> GetCompanyByUsername(string username);
         Task<Company> GetCompanyByEmail(string email);
-        Task<Tuple<int, IEnumerable<CompanyRequest>>> GetCompanyReportList(PaginationParameter paginationParameter);
+        Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter);
         Task<int> InsertNewCompany(Company company);
         bool InsertNewCompanyNoSaveChange(Company company);
         Task<int> UpdateCompany(int id, Company company);

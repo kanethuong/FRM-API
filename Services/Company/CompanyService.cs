@@ -55,9 +55,9 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="paginationParameter"></param>
         /// <returns>Total record, report list</returns>
-        public async Task<Tuple<int, IEnumerable<CompanyRequest>>> GetCompanyReportList(PaginationParameter paginationParameter)
+        public async Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter)
         {
-            var reportList = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
+            var listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
               && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
                   c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
                   c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
@@ -65,15 +65,28 @@ namespace kroniiapi.Services
                             CompanyRequestId=c.CompanyRequestId,
                             Company=new Company{
                                 Fullname=c.Company.Fullname
-                            }
-
-
+                            },
+                            CompanyRequestDetails=c.CompanyRequestDetails.ToList(),
+                            AcceptedAt=c.AcceptedAt,
+                            ReportURL=c.ReportURL
                 })
                 .OrderByDescending(c => c.AcceptedAt)
                 .ToListAsync();
 
-            return Tuple.Create(reportList.Count(),
-                                PaginationHelper.GetPage(reportList, paginationParameter.PageSize, paginationParameter.PageNumber));
+            List<CompanyReport> listCompanyReport = new List<CompanyReport>();
+            foreach(var request in listRequestAccepted){
+                var report=new CompanyReport{
+                    CompanyRequestId=request.CompanyRequestId,
+                    CompanyName=request.Company.Fullname,
+                    NumberOfTrainee=request.CompanyRequestDetails.Count(),
+                    AcceptedAt=(DateTime)request.AcceptedAt,
+                    ReportURL=request.ReportURL
+                };
+                listCompanyReport.Add(report);
+            }
+
+            return Tuple.Create(listCompanyReport.Count(),
+                                PaginationHelper.GetPage(listCompanyReport, paginationParameter.PageSize, paginationParameter.PageNumber));
         }
 
         /// <summary>

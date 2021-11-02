@@ -109,5 +109,14 @@ namespace kroniiapi.Services
             await _dataContext.SaveChangesAsync();
             return (1, "Success");
         }
+
+        /// <summary>
+        /// Get trainer feedback by trainer ID
+        /// </summary>
+        /// <param name="trainerId"></param>
+        /// <returns>List of feedback</returns>
+        public async Task<ICollection<TrainerFeedback>> GetTrainerFeedbackByTrainerId(int trainerId){
+            return await _dataContext.TrainerFeedbacks.Where(t => t.TrainerId==trainerId).ToListAsync();
+        }
     }
 }
