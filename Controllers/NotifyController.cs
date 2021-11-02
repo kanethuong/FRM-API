@@ -160,8 +160,23 @@ namespace kroniiapi.Controllers
         /// <param name="notifyMessage">user: email of admin / content: content / sendTo: trainee's email</param>
         /// <returns>400: cannot find trainee's email / 204: send success</returns>
         [HttpPost("listTrainee")]
-        public async Task<ActionResult> SendTraineeNotification([FromBody] IEnumerable<NotifyMessage> notifyMessageList)
+        public async Task<ActionResult> SendTraineeNotification([FromBody] NotifyMessageToTraineeList notifyMessageWithTraineeList)
         {
+            List<NotifyMessage> notifyMessageList= new List<NotifyMessage>();
+
+            foreach (var trainee in notifyMessageWithTraineeList.SendTo)
+            {
+                notifyMessageList.Add
+                (
+                    new NotifyMessage
+                    {
+                        SendTo = trainee,
+                        User = notifyMessageWithTraineeList.User,
+                        Message = notifyMessageWithTraineeList.Message
+                    }
+                );
+            }
+
             foreach (var notifyMessage in notifyMessageList)
             {
                 notifyMessage.SendTo = notifyMessage.SendTo.ToLower();
