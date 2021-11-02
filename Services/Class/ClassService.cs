@@ -240,7 +240,7 @@ namespace kroniiapi.Services
         /// <returns>tuple list of trainee</returns>
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
-            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
             int totalRecords = traineeList.Count();
             var rs = traineeList.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)

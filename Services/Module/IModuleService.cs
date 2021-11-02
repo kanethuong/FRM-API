@@ -14,5 +14,6 @@ namespace kroniiapi.Services
         Task<int> UpdateModule(int id, Module module);
         Task<IEnumerable<Module>> GetModulesByClassId(int classId);
         Task<Tuple<int, IEnumerable<Module>>> GetAllModule(PaginationParameter paginationParameter);
+        Task<IEnumerable<int>> GetModulesIdByTraineeId(int traineeId);
     }
 }
