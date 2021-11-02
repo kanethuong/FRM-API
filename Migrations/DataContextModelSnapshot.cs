@@ -400,6 +400,9 @@ namespace kroniiapi.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
@@ -602,6 +605,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<int>("NoOfSlot")
                         .HasColumnType("integer");
+
+                    b.Property<TimeSpan>("SlotDuration")
+                        .HasColumnType("interval");
 
                     b.Property<string>("SyllabusURL")
                         .HasColumnType("text");

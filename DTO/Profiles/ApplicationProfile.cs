@@ -13,9 +13,17 @@ namespace kroniiapi.DTO.Profiles
     {
         public ApplicationProfile()
         {
-            CreateMap<Application,TraineeApplicationResponse>();
-            CreateMap<ApplicationInput,Application>();
-            CreateMap<ApplicationCategory,ApplicationCategoryResponse>();
+            CreateMap<Application, TraineeApplicationResponse>();
+            CreateMap<Application, ApplicationResponse>()
+                .ForMember(ti => ti.TraineeName, c => c.MapFrom(s => s.Trainee.Fullname))
+                .ForMember(ti => ti.Category, c => c.MapFrom(s => s.ApplicationCategory.CategoryName));
+
+            CreateMap<Application, ApplicationDetail>()
+                .ForMember(ti => ti.TraineeName, c => c.MapFrom(s => s.Trainee.Fullname))
+                .ForMember(ti => ti.Category, c => c.MapFrom(s => s.ApplicationCategory.CategoryName));
+                
+            CreateMap<ApplicationInput, Application>();
+            CreateMap<ApplicationCategory, ApplicationCategoryResponse>();
         }
     }
 }

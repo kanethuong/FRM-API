@@ -51,7 +51,7 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<int> UpdateModule(int id, Module module)
         {
-            var existedModule = await _dataContext.Modules.Where(m => m.ModuleId == id).FirstOrDefaultAsync();
+            var existedModule = await GetModuleById(id);
             if (existedModule is null)
             {
                 return -1;
@@ -59,7 +59,9 @@ namespace kroniiapi.Services
             existedModule.ModuleName = module.ModuleName;
             existedModule.Description = module.Description;
             existedModule.NoOfSlot = module.NoOfSlot;
+            existedModule.SlotDuration = module.SlotDuration;
             existedModule.SyllabusURL = module.SyllabusURL;
+            existedModule.IconURL = module.IconURL;
             var rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();
             return rowUpdated;
@@ -78,6 +80,22 @@ namespace kroniiapi.Services
                 Module m = new Module();
                 m = await GetModuleById(i);
                 modules.Add(m);
+            }
+            return modules;
+        }
+        /// <summary>
+        /// Get module by trainee id
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<int>> GetModulesIdByTraineeId(int traineeId)
+        {
+            var classId = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).Select(t => t.ClassId).FirstOrDefaultAsync();
+            var classModules = await _dataContext.ClassModules.Where(t => t.ClassId == classId).ToListAsync();
+            List<int> modules = new List<int>();
+            foreach (var item in classModules)
+            {
+                modules.Add(await _dataContext.Modules.Where(t => t.ModuleId == item.ModuleId).Select(t => t.ModuleId).FirstOrDefaultAsync());
             }
             return modules;
         }
