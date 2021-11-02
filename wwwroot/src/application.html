@@ -305,7 +305,7 @@
         <p>By DanhLPT</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/Application/{id}</p>
+            <p>/api/Application</p>
         </div>
 
         <!-- Role, Method and Status code -->
@@ -328,7 +328,7 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
-                <p>id: Id of application</p>
+                <p>No</p>
             </div>
         </div>
 
@@ -338,6 +338,8 @@
                 <h5>Request Body</h5>
                 <p>
                 <pre><code>{
+    "applicationId": int,
+    "adminId": int,
     "response": "string",
     "isAccepted": boolean
 }
