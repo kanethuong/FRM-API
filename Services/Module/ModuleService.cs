@@ -84,6 +84,22 @@ namespace kroniiapi.Services
             return modules;
         }
         /// <summary>
+        /// Get module by trainee id
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<int>> GetModulesIdByTraineeId(int traineeId)
+        {
+            var classId = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).Select(t => t.ClassId).FirstOrDefaultAsync();
+            var classModules = await _dataContext.ClassModules.Where(t => t.ClassId == classId).ToListAsync();
+            List<int> modules = new List<int>();
+            foreach (var item in classModules)
+            {
+                modules.Add(await _dataContext.Modules.Where(t => t.ModuleId == item.ModuleId).Select(t => t.ModuleId).FirstOrDefaultAsync());
+            }
+            return modules;
+        }
+        /// <summary>
         /// Get all module with pagination (module name)
         /// </summary>
         /// <param name="paginationParameter"></param>
