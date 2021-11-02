@@ -320,14 +320,14 @@ namespace kroniiapi.Services
                         if (slotInWeek == numSlotWeek)
                         {
                             slotInWeek = 0;
-                            dateCount = TimetableHelper.NextMonday(dateCount); 
+                            dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1); 
                         }
                         break;
                     }
                     if (slotInWeek == numSlotWeek)
                     {
                         slotInWeek = 0;
-                        dateCount = TimetableHelper.NextMonday(dateCount);
+                        dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
                         break;
                     }
                     if (DayCheck(calendarToAdd, classGet.RoomId) && TrainerCheck(calendarToAdd,classGet.TrainerId))
