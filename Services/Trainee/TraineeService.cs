@@ -96,6 +96,7 @@ namespace kroniiapi.Services
             existedTrainee.DOB = trainee.DOB;
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
+            existedTrainee.Wage = trainee.Wage;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
