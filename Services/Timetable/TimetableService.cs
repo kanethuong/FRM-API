@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.Helper.Timetable;
+using kroniiapi.Services.Attendance;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -15,13 +16,16 @@ namespace kroniiapi.Services
         private ICalendarService _calendarService;
         private IModuleService _moduleService;
         private IClassService _classService;
+        private IAttendanceService _attendaceService;
 
-        public TimetableService(DataContext dataContext, ICalendarService calendarService, IModuleService moduleService, IClassService classService)
+
+        public TimetableService(DataContext dataContext, ICalendarService calendarService, IModuleService moduleService, IClassService classService, IAttendanceService attendanceService)
         {
             _datacontext = dataContext;
             _calendarService = calendarService;
             _moduleService = moduleService;
             _classService = classService;
+            _attendaceService = attendanceService;
         }
         List<DateTime> holidayss = new List<DateTime> {
             // New Year
@@ -316,14 +320,14 @@ namespace kroniiapi.Services
                         if (slotInWeek == numSlotWeek)
                         {
                             slotInWeek = 0;
-                            dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1); 
+                            dateCount = TimetableHelper.NextMonday(dateCount); 
                         }
                         break;
                     }
                     if (slotInWeek == numSlotWeek)
                     {
                         slotInWeek = 0;
-                        dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
+                        dateCount = TimetableHelper.NextMonday(dateCount);
                         break;
                     }
                     if (DayCheck(calendarToAdd, classGet.RoomId) && TrainerCheck(calendarToAdd,classGet.TrainerId))
@@ -332,7 +336,7 @@ namespace kroniiapi.Services
                         slotModuleInDay += 1;
                         slotInDay += 1;
                         slotInWeek += 1;
-                        _datacontext.Calendars.AddRange(calendarToAdd);
+                        _datacontext.Calendars.Add(calendarToAdd);
                     };
                 }
                 dateCount = dateCount.AddDays(1);
@@ -345,11 +349,49 @@ namespace kroniiapi.Services
             return 1;
         }
         /// <summary>
-        /// Just Save Change
+        /// Generate Timetable
         /// </summary>
-        public void SaveChangeTimeTable()
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public async Task<(int, string)> GenerateTimetable(int classId)
         {
-            _datacontext.SaveChangesAsync();
+            var moduleList = await GetModuleListlByClassId(classId);
+            var classGet = await _classService.GetClassByClassID(classId);
+            if (CheckAvailableModule(moduleList,classGet.StartDay,classGet.EndDay))
+            {
+                return (-1, "Too much Module");
+            }
+            int slotsNeed = GetTotalSlotsNeed(moduleList);
+            if (!CheckAvailabeSlotsForRoom(slotsNeed,classGet.RoomId,classGet.StartDay,classGet.EndDay))
+            {
+                var otherRooms = await GetOtherRoomsForClass(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay);
+                string message = "Room is already full of slot, Recommend:";
+                foreach (var item in otherRooms)
+                {
+                    message += " "  + item;
+                }
+                return (-1, message);
+            }
+            if (!CheckAvailabeSlotsForTrainer(slotsNeed,classGet.TrainerId,classGet.StartDay,classGet.EndDay))
+            {
+                return (-1,"This trainer is too bussy at that moment");
+            }
+            foreach (var item in moduleList)
+            {
+                var slotForWeek = CalculateSlotForWeek(item.NoOfSlot, classGet.StartDay, classGet.EndDay);
+                var slotss = item.NoOfSlot;
+                var status = await InsertModuleToClass(item.ModuleId, classId, slotForWeek);
+                if (status == -1)
+                {
+                    return (0, "Failed To Insert");
+                }
+                var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
+                foreach (var id in idList)
+                {
+                    await _attendaceService.AddNewAttendance(id, classGet.Trainees);
+                }
+            }
+            return (1, "Succes");            
         }
     }
 }
