@@ -23,7 +23,7 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, IMapper mapper,ITraineeService traineeService,IAdminService adminService,IModuleService moduleService,IClassService classService)
+        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService)
         {
             _examService = examService;
             _mapper = mapper;
@@ -42,10 +42,18 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
+<<<<<<< HEAD
             
             if(newExamInput.classId != null){
                 List<int> traineeIdList = new List<int>();
                 var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault()); 
+=======
+
+            if (classId != null)
+            {
+                List<int> traineeIdList = new List<int>();
+                var traineeList = await _traineeService.GetTraineeByClassId(classId.GetValueOrDefault());
+>>>>>>> eadbc0caaaca0118f1dbd683740fb3a1ba5f547d
                 foreach (Trainee item in traineeList)
                 {
                     traineeIdList.Add(item.TraineeId);
@@ -53,15 +61,24 @@ namespace kroniiapi.Controllers
                 newExamInput.TraineeIdList = newExamInput.TraineeIdList.Concat(traineeIdList);
                 newExamInput.TraineeIdList = newExamInput.TraineeIdList.Distinct();
             }
+<<<<<<< HEAD
             //Check Class deactivated
             var classCheck = await _classService.GetClassByClassID(newExamInput.classId.GetValueOrDefault());
             if(newExamInput.classId != 0 && classCheck == null){
                 return NotFound(new ResponseDTO(404,"Class not found"));
+=======
+            //Check Class deactivated 
+            var classCheck = await _classService.GetClassByClassID(classId.GetValueOrDefault());
+            if (classCheck == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+>>>>>>> eadbc0caaaca0118f1dbd683740fb3a1ba5f547d
             }
             //Check admin deactivated == false
             var adminCheck = await _adminService.GetAdminById(newExamInput.AdminId);
-            if(adminCheck == null){
-                return NotFound(new ResponseDTO(404,"Admin not found"));
+            if (adminCheck == null)
+            {
+                return NotFound(new ResponseDTO(404, "Admin not found"));
             }
             //map
             Exam exam = _mapper.Map<Exam>(newExamInput);
@@ -71,9 +88,16 @@ namespace kroniiapi.Controllers
             foreach (var item in newExamInput.TraineeIdList)
             {
                 var traineeCheck = await _traineeService.GetTraineeById(item);
+<<<<<<< HEAD
                 if(traineeCheck == null){
                     return NotFound(new ResponseDTO(404,"Trainee(s) not found"));
                 } 
+=======
+                if (traineeCheck == null)
+                {
+                    return Ok(new ResponseDTO(404, "Trainee(s) not found"));
+                }
+>>>>>>> eadbc0caaaca0118f1dbd683740fb3a1ba5f547d
                 traineeList1.Add(traineeCheck);
             }
             exam.Trainees = traineeList1;
@@ -81,12 +105,13 @@ namespace kroniiapi.Controllers
             foreach (var item in exam.Trainees)
             {
                 var modules = await _moduleService.GetModulesIdByTraineeId(item.TraineeId);
-                bool checkModule =  modules.Contains(exam.ModuleId);
-                if(checkModule == false){
-                    return Ok(new ResponseDTO(404,"Trainee " + item.Fullname +" doesn't have module "+exam.ModuleId));
+                bool checkModule = modules.Contains(exam.ModuleId);
+                if (checkModule == false)
+                {
+                    return Ok(new ResponseDTO(404, "Trainee " + item.Fullname + " doesn't have module " + exam.ModuleId));
                 }
             }
-            
+
             //Set variable cho traineeExams
             List<TraineeExam> traineeExams = new List<TraineeExam>();
             foreach (var item in exam.Trainees)
@@ -99,7 +124,11 @@ namespace kroniiapi.Controllers
             }
             int status = await _examService.InsertNewExam(exam);
 
+<<<<<<< HEAD
             return Ok(new ResponseDTO(200,"Success"));
+=======
+            return Ok(new ResponseDTO(200, "Suc cu"));
+>>>>>>> eadbc0caaaca0118f1dbd683740fb3a1ba5f547d
         }
         /// <summary>
         /// View all exam with pagination
