@@ -197,5 +197,43 @@ namespace kroniiapi.Services
             return Tuple.Create(companyRequestResponses.Count(), PaginationHelper.GetPage(companyRequestResponses,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
+        /// <summary>
+        /// Get Company Request Detail
+        /// </summary>
+        /// <param name="requestId">ID of Request</param>
+        /// <returns>Company request</returns>
+        public async Task<CompanyRequest> GetCompanyRequestDetail(int requestId){
+            var CompanyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId)
+            .Select(comreq => new CompanyRequest {
+                CompanyRequestId = comreq.CompanyRequestId,
+                Company = new Company {
+                    Fullname = comreq.Company.Fullname
+                },
+                Content = comreq.Content,
+                CreatedAt = comreq.CreatedAt
+            }).FirstOrDefaultAsync();
+            return CompanyRequest;
+        }
+        /// <summary>
+        /// Get Trainees By Company Request Id
+        /// </summary>
+        /// <param name="requestId">ID of Request</param>
+        /// <param name="paginationParameter">Pagination Parameter</param>
+        /// <returns>Trainee list</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter) {
+            var traineeIds = await _dataContext.CompanyRequestDetails.Where(comreq => comreq.CompanyRequestId == requestId)
+            .Select(comreq => comreq.TraineeId).ToListAsync();
+            var traineeLists = new List<Trainee>();
+            foreach (var item in traineeIds)
+            {
+                traineeLists.Add(await _dataContext.Trainees.Where(t => t.TraineeId == item).FirstOrDefaultAsync());
+            }
+            var result = traineeLists.Where(t => t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
+            int totalRecords = result.Count();
+            var rs = result.OrderBy(c => c.TraineeId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
+        }
     }
 }

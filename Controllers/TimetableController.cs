@@ -39,7 +39,7 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(404, "Hoc it thoi"));
             }
             int slotsNeed = _timetableService.GetTotalSlotsNeed(moduleList);
-            if (_timetableService.CheckAvailabeSlotsForRoom(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay))
+            if (!_timetableService.CheckAvailabeSlotsForRoom(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay))
             {
                 var otherRooms = await _timetableService.GetOtherRoomsForClass(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay);
                 string message = "Room is already full of slot, Recommend:";
@@ -49,7 +49,7 @@ namespace kroniiapi.Controllers
                 }
                 return Conflict(new ResponseDTO(409, message));
             }
-            if (_timetableService.CheckAvailabeSlotsForTrainer(slotsNeed, classGet.TrainerId, classGet.StartDay, classGet.EndDay))
+            if (!_timetableService.CheckAvailabeSlotsForTrainer(slotsNeed, classGet.TrainerId, classGet.StartDay, classGet.EndDay))
             {
                 return Conflict(new ResponseDTO(409, "This Trainer is bussy in that among of time"));
             }

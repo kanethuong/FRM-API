@@ -234,6 +234,8 @@ namespace kroniiapi.Controllers
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(date.Year, date.Month, 1);
             var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            startDate = startDate.AddMonths(-1);
+            endDate = endDate.AddMonths(1);
             endDate = endDate.Add(oneday);
 
             var checkTrainee = await _traineeService.GetTraineeById(id);
