@@ -109,7 +109,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 1)
             {
-                return Ok(new ResponseDTO(200, "The company request is comfirmed"));
+                return Ok(new ResponseDTO(200, "The company request is processed"));
             }
             else return BadRequest(new ResponseDTO(400, "Fail to update"));
         }
