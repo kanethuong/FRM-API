@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace kroniiapi.Services
 {
@@ -87,6 +88,9 @@ namespace kroniiapi.Services
         {
 
             var existedTrainer = await _dataContext.Trainers.Where(t => t.TrainerId == id).FirstOrDefaultAsync();
+            if(JsonConvert.SerializeObject(existedTrainer).ToLower().Equals(JsonConvert.SerializeObject(trainer).ToLower())){
+                return 1;
+            }
             if (existedTrainer == null)
             {
                 return -1;
