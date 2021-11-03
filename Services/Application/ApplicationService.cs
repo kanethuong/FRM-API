@@ -65,7 +65,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of application </returns>
         public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationList(PaginationParameter paginationParameter)
         {
-            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) && app.Trainee.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || app.Trainee.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                     .Select(a => new Application
                                                     {
                                                         TraineeId = a.TraineeId,
@@ -170,7 +170,7 @@ namespace kroniiapi.Services
         /// <returns>-1,-2:Not found / 0:Fail to confirm / 1:Confirmed</returns>
         public async Task<int> ConfirmApplication([FromBody]ConfirmApplicationInput confirmApplicationInput)
         {
-            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == confirmApplicationInput.ApplicationId).FirstOrDefaultAsync();
+            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == confirmApplicationInput.ApplicationId && a.IsAccepted == null).FirstOrDefaultAsync();
             var checkAdmin = await _dataContext.Admins.Where(a => a.AdminId == confirmApplicationInput.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
             if (existedApplication == null)
             {
