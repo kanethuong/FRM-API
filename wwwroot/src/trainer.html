@@ -48,7 +48,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>
+                <p>
+                <pre><code>
                     {
                         "totalRecords": int,
                         "payload": [
@@ -60,9 +61,179 @@
                           }
                         ]
                       }
-</code></pre></p>
+</code></pre>
+                </p>
             </div>
         </div>
     </div>
 
-</div>    
+    <!-- View trainer profile -->
+    <div id="viewTrainerProfile">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Trainer Profile</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Trainer/{id}/profile</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Trainer, Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of trainer</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "fullname": "string",
+    "avatarURL": "string",
+    "email": "string",
+    "phone": "string",
+    "dob": DateTime,
+    "address": "string",
+    "gender": "string",
+    "wage": decimal
+}
+                        </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- View trainer feedback -->
+    <div id="viewTrainerFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Trainer Feedback</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Trainer/{id}/feedback</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Trainer, Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of trainer</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+[
+    {
+        "rate": int,
+        "content": "string"
+    }
+]
+                            </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update trainer wage -->
+    <div id="updateTrainerWage">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Update Trainer Wage</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Trainer/{id}/wage</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of trainer</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>decimal</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
+
+</div>

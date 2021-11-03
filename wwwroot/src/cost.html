@@ -36,12 +36,14 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
 "content": "string",
 "amount": decimal,
 "costTypeId": int,
 "adminId": int
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
@@ -99,5 +101,72 @@
             </div>
         </div>
     </div>
-   
+
+    <!-- View cost list -->
+    <div id="viewCostList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Cost List</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Cost/page</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Cost content</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+{
+    "totalRecords": int,
+    "payload": [
+        {
+        "costId": int,
+        "content": "string",
+        "amount": int,
+        "createdAt": DateTime,
+        "costType": "string",
+        "creator": "string"
+        }
+    ]
+}
+                    </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
 </div>

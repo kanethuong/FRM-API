@@ -19,7 +19,7 @@ namespace kroniiapi.Controllers
         private readonly ICostService _costService;
         private readonly IAdminService _adminService;
         private readonly IMapper _mapper;
-        public CostController(ICostService costService, IMapper mapper,IAdminService adminService)
+        public CostController(ICostService costService, IMapper mapper, IAdminService adminService)
         {
             _costService = costService;
             _mapper = mapper;
@@ -29,11 +29,19 @@ namespace kroniiapi.Controllers
         /// Get all cost with pagination
         /// </summary>
         /// <param name="paginationParameter"></param>
-        /// <returns></returns>
+        /// <returns>200: Total record, list of cost / 404: Searched content cannot be found</returns>
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<CostResponse>>>> ViewCostList([FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecord, IEnumerable<Cost> costList) = await _costService.GetCostList(paginationParameter);
+
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Searched content cannot be found"));
+            }
+
+            var costResponse = _mapper.Map<IEnumerable<CostResponse>>(costList);
+            return Ok(new PaginationResponse<IEnumerable<CostResponse>>(totalRecord, costResponse));
         }
         /// <summary>
         /// create new cost
@@ -41,7 +49,7 @@ namespace kroniiapi.Controllers
         /// <param name="costInput"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> CreateNewCost([FromBody]CostInput costInput)
+        public async Task<ActionResult> CreateNewCost([FromBody] CostInput costInput)
         {
             if (_adminService.CheckAdminExist(costInput.AdminId) is false)
             {
@@ -61,7 +69,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Cost type is not found"));
             }
-            return Created("",new ResponseDTO(201, "Successfully inserted"));
+            return Created("", new ResponseDTO(201, "Successfully inserted"));
         }
         [HttpGet("type")]
         public async Task<ActionResult<IEnumerable<CostTypeResponse>>> GetCostType()
@@ -70,6 +78,6 @@ namespace kroniiapi.Controllers
             var rs = _mapper.Map<IEnumerable<CostTypeResponse>>(costTypeList);
             return Ok(rs);
         }
-        
+
     }
 }
