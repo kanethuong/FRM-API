@@ -9,6 +9,7 @@ using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -64,7 +65,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of application </returns>
         public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationList(PaginationParameter paginationParameter)
         {
-            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) && app.Trainee.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || app.Trainee.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
                                                     .Select(a => new Application
                                                     {
                                                         TraineeId = a.TraineeId,
@@ -144,15 +145,6 @@ namespace kroniiapi.Services
                                                                     AvatarURL = a.Trainee.AvatarURL,
                                                                     Email = a.Trainee.Email
                                                                 },
-                                                                AdminId = a.AdminId,
-
-                                                                Admin = new Admin
-                                                                {
-                                                                    AdminId = (int)a.AdminId,
-                                                                    Fullname = a.Admin.Fullname,
-                                                                    AvatarURL = a.Admin.AvatarURL,
-                                                                    Email = a.Admin.Email,
-                                                                },
                                                                 Response = a.Response,
                                                                 ApplicationCategoryId = a.ApplicationCategoryId,
                                                                 ApplicationCategory = new ApplicationCategory
@@ -160,7 +152,9 @@ namespace kroniiapi.Services
                                                                     ApplicationCategoryId = a.ApplicationCategoryId,
                                                                     CategoryName = a.ApplicationCategory.CategoryName,
                                                                 },
-                                                                ApplicationURL = a.ApplicationURL
+                                                                ApplicationURL = a.ApplicationURL,
+                                                                IsAccepted = a.IsAccepted,
+                                                                AcceptedAt = a.AcceptedAt,
                                                             })
                                                             .FirstOrDefaultAsync();
 
@@ -170,20 +164,26 @@ namespace kroniiapi.Services
         /// <summary>
         /// Confirm application method
         /// </summary>
-        /// <param name="id">application id</param>
+        /// <param name="confirmApplicationInput">Confirm Application Input DTO</param>
         /// <param name="response">message of admin to response</param>
         /// <param name="isAccepted">true/false/null</param>
-        /// <returns>-1:Not found / 0:Fail to confirm / 1:Confirmed</returns>
-        public async Task<int> ConfirmApplication(int id, string response, bool isAccepted)
+        /// <returns>-1,-2:Not found / 0:Fail to confirm / 1:Confirmed</returns>
+        public async Task<int> ConfirmApplication([FromBody]ConfirmApplicationInput confirmApplicationInput)
         {
-            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == id).FirstOrDefaultAsync();
+            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == confirmApplicationInput.ApplicationId && a.IsAccepted == null).FirstOrDefaultAsync();
+            var checkAdmin = await _dataContext.Admins.Where(a => a.AdminId == confirmApplicationInput.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
             if (existedApplication == null)
             {
                 return -1;
             }
-            existedApplication.Response = response;
-            existedApplication.IsAccepted = isAccepted;
+            if (checkAdmin == null)
+            {
+                return -2;
+            }
+            existedApplication.Response = confirmApplicationInput.Response;
+            existedApplication.IsAccepted = confirmApplicationInput.IsAccepted;
             existedApplication.AcceptedAt = DateTime.Now;
+            existedApplication.AdminId = confirmApplicationInput.AdminId;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;

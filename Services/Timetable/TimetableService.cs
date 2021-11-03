@@ -142,11 +142,20 @@ namespace kroniiapi.Services
         public bool CheckAvailableModule(ICollection<Module> modulesList, DateTime startDay, DateTime endDay)
         {
             int record = 0;
+            
             foreach (var item in modulesList)
             {
                 record += item.NoOfSlot;
             }
             int availableDays = TimetableHelper.BusinessDaysUntil(startDay,endDay,holidayss);
+            if (modulesList.Count() == 1)
+            {
+                if (record > availableDays * 2)
+                {
+                    return true;
+                }
+            }
+            
             if (record > availableDays * 3)
             {
                 return true;
@@ -353,7 +362,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <returns></returns>
-        public async Task<(int, string)> GenerateTimetable(int classId)
+        public async Task<(int, string )> GenerateTimetable(int classId)
         {
             var moduleList = await GetModuleListlByClassId(classId);
             var classGet = await _classService.GetClassByClassID(classId);

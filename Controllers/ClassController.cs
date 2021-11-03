@@ -28,21 +28,25 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IAdminService _adminService;
         private readonly ITrainerService _trainerService;
-        private readonly IMarkService _markService;
         private readonly IModuleService _moduleService;
-        private readonly IFeedbackService _feedbackService;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
+        private readonly ITimetableService _timetableService;
 
-        public ClassController(IClassService classService, ITraineeService traineeService, IMarkService markService, IAdminService adminService, IModuleService moduleService, ITrainerService trainerService, IFeedbackService feedbackService, IMapper mapper)
+        public ClassController(IClassService classService,
+                               ITraineeService traineeService,
+                               IAdminService adminService,
+                               IModuleService moduleService,
+                               ITrainerService trainerService,
+                               IMapper mapper,
+                               ITimetableService timetableService)
         {
             _classService = classService;
             _adminService = adminService;
             _trainerService = trainerService;
-            _feedbackService = feedbackService;
-            _markService = markService;
             _moduleService = moduleService;
             _mapper = mapper;
+            _timetableService = timetableService;
             _adminService = adminService;
             _traineeService = traineeService;
         }
@@ -231,7 +235,6 @@ namespace kroniiapi.Controllers
         /// <param name="newClassInput">Detail of new class</param>
         /// <returns>201: Class is created / 409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost]
-        [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
             if (_adminService.CheckAdminExist(newClassInput.AdminId) is false)
@@ -278,7 +281,14 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest("Some error occur");
             }
-            return CreatedAtAction(nameof(GetClassList), new ResponseDTO(201, "Successfully inserted"));
+            var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
+            (int result, string message) = _timetableService.GenerateTimetable(classGet.ClassId).Result;
+            if (result != 1)
+            {
+                return BadRequest(new ResponseDTO(400, message));
+            } 
+            else
+                return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
 
         /// <summary>

@@ -51,6 +51,45 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Get a report list of companies
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns>Total record, report list</returns>
+        public async Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter)
+        {
+            var listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
+              && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
+                  c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
+                  c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
+                .Select(c => new CompanyRequest{
+                            CompanyRequestId=c.CompanyRequestId,
+                            Company=new Company{
+                                Fullname=c.Company.Fullname
+                            },
+                            CompanyRequestDetails=c.CompanyRequestDetails.ToList(),
+                            AcceptedAt=c.AcceptedAt,
+                            ReportURL=c.ReportURL
+                })
+                .OrderByDescending(c => c.AcceptedAt)
+                .ToListAsync();
+
+            List<CompanyReport> listCompanyReport = new List<CompanyReport>();
+            foreach(var request in listRequestAccepted){
+                var report=new CompanyReport{
+                    CompanyRequestId=request.CompanyRequestId,
+                    CompanyName=request.Company.Fullname,
+                    NumberOfTrainee=request.CompanyRequestDetails.Count(),
+                    AcceptedAt=(DateTime)request.AcceptedAt,
+                    ReportURL=request.ReportURL
+                };
+                listCompanyReport.Add(report);
+            }
+
+            return Tuple.Create(listCompanyReport.Count(),
+                                PaginationHelper.GetPage(listCompanyReport, paginationParameter.PageSize, paginationParameter.PageNumber));
+        }
+
+        /// <summary>
         /// Insert new company to database
         /// </summary>
         /// <param name="company">Company data</param>
@@ -197,6 +236,11 @@ namespace kroniiapi.Services
             return Tuple.Create(companyRequestResponses.Count(), PaginationHelper.GetPage(companyRequestResponses,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
+        /// <summary>
+        /// Get Company Request Detail
+        /// </summary>
+        /// <param name="requestId">ID of Request</param>
+        /// <returns>Company request</returns>
         public async Task<CompanyRequest> GetCompanyRequestDetail(int requestId){
             var CompanyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId)
             .Select(comreq => new CompanyRequest {
@@ -208,6 +252,27 @@ namespace kroniiapi.Services
                 CreatedAt = comreq.CreatedAt
             }).FirstOrDefaultAsync();
             return CompanyRequest;
+        }
+        /// <summary>
+        /// Get Trainees By Company Request Id
+        /// </summary>
+        /// <param name="requestId">ID of Request</param>
+        /// <param name="paginationParameter">Pagination Parameter</param>
+        /// <returns>Trainee list</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter) {
+            var traineeIds = await _dataContext.CompanyRequestDetails.Where(comreq => comreq.CompanyRequestId == requestId)
+            .Select(comreq => comreq.TraineeId).ToListAsync();
+            var traineeLists = new List<Trainee>();
+            foreach (var item in traineeIds)
+            {
+                traineeLists.Add(await _dataContext.Trainees.Where(t => t.TraineeId == item).FirstOrDefaultAsync());
+            }
+            var result = traineeLists.Where(t => t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
+            int totalRecords = result.Count();
+            var rs = result.OrderBy(c => c.TraineeId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
         }
     }
 }

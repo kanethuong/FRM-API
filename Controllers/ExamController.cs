@@ -17,12 +17,20 @@ namespace kroniiapi.Controllers
     public class ExamController : ControllerBase
     {
         private readonly IExamService _examService;
+        private readonly ITraineeService _traineeService;
+        private readonly IAdminService _adminService;
+        private readonly IModuleService _moduleService;
+        private readonly IClassService _classService;
         private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, IMapper mapper)
+        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService)
         {
             _examService = examService;
             _mapper = mapper;
+            _traineeService = traineeService;
+            _adminService = adminService;
+            _moduleService = moduleService;
+            _classService = classService;
         }
 
         /// <summary>
@@ -32,9 +40,68 @@ namespace kroniiapi.Controllers
         /// <param name="classId">classId to take exam (optional), if user send classId, get all trainee in the class</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput, int? classId = null)
+        public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
-            return null;
+            
+            if(newExamInput.classId != null){
+                List<int> traineeIdList = new List<int>();
+                var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault()); 
+                foreach (Trainee item in traineeList)
+                {
+                    traineeIdList.Add(item.TraineeId);
+                }
+                newExamInput.TraineeIdList = newExamInput.TraineeIdList.Concat(traineeIdList);
+                newExamInput.TraineeIdList = newExamInput.TraineeIdList.Distinct();
+            }
+            //Check Class deactivated
+            var classCheck = await _classService.GetClassByClassID(newExamInput.classId.GetValueOrDefault());
+            if(newExamInput.classId != 0 && classCheck == null){
+                return NotFound(new ResponseDTO(404,"Class not found"));
+            }
+            //Check admin deactivated == false
+            var adminCheck = await _adminService.GetAdminById(newExamInput.AdminId);
+            if (adminCheck == null)
+            {
+                return NotFound(new ResponseDTO(404, "Admin not found"));
+            }
+            //map
+            Exam exam = _mapper.Map<Exam>(newExamInput);
+
+            //Gan trainee vao traineeList1 va check trainee deactivated
+            var traineeList1 = new List<Trainee>();
+            foreach (var item in newExamInput.TraineeIdList)
+            {
+                var traineeCheck = await _traineeService.GetTraineeById(item);
+                if(traineeCheck == null){
+                    return NotFound(new ResponseDTO(404,"Trainee(s) not found"));
+                } 
+                traineeList1.Add(traineeCheck);
+            }
+            exam.Trainees = traineeList1;
+            //Check if trainee have right module
+            foreach (var item in exam.Trainees)
+            {
+                var modules = await _moduleService.GetModulesIdByTraineeId(item.TraineeId);
+                bool checkModule = modules.Contains(exam.ModuleId);
+                if (checkModule == false)
+                {
+                    return Ok(new ResponseDTO(404, "Trainee " + item.Fullname + " doesn't have module " + exam.ModuleId));
+                }
+            }
+
+            //Set variable cho traineeExams
+            List<TraineeExam> traineeExams = new List<TraineeExam>();
+            foreach (var item in exam.Trainees)
+            {
+                TraineeExam tempTraineeExam = new TraineeExam();
+                tempTraineeExam.Trainee = item;
+                tempTraineeExam.TraineeId = item.TraineeId;
+                tempTraineeExam.Score = 0;
+                tempTraineeExam.Exam = exam;
+            }
+            int status = await _examService.InsertNewExam(exam);
+
+            return Ok(new ResponseDTO(200,"Success"));
         }
         /// <summary>
         /// View all exam with pagination
