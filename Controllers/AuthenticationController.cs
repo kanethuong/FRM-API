@@ -104,7 +104,7 @@ namespace kroniiapi.Controllers
         {
             if (!Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
             {
-                return BadRequest(new ResponseDTO(400, "Invalid token request"));
+                return BadRequest(new ResponseDTO(400, "No cookies found"));
             }
             var tokenEmail = _refreshToken.GetEmailByToken(refreshToken);
             try
@@ -113,7 +113,7 @@ namespace kroniiapi.Controllers
             }
             catch
             {
-                return BadRequest(new ResponseDTO(400, "Invalid token request"));
+                return BadRequest(new ResponseDTO(400, "Saved refresh token not found. Cannot remove email"));
             }
             return Ok(new ResponseDTO(200, "Logout Success!"));
 
