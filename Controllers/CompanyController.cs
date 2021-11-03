@@ -45,11 +45,17 @@ namespace kroniiapi.Controllers
         /// View all company report with pagination (CompanyRequest with isAccepted == true)
         /// </summary>
         /// <param name="paginationParameter"></param>
-        /// <returns></returns>
+        /// <returns>200: Total record, list of report / 404: Searched company cannot be found</returns>
         [HttpGet("report")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<CompanyReport>>>> ViewCompanyReportList([FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecord, IEnumerable<CompanyReport> reportList) = await _companyService.GetCompanyReportList(paginationParameter);
+
+            if(totalRecord==0){
+                return NotFound(new ResponseDTO(404,"Searched company cannot be found"));
+            }
+            
+            return Ok(new PaginationResponse<IEnumerable<CompanyReport>>(totalRecord,reportList));
         }
         /// <summary>
         /// View Company Request Detail 
