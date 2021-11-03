@@ -88,21 +88,10 @@ namespace kroniiapi.Services
         {
 
             var existedTrainer = await _dataContext.Trainers.Where(t => t.TrainerId == id).FirstOrDefaultAsync();
-            if(JsonConvert.SerializeObject(existedTrainer).ToLower().Equals(JsonConvert.SerializeObject(trainer).ToLower())){
-                return 1;
-            }
             if (existedTrainer == null)
             {
                 return -1;
             }
-            // existedTrainer.Email = trainer.Email;
-            // if(_dataContext.Trainer.Any(t =>
-            //     t.TrainerID != trainer.ID &&
-            //     t.Email == trainer.Email
-            // ))
-            // {
-            //     return 0;
-            // }
             existedTrainer.Fullname = trainer.Fullname;
             existedTrainer.Phone = trainer.Phone;
             existedTrainer.DOB = trainer.DOB;
