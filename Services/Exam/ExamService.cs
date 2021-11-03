@@ -48,17 +48,11 @@ namespace kroniiapi.Services
         {
             var existedExam = await _dataContext.Exams.Where(t => t.ExamId == id && t.IsCancelled == false).FirstOrDefaultAsync();
 
-            if (existedExam.ExamDay == exam.ExamDay && existedExam.DurationInMinute == exam.DurationInMinute)
-            {
-                return 1;
-            }
-
             if (existedExam == null)
             {
                 return -1;
             }
-            // existedExam.ExamName = exam.ExamName;
-            // existedExam.Description = exam.Description;
+
             existedExam.ExamDay = exam.ExamDay;
             existedExam.DurationInMinute = exam.DurationInMinute;
 
