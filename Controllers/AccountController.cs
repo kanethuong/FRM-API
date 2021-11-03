@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Account")]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
