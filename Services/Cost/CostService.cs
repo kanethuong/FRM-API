@@ -36,7 +36,7 @@ namespace kroniiapi.Services
 
         public async Task<Tuple<int, IEnumerable<Cost>>> GetCostList(PaginationParameter paginationParameter)
         {
-            var costList = await _dataContext.Costs.Where(c => c.Content.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+            var costList = await _dataContext.Costs.Where(c => c.CostType.CostTypeName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
                                 .Select(c => new Cost
                                 {
                                     CostId = c.CostId,
