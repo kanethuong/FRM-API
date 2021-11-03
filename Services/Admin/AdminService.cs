@@ -53,8 +53,10 @@ namespace kroniiapi.Services
         /// <returns> Tuple list of all admin</returns>
         public async Task<Tuple<int, IEnumerable<Admin>>> GetAdminList(PaginationParameter paginationParameter)
         {
-            var listAdmin = await _dataContext.Admins.Where(a => a.IsDeactivated == false && a.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                .OrderByDescending(c => c.CreatedAt).ToListAsync();
+            var listAdmin = await _dataContext.Admins.Where(a => a.IsDeactivated == false && 
+                                                    (a.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
+                                                     .OrderByDescending(c => c.CreatedAt)
+                                                     .ToListAsync();
 
             int totalRecords = listAdmin.Count();
 
