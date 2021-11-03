@@ -37,7 +37,7 @@ namespace kroniiapi.Controllers
 
             if (totalRecord == 0)
             {
-                return NotFound(new ResponseDTO(404, "Searched content cannot be found"));
+                return NotFound(new ResponseDTO(404, "Cost type cannot be found"));
             }
 
             var costResponse = _mapper.Map<IEnumerable<CostResponse>>(costList);

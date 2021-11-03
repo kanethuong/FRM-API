@@ -96,7 +96,7 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404,"Trainer cannot be found"));
             }
 
-            if(wage<=0){
+            if(wage<0){
                 return BadRequest(new ResponseDTO(400,"Fail to update trainer wage"));
             }
 
