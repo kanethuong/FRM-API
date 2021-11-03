@@ -16,5 +16,7 @@ namespace kroniiapi.Services
 
         Task<(int,string)> InsertNewTrainerFeedback(TrainerFeedback trainerFeedback);
 
+        Task<ICollection<TrainerFeedback>> GetTrainerFeedbackByTrainerId(int trainerId);
+
     }
 }
