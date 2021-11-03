@@ -166,4 +166,60 @@
             </div>
         </div>
     </div>
+    <div id="createNewExam">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create an new exam</h3>
+        </div>
+        <p>By DatLT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Exam</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Anonymous</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+"examName": "string",
+"description": "string",
+"examDay": "DateTime",
+"durationInMinute": int,
+"adminId": int,
+"traineeIdList": [
+    int,int,int
+],
+"moduleId": int,
+"classId": int
+                  }</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Request sponse</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
 </div>
