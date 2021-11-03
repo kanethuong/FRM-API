@@ -42,7 +42,9 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
-            
+            if(newExamInput.DurationInMinute < 0){
+                return BadRequest(new ResponseDTO(400,"Cannot input negative duration"));
+            }
             if(newExamInput.classId != null){
                 List<int> traineeIdList = new List<int>();
                 var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault()); 
