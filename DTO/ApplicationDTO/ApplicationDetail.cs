@@ -14,5 +14,6 @@ namespace kroniiapi.DTO.ApplicationDTO
         public string Description { get; set; }
         public string ApplicationURL { get; set; }
         public string Response { get; set; }
+        public bool IsAccepted { get; set; }
     }
 }
