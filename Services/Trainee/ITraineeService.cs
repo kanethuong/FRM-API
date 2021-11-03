@@ -28,5 +28,6 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter);
         Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter);
         bool CheckTraineeExist(int id);
+        Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationParameter paginationParameter);
     }
 }

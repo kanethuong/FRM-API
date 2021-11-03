@@ -312,7 +312,13 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _traineeService.GetAllTrainee(paginationParameter);
+            IEnumerable<TraineeResponse> traineesDto = _mapper.Map<IEnumerable<TraineeResponse>>(trainees);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search trainee name not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TraineeResponse>>(totalRecords, traineesDto));
         }
         /// <summary>
         /// Update trainee wage

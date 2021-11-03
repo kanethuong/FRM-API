@@ -10,7 +10,7 @@ namespace kroniiapi.DTO.TraineeDTO
         public int ModuleId { get; set; }
         public string ModuleName { get; set; }
         public DateTime Date { get; set; }
-        public TimeSpan SlotDuration { get; set; }
+        public int SlotDuration { get; set; }
         public TraineeClassInfo Class { get; set; }
     }
 }
