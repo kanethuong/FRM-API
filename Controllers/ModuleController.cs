@@ -59,10 +59,12 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewModule([FromForm] ModuleInput moduleInput)
         {
+            // Map to module
             Module module = _mapper.Map<Module>(moduleInput);
+
+            // Check File Extension on Icon & Syllabus
             var icon = moduleInput.Icon;
             var syllabus = moduleInput.Syllabus;
-
             bool success;
             string message;
             (success, message) = FileHelper.CheckImageExtension(icon);
@@ -70,6 +72,7 @@ namespace kroniiapi.Controllers
             (success, message) = FileHelper.CheckExcelExtension(syllabus);
             if (!success) return BadRequest(new ResponseDTO(400, "The Syllabus is invalid: " + message));
 
+            // Upload & assign URL to Module
             using (var stream = icon.OpenReadStream())
             {
                 module.IconURL = await _imgHelper.Upload(stream, icon.FileName, icon.Length, icon.ContentType);
@@ -79,6 +82,7 @@ namespace kroniiapi.Controllers
                 module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
             }
 
+            // Insert module & Return Result
             int result = await _moduleService.InsertNewModule(module);
             if (result > 0)
             {
@@ -100,11 +104,14 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> UpdateModule(int moduleId, [FromForm] ModuleUpdateInput moduleInput)
         {
             List<string> errors = new();
+
+            // Map input to module
             Module module = await _moduleService.GetModuleById(moduleId);
             if (module is null)
                 return NotFound(new ResponseDTO(404, "The module id is not found"));
             _mapper.Map(moduleInput, module);
 
+            // If File is not null, check file extension & assign URL to Module
             bool success;
             string message;
             if (moduleInput.Syllabus is not null)
@@ -140,6 +147,7 @@ namespace kroniiapi.Controllers
                 }
             }
 
+            // Update Module & Return Result
             int result = await _moduleService.UpdateModule(moduleId, module);
             if (result > 0)
                 return Ok(new ResponseDTO(200, "Successfully updated")
