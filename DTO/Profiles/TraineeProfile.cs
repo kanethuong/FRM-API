@@ -19,7 +19,7 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Calendar,ModuleInTraineeDashboard>()
                 .ForMember(md => md.ModuleId,c => c.MapFrom(s => s.Module.ModuleId))
                 .ForMember(md => md.ModuleName,c => c.MapFrom(s => s.Module.ModuleName))
-                .ForMember(md => md.SlotDuration,c => c.MapFrom(s => s.Module.SlotDuration));
+                .ForMember(md => md.SlotDuration,c => c.MapFrom(s => s.Module.SlotDuration.TotalMinutes));
             CreateMap<Class,TraineeClassInfo>()
                 .ForMember(ti => ti.TrainerAvatarURL,c => c.MapFrom(s => s.Trainer.AvatarURL))
                 .ForMember(ti => ti.TrainerName,c => c.MapFrom(s => s.Trainer.Fullname))
@@ -30,7 +30,7 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Calendar,ModuleInTimeTable>()
                 .ForMember(md => md.ModuleId,c => c.MapFrom(s => s.Module.ModuleId))
                 .ForMember(md => md.ModuleName,c => c.MapFrom(s => s.Module.ModuleName))
-                .ForMember(md => md.SlotDuration,c => c.MapFrom(s => s.Module.SlotDuration));
+                .ForMember(md => md.SlotDuration,c => c.MapFrom(s => s.Module.SlotDuration.TotalMinutes));
 
             CreateMap<TraineeProfileDetailInput,Trainee>();
             CreateMap<Trainee,TraineeResponse>();
