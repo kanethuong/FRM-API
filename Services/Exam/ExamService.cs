@@ -43,16 +43,22 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="id"></param>
         /// <param name="exam"></param>
-        /// <returns>-1:none existed / 0:fail / 1:success</returns>
+        /// <returns>-1:none existed / 0:fail / 1:success(also not change anything)</returns>
         public async Task<int> UpdateExam(int id, Exam exam)
         {
             var existedExam = await _dataContext.Exams.Where(t => t.ExamId == id && t.IsCancelled == false).FirstOrDefaultAsync();
+
+            if (existedExam.ExamDay == exam.ExamDay && existedExam.DurationInMinute == exam.DurationInMinute)
+            {
+                return 1;
+            }
+
             if (existedExam == null)
             {
                 return -1;
             }
-            existedExam.ExamName = exam.ExamName;
-            existedExam.Description = exam.Description;
+            // existedExam.ExamName = exam.ExamName;
+            // existedExam.Description = exam.Description;
             existedExam.ExamDay = exam.ExamDay;
             existedExam.DurationInMinute = exam.DurationInMinute;
 
