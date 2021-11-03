@@ -10,6 +10,7 @@ using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace kroniiapi.Services
 {
@@ -87,7 +88,10 @@ namespace kroniiapi.Services
         public async Task<int> UpdateTrainee(int id, Trainee trainee)
         {
             var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
-            if (existedTrainee == null)
+            if(JsonConvert.SerializeObject(existedTrainee).ToLower().Equals(JsonConvert.SerializeObject(trainee).ToLower())){
+                return 1;
+            }
+            else if (existedTrainee == null)
             {
                 return -1;
             }

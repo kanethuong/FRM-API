@@ -22,7 +22,7 @@ namespace kroniiapi.Services
         private ITraineeService _traineeService;
         private IEmailService _emailService;
         private IMapper _mapper;
-        private string defaultAvatar ="https://ibb.co/t4mtsyF";
+        private string defaultAvatar = "https://i.ibb.co/kxHf8Yv/default-avatar.png";
 
         public AccountService(DataContext dataContext, IMapper mapper, IAdminService adminService
         , IAdministratorService administratorService, ICompanyService companyService, ITraineeService traineeService
@@ -596,7 +596,7 @@ namespace kroniiapi.Services
         public async Task<int> UpdateAccountPassword(string email, string password)
         {
             Tuple<AccountResponse, string> tupleResponse = await GetAccountByEmail(email);
-            if(tupleResponse == null)
+            if (tupleResponse == null)
             {
                 return 0;
             }
