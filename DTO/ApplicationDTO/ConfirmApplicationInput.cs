@@ -9,8 +9,6 @@ namespace kroniiapi.DTO.ApplicationDTO
     public class ConfirmApplicationInput
     {
         [Required]
-        public int ApplicationId { get; set; }
-        [Required]
         public int AdminId { get; set; }
         [Required]
         public string Response { get; set; }
