@@ -135,10 +135,10 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="confirmApplicationInput">Confirm Application Input DTO</param>
         /// <returns></returns>
-        [HttpPut]
-        public async Task<ActionResult> ConfirmApplication([FromBody] ConfirmApplicationInput confirmApplicationInput)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> ConfirmApplication(int id,[FromBody] ConfirmApplicationInput confirmApplicationInput)
         {
-            int rs = await _applicationService.ConfirmApplication(confirmApplicationInput);
+            int rs = await _applicationService.ConfirmApplication(id, confirmApplicationInput);
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, "Application not found"));
