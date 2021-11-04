@@ -42,12 +42,14 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
-            if(newExamInput.DurationInMinute < 0){
-                return BadRequest(new ResponseDTO(400,"Cannot input negative duration"));
+            if (newExamInput.DurationInMinute < 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Cannot input negative duration"));
             }
-            if(newExamInput.classId != null){
+            if (newExamInput.classId != null)
+            {
                 List<int> traineeIdList = new List<int>();
-                var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault()); 
+                var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault());
                 foreach (Trainee item in traineeList)
                 {
                     traineeIdList.Add(item.TraineeId);
@@ -57,8 +59,9 @@ namespace kroniiapi.Controllers
             }
             //Check Class deactivated
             var classCheck = await _classService.GetClassByClassID(newExamInput.classId.GetValueOrDefault());
-            if(newExamInput.classId != 0 && classCheck == null){
-                return NotFound(new ResponseDTO(404,"Class not found"));
+            if (newExamInput.classId != 0 && classCheck == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
             }
             //Check admin deactivated == false
             var adminCheck = await _adminService.GetAdminById(newExamInput.AdminId);
@@ -74,9 +77,10 @@ namespace kroniiapi.Controllers
             foreach (var item in newExamInput.TraineeIdList)
             {
                 var traineeCheck = await _traineeService.GetTraineeById(item);
-                if(traineeCheck == null){
-                    return NotFound(new ResponseDTO(404,"Trainee(s) not found"));
-                } 
+                if (traineeCheck == null)
+                {
+                    return NotFound(new ResponseDTO(404, "Trainee(s) not found"));
+                }
                 traineeList1.Add(traineeCheck);
             }
             exam.Trainees = traineeList1;
@@ -103,7 +107,7 @@ namespace kroniiapi.Controllers
             }
             int status = await _examService.InsertNewExam(exam);
 
-            return Ok(new ResponseDTO(200,"Success"));
+            return Ok(new ResponseDTO(200, "Success"));
         }
         /// <summary>
         /// View all exam with pagination
@@ -112,9 +116,7 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ExamResponse>>>> ViewExamList([FromQuery] PaginationParameter paginationParameter)
         {
-            var tuple = await _examService.GetExamList(paginationParameter);
-            var totalRecord = tuple.Item1;
-            var examList = tuple.Item2;
+            (int totalRecord, IEnumerable<Exam> examList) = await _examService.GetExamList(paginationParameter);
 
             if (totalRecord == 0)
             {
@@ -136,7 +138,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">id of exam</param>
         /// <param name="duration"></param>
         /// <param name="ExamDay"></param>
-        /// <returns></returns>
+        /// <returns>200: Update succcessfully / 400: Exam was cancelled / 404: Exam not found</returns>
         [HttpPut("{id:int}")]
         public async Task<ActionResult> ChangeExamInfo(int id, [FromBody] UpdateExamInput updateExamInput)
         {
@@ -145,6 +147,11 @@ namespace kroniiapi.Controllers
             if (exam == null)
             {
                 return NotFound(new ResponseDTO(404, "Exam not found"));
+            }
+
+            if (exam.DurationInMinute == updateExamInput.Duration && exam.ExamDay == updateExamInput.ExamDay)
+            {
+                return Ok(new ResponseDTO(200, "Update exam successfully"));
             }
 
             exam.DurationInMinute = updateExamInput.Duration;

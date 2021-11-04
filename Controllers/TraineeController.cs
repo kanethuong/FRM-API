@@ -17,6 +17,7 @@ using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace kroniiapi.Controllers
 {
@@ -76,12 +77,14 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<List<Object>>> ViewTraineeDashboard(int id)
         {
             var checkTrainee = await _traineeService.GetTraineeById(id);
-            if (checkTrainee == null) {
-                return NotFound(new ResponseDTO(404,"Trainee not found!"));
+            if (checkTrainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found!"));
             }
             var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
-            if(classCheck == null || classCheck.IsDeactivated == true){
-                return NotFound(new ResponseDTO(404,"Class not found"));
+            if (classCheck == null || classCheck.IsDeactivated == true)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
             }
             TimeSpan oneSecond = new TimeSpan(00, 00, -1);
             var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
@@ -98,10 +101,11 @@ namespace kroniiapi.Controllers
                     item.Class.Room = room;
                 }
             }
-            
+
             var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
             var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
-            if(examInDashboard.Count() != 0){
+            if (examInDashboard.Count() != 0)
+            {
                 Room room = await _roomService.GetRoomByTraineeId(id);
                 foreach (var item in examInDashboard)
                 {
@@ -149,6 +153,17 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> EditProfile(int id, [FromBody] TraineeProfileDetailInput traineeProfileDetail)
         {
             Trainee trainee = _mapper.Map<Trainee>(traineeProfileDetail);
+            Trainee existedTrainee = await _traineeService.GetTraineeById(id);
+            if (
+                existedTrainee.Fullname.ToLower().Equals(trainee.Fullname.ToLower()) &&
+                existedTrainee.Phone.ToLower().Equals(trainee.Phone.ToLower()) &&
+                existedTrainee.DOB.ToString().ToLower().Equals(trainee.DOB.ToString().ToLower()) &&
+                existedTrainee.Address.ToLower().Equals(trainee.Address.ToLower()) &&
+                existedTrainee.Gender.ToLower().Equals(trainee.Gender.ToLower())
+            )
+            {
+                return Ok(new ResponseDTO(200, "Update profile success"));
+            }
             int rs = await _traineeService.UpdateTrainee(id, trainee);
             if (rs == -1)
             {
@@ -239,12 +254,14 @@ namespace kroniiapi.Controllers
             endDate = endDate.Add(oneday);
 
             var checkTrainee = await _traineeService.GetTraineeById(id);
-            if (checkTrainee == null) {
-                return NotFound(new ResponseDTO(404,"Trainee not found!"));
+            if (checkTrainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found!"));
             }
             var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
-            if(classCheck == null || classCheck.IsDeactivated == true){
-                return NotFound(new ResponseDTO(404,"Class not found"));
+            if (classCheck == null || classCheck.IsDeactivated == true)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
             }
             var calenders = await _calendarService.GetCalendarsByTraineeId(id, startDate, endDate);
             var exam = await _examService.GetExamListByTraineeId(id, startDate, endDate);
@@ -263,7 +280,8 @@ namespace kroniiapi.Controllers
 
             var moduleInTimeTable = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
             var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
-            if(examInTimeTable.Count() != 0){
+            if (examInTimeTable.Count() != 0)
+            {
                 Room room = await _roomService.GetRoomByTraineeId(id);
                 foreach (var item in examInTimeTable)
                 {
@@ -291,9 +309,9 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
         [HttpGet("free_trainee")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery]PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery] PaginationParameter paginationParameter)
         {
-            
+
             (int totalRecord, IEnumerable<Trainee> listTrainee) = await _traineeService.GetAllTraineeWithoutClass(paginationParameter);
 
             if (totalRecord == 0)
@@ -310,7 +328,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
         [HttpGet("page")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationParameter paginationParameter)
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecords, IEnumerable<Trainee> trainees) = await _traineeService.GetAllTrainee(paginationParameter);
             IEnumerable<TraineeResponse> traineesDto = _mapper.Map<IEnumerable<TraineeResponse>>(trainees);
@@ -327,19 +345,19 @@ namespace kroniiapi.Controllers
         /// <param name="wage"></param>
         /// <returns>200: Update wage success / 404: Trainee profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/wage")]
-        public async Task<ActionResult> UpdateTraineeWage(int id, [FromBody]decimal wage)
+        public async Task<ActionResult> UpdateTraineeWage(int id, [FromBody] decimal wage)
         {
             Trainee trainee = await _traineeService.GetTraineeById(id);
-            if(trainee is null)
+            if (trainee is null)
             {
                 return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
             }
-            if(wage <= 0)
+            if (wage <= 0)
             {
                 return BadRequest(new ResponseDTO(400, "Fail to update trainee wage"));
             }
             trainee.Wage = wage;
-            if(await _traineeService.UpdateTrainee(id, trainee) == 1)
+            if (await _traineeService.UpdateTrainee(id, trainee) == 1)
             {
                 return Ok(new ResponseDTO(200, "Update trainee's wage success"));
             }
