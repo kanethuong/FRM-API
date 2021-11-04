@@ -40,7 +40,7 @@ namespace kroniiapi.Controllers
 
             if (totalRecord == 0)
             {
-                return NotFound(new ResponseDTO(404, "Search trainer email not found"));
+                return NotFound(new ResponseDTO(404, "Search trainer not found"));
             }
             var trainers = _mapper.Map<IEnumerable<TrainerResponse>>(listTrainer);
 
@@ -95,8 +95,10 @@ namespace kroniiapi.Controllers
             if(trainer==null){
                 return NotFound(new ResponseDTO(404,"Trainer cannot be found"));
             }
-
-            if(wage<=0){
+            if(trainer.Wage==wage){
+                return Ok(new ResponseDTO(200,"Update trainer wage success"));
+            }
+            if(wage<0){
                 return BadRequest(new ResponseDTO(400,"Fail to update trainer wage"));
             }
 

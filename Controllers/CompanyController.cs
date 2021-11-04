@@ -85,7 +85,7 @@ namespace kroniiapi.Controllers
             IEnumerable<TraineeInRequest> traineeDTO = _mapper.Map<IEnumerable<TraineeInRequest>>(trainees);
             if (totalRecords == 0)
             {
-                return NotFound(new ResponseDTO(404, "Search trainee name not found"));
+                return NotFound(new ResponseDTO(404, "Trainee not found"));
             }
             return Ok(new PaginationResponse<IEnumerable<TraineeInRequest>>(totalRecords, traineeDTO));
         }
@@ -109,7 +109,7 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 1)
             {
-                return Ok(new ResponseDTO(200, "The company request is comfirmed"));
+                return Ok(new ResponseDTO(200, "The company request is processed"));
             }
             else return BadRequest(new ResponseDTO(400, "Fail to update"));
         }

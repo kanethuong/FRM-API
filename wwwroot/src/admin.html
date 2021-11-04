@@ -1,25 +1,25 @@
 <div class="mb-5">
-    <h2 class="fw-bold">Exam</h2>
+    <h2 class="fw-bold">Admin</h2>
     <p>
-        Help you to view, create, update and cancel exam
+        Admin details
     </p>
-
-    <div id="viewExamList">
+    <!-- Get Admin List -->
+    <div id="getAdminList">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>View Exam List</h3>
+            <h3>View Admin List</h3>
         </div>
-        <p>By PhuTT</p>
+        <p>By HoangNN</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/exam/page</p>
+            <p>/api/Admin/page</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Anonymous</p>
+                <p>Administrator</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
@@ -35,9 +35,9 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
-                <p>PageNumber: Position of page</p>
-                <p>PageSize: Number items per page</p>
-                <p>SearchName: Exam name</p>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Admin Username/Fullname/Email</p>
             </div>
         </div>
 
@@ -45,147 +45,46 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>None</p>
+                <p>No</p>
             </div>
             <div class="col-6">
-                <h5>Request sponse</h5>
-                <p><pre><code>{
+                <h5>Response Body</h5>
+            <p><pre><code>{
     "totalRecords": int,
     "payload": [
         {
-        "examId": int,
-        "examName": "string",
-        "moduleName": "string",
-        "description": "string",
-        "examDay": "DateTime",
-        "durationInMinute": int,
-        "adminName": "string",
-        "isCancelled": boolean
+        "adminId": int,
+        "fullname": "string",
+        "avatarURL": "string",
+        "email": "string",
+        "wage": int
         }
     ]
 }</code></pre></p>
             </div>
         </div>
     </div>
-
-    <div id="updateExam">
+    <!-- Get Admin Profile -->
+    <div id="getAdminProfile">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>Update exam information</h3>
+            <h3>View Admin Profile</h3>
         </div>
-        <p>By PhuTT</p>
+        <p>By HoangNN</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/exam/{id}</p>
+            <p>/api/Admin/{id}/profile</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Anonymous</p>
+                <p>Administrator</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
-                <p>PUT</p>
-            </div>
-            <div class="col-4">
-                <h5>Status</h5>
-                <p>200 400 404</p>
-            </div>
-        </div>
-
-        <!-- Parameter & file -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Parameter</h5>
-                <p>id: exam id</p>
-            </div>
-        </div>
-
-        <!-- Request body and Response body  -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Request Body</h5>
-                <p><pre><code>{
-    "duration": int,
-    "examDay": "DateTime"
-}</code></pre></p>
-            </div>
-            <div class="col-6">
-                <h5>Request sponse</h5>
-                <p>Error Response</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="cancelExam">
-        <!-- Function Title -->
-        <div class="w-75 border-bottom mb-3">
-            <h3>Cancel exam</h3>
-        </div>
-        <p>By PhuTT</p>
-        <div>
-            <h5>Endpoint</h5>
-            <p>/api/exam/{id}</p>
-        </div>
-
-        <!-- Role, Method and Status code -->
-        <div class="row mb-3">
-            <div class="col-4 border-end">
-                <h5>Allow</h5>
-                <p>Anonymous</p>
-            </div>
-            <div class="col-4 border-end">
-                <h5>Method</h5>
-                <p>DELETE</p>
-            </div>
-            <div class="col-4">
-                <h5>Status</h5>
-                <p>200 404 409</p>
-            </div>
-        </div>
-
-        <!-- Parameter & file -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Parameter</h5>
-                <p>id: exam id</p>
-            </div>
-        </div>
-
-        <!-- Request body and Response body  -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Request Body</h5>
-                <p>None</p>
-            </div>
-            <div class="col-6">
-                <h5>Request sponse</h5>
-                <p>Error Response</p>
-            </div>
-        </div>
-    </div>
-    <div id="createNewExam">
-        <!-- Function Title -->
-        <div class="w-75 border-bottom mb-3">
-            <h3>Create an new exam</h3>
-        </div>
-        <p>By DatLT</p>
-        <div>
-            <h5>Endpoint</h5>
-            <p>/api/Exam</p>
-        </div>
-
-        <!-- Role, Method and Status code -->
-        <div class="row mb-3">
-            <div class="col-4 border-end">
-                <h5>Allow</h5>
-                <p>Anonymous</p>
-            </div>
-            <div class="col-4 border-end">
-                <h5>Method</h5>
-                <p>POST</p>
+                <p>GET</p>
             </div>
             <div class="col-4">
                 <h5>Status</h5>
@@ -196,6 +95,8 @@
         <!-- Parameter & file -->
         <div class="row mb-3">
             <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: Admin ID</p>
             </div>
         </div>
 
@@ -203,23 +104,73 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p><pre><code>{
-"examName": "string",
-"description": "string",
-"examDay": "DateTime",
-"durationInMinute": int,
-"adminId": int,
-"traineeIdList": [
-    int,int,int
-],
-"moduleId": int,
-"classId": int
-                  }</code></pre></p>
+                <p>No</p>
             </div>
             <div class="col-6">
-                <h5>Request sponse</h5>
-                <p>Error Response</p>
+                <h5>Response Body</h5>
+            <p><pre><code>{
+    "fullname": "string",
+    "avatarURL": "string",
+    "email": "string",
+    "phone": "string",
+    "dob": "string",
+    "address": "string",
+    "gender": "string",
+    "wage": int
+}</code></pre></p>
             </div>
         </div>
     </div>
+    <!-- Get Admin Feedback -->
+    <div id="getAdminFeedback">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Admin Feedback</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Admin/{id}/feedback</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: Admin ID</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+            <p><pre><code>{
+    "rate": int,
+    "content": "string"
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+   
 </div>

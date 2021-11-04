@@ -10,6 +10,7 @@ using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace kroniiapi.Services
 {

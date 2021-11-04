@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace kroniiapi.Services
 {
@@ -91,14 +92,6 @@ namespace kroniiapi.Services
             {
                 return -1;
             }
-            // existedTrainer.Email = trainer.Email;
-            // if(_dataContext.Trainer.Any(t =>
-            //     t.TrainerID != trainer.ID &&
-            //     t.Email == trainer.Email
-            // ))
-            // {
-            //     return 0;
-            // }
             existedTrainer.Fullname = trainer.Fullname;
             existedTrainer.Phone = trainer.Phone;
             existedTrainer.DOB = trainer.DOB;

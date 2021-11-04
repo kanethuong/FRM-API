@@ -267,7 +267,7 @@ namespace kroniiapi.Services
             {
                 traineeLists.Add(await _dataContext.Trainees.Where(t => t.TraineeId == item).FirstOrDefaultAsync());
             }
-            var result = traineeLists.Where(t => t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()));
+            var result = traineeLists.Where(t => t.IsDeactivated == false && (t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
             int totalRecords = result.Count();
             var rs = result.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
