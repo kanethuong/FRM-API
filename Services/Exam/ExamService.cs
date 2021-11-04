@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -69,13 +70,10 @@ namespace kroniiapi.Services
         /// <returns>Exam list</returns>
         public async Task<Tuple<int, IEnumerable<Exam>>> GetExamList(PaginationParameter paginationParameter)
         {
-            var totalRecords = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
-                .CountAsync();
-
             IEnumerable<Exam> rs = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+                .GetCount(out var totalRecords)
                 .OrderByDescending(e => e.ExamDay)
-                .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                .Take(paginationParameter.PageSize)
+                .GetPage(paginationParameter)
                 .Select(e => new Exam
                 {
                     ExamId = e.ExamId,

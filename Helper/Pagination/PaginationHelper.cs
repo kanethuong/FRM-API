@@ -41,7 +41,7 @@ namespace kroniiapi.Helper
         /// <param name="count">the amount of entities in the list</param>
         /// <typeparam name="TEntity">the entity</typeparam>
         /// <returns>the list</returns>
-        public static IEnumerable<TEntity> Count<TEntity>(this IEnumerable<TEntity> entities, out int count)
+        public static IEnumerable<TEntity> GetCount<TEntity>(this IEnumerable<TEntity> entities, out int count)
         {
             count = entities.Count();
             return entities;
@@ -81,7 +81,7 @@ namespace kroniiapi.Helper
         /// <param name="count">the amount of entities in the list</param>
         /// <typeparam name="TEntity">the entity</typeparam>
         /// <returns>the list</returns>
-        public static IQueryable<TEntity> Count<TEntity>(this IQueryable<TEntity> entities, out int count)
+        public static IQueryable<TEntity> GetCount<TEntity>(this IQueryable<TEntity> entities, out int count)
         {
             count = entities.Count();
             return entities;
