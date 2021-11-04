@@ -116,9 +116,7 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ExamResponse>>>> ViewExamList([FromQuery] PaginationParameter paginationParameter)
         {
-            var tuple = await _examService.GetExamList(paginationParameter);
-            var totalRecord = tuple.Item1;
-            var examList = tuple.Item2;
+            (int totalRecord, IEnumerable<Exam> examList) = await _examService.GetExamList(paginationParameter);
 
             if (totalRecord == 0)
             {
@@ -140,7 +138,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">id of exam</param>
         /// <param name="duration"></param>
         /// <param name="ExamDay"></param>
-        /// <returns></returns>
+        /// <returns>200: Update succcessfully / 400: Exam was cancelled / 404: Exam not found</returns>
         [HttpPut("{id:int}")]
         public async Task<ActionResult> ChangeExamInfo(int id, [FromBody] UpdateExamInput updateExamInput)
         {
