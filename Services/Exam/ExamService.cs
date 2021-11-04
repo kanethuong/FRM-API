@@ -69,25 +69,25 @@ namespace kroniiapi.Services
         /// <returns>Exam list</returns>
         public async Task<Tuple<int, IEnumerable<Exam>>> GetExamList(PaginationParameter paginationParameter)
         {
-            var listExam = await _dataContext.Exams.Where(e => e.ExamName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                    .Select(e => new Exam
-                    {
-                        ExamId = e.ExamId,
-                        ExamName = e.ExamName,
-                        Description = e.Description,
-                        Module = e.Module,
-                        ExamDay = e.ExamDay,
-                        DurationInMinute = e.DurationInMinute,
-                        Admin = e.Admin,
-                        IsCancelled = e.IsCancelled
-                    })
-                    .ToListAsync();
+            var totalRecords = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+                .CountAsync();
 
-            int totalRecords = listExam.Count();
-
-            var rs = listExam.OrderByDescending(e => e.ExamDay)
-                    .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                    .Take(paginationParameter.PageSize);
+            IEnumerable<Exam> rs = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+                .OrderByDescending(e => e.ExamDay)
+                .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                .Take(paginationParameter.PageSize)
+                .Select(e => new Exam
+                {
+                    ExamId = e.ExamId,
+                    ExamName = e.ExamName,
+                    Description = e.Description,
+                    Module = e.Module,
+                    ExamDay = e.ExamDay,
+                    DurationInMinute = e.DurationInMinute,
+                    Admin = e.Admin,
+                    IsCancelled = e.IsCancelled
+                })
+                .ToListAsync();
 
             return Tuple.Create(totalRecords, rs);
         }
