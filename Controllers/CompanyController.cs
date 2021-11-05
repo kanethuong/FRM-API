@@ -52,7 +52,7 @@ namespace kroniiapi.Controllers
             (int totalRecord, IEnumerable<CompanyReport> reportList) = await _companyService.GetCompanyReportList(paginationParameter);
 
             if(totalRecord==0){
-                return NotFound(new ResponseDTO(404,"Searched company cannot be found"));
+                return NotFound(new ResponseDTO(404,"Company report not found"));
             }
             
             return Ok(new PaginationResponse<IEnumerable<CompanyReport>>(totalRecord,reportList));
@@ -96,9 +96,9 @@ namespace kroniiapi.Controllers
         /// <param name="isAccepted">accept or reject</param>
         /// <returns></returns>
         [HttpPut("request/{id:int}")]
-        public async Task<ActionResult> ConfirmCompanyRequest(int id,[FromBody] bool isAccepted)
+        public async Task<ActionResult> ConfirmCompanyRequest(int id,[FromBody] ConfirmCompanyRequestInput input)
         {
-            var rs = await _companyService.ConfirmCompanyRequest(id, isAccepted);
+            var rs = await _companyService.ConfirmCompanyRequest(id, input.isAccepted);
             if (rs == -1)
             {
                 return NotFound(new ResponseDTO(404, "Company request cannot be found"));
