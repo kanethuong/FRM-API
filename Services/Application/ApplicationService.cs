@@ -168,9 +168,9 @@ namespace kroniiapi.Services
         /// <param name="response">message of admin to response</param>
         /// <param name="isAccepted">true/false/null</param>
         /// <returns>-1,-2:Not found / 0:Fail to confirm / 1:Confirmed</returns>
-        public async Task<int> ConfirmApplication([FromBody]ConfirmApplicationInput confirmApplicationInput)
+        public async Task<int> ConfirmApplication(int id, [FromBody]ConfirmApplicationInput confirmApplicationInput)
         {
-            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == confirmApplicationInput.ApplicationId && a.IsAccepted == null).FirstOrDefaultAsync();
+            var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == id && a.IsAccepted == null).FirstOrDefaultAsync();
             var checkAdmin = await _dataContext.Admins.Where(a => a.AdminId == confirmApplicationInput.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();
             if (existedApplication == null)
             {
