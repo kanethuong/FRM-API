@@ -33,13 +33,19 @@ namespace kroniiapi.Controllers
         private readonly ITraineeService _traineeService;
         private readonly ITimetableService _timetableService;
 
+        private readonly IMarkService _markService;
+
+        private readonly ICertificateService _certificateService;
+
         public ClassController(IClassService classService,
                                ITraineeService traineeService,
                                IAdminService adminService,
                                IModuleService moduleService,
                                ITrainerService trainerService,
                                IMapper mapper,
-                               ITimetableService timetableService)
+                               ITimetableService timetableService,
+                               IMarkService markService,
+                               ICertificateService certificateService)
         {
             _classService = classService;
             _adminService = adminService;
@@ -49,6 +55,8 @@ namespace kroniiapi.Controllers
             _timetableService = timetableService;
             _adminService = adminService;
             _traineeService = traineeService;
+            _markService = markService;
+            _certificateService = certificateService;
         }
 
         /// <summary>
@@ -287,7 +295,7 @@ namespace kroniiapi.Controllers
             if (result != 1)
             {
                 return BadRequest(new ResponseDTO(400, message));
-            } 
+            }
             else
                 return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
@@ -612,7 +620,20 @@ namespace kroniiapi.Controllers
         [HttpDelete("module/{moduleId:int}")]
         public async Task<ActionResult> RemoveModule(AssignModuleInput assignModuleInput)
         {
-            return null;
+            var moduleMarkState = await _markService.GetMarkByModuleId(assignModuleInput.ModuleId, null, null);
+            if (moduleMarkState.Count() != 0)
+            {
+                return BadRequest("test");
+            }
+
+            var moduleCertificateState = await _certificateService.GetCertificatesURLByModuleId(assignModuleInput.ModuleId);
+            if (moduleCertificateState.Count() != 0)
+            {
+                return BadRequest("test");
+            }
+
+
+            return Ok();
         }
 
     }
