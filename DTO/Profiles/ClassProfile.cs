@@ -30,6 +30,9 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<RequestDeleteClassInput, DeleteClassRequest>();
             CreateMap<Class, ClassDetailResponse>();
             CreateMap<Trainee, TraineeInclassResponse>();
+            CreateMap<Class,TrainerClassListResponse>();
+            CreateMap<Class,TrainerClassDetailResponse>();
+            CreateMap<AssignModuleInput, ClassModule>();
 
         }
     }
