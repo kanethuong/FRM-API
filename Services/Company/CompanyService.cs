@@ -57,7 +57,7 @@ namespace kroniiapi.Services
         /// <returns>Total record, report list</returns>
         public async Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter)
         {
-            var listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
+            IEnumerable<CompanyRequest> listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
               && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
                   c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
                   c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
