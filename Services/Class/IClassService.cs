@@ -29,5 +29,6 @@ namespace kroniiapi.Services
         Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId);
         Task<int> DeleteTraineeClass(int deleteRequestId);
         void DiscardChanges();
+        Task<int> RemoveModuleFromClass(int classId, int moduleId);
     }
 }

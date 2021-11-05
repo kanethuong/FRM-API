@@ -445,5 +445,19 @@ namespace kroniiapi.Services
             };
             return returnThing;
         }
+
+        public async Task<int> RemoveModuleFromClass(int classId, int moduleId)
+        {
+            var classModuleForDelete =  _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
+            if(classModuleForDelete != null)
+            {
+                _dataContext.ClassModules.Remove(classModuleForDelete);
+            }
+            else
+            {
+                return -1;
+            }
+            return await _dataContext.SaveChangesAsync();
+        }
     }
 }
