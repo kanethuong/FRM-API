@@ -19,6 +19,6 @@ namespace kroniiapi.Services
         Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList ();
         Task<ApplicationCategory> GetApplicationCategory(int id);
         Task<Application> GetApplicationDetail(int id);
-        Task<int> ConfirmApplication([FromBody]ConfirmApplicationInput confirmApplicationInput);
+        Task<int> ConfirmApplication(int id, [FromBody]ConfirmApplicationInput confirmApplicationInput);
     }
 }
