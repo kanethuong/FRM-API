@@ -179,18 +179,18 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter)
         {
             var trainerList = await _dataContext.Trainers.Where(t
-                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || 
+                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
                                                 t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
                                                 t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
-                                                .OrderByDescending(t=>t.CreatedAt)
+                                                .OrderByDescending(t => t.CreatedAt)
                                                 .ToListAsync();
             return Tuple.Create(trainerList.Count(), PaginationHelper.GetPage(trainerList,
                 paginationParameter.PageSize, paginationParameter.PageNumber));
         }
         public bool CheckTrainerExist(int id)
         {
-            return  _dataContext.Trainers.Any(t => t.TrainerId == id &&
-            t.IsDeactivated == false);
+            return _dataContext.Trainers.Any(t => t.TrainerId == id &&
+           t.IsDeactivated == false);
         }
     }
 }
