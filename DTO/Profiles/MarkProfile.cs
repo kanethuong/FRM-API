@@ -14,6 +14,8 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<Mark,ModuleMark>()
                 .ForMember(mm=>mm.ModuleName,x => x.MapFrom(m => m.Module.ModuleName));
+            CreateMap<TraineeMarkInput,Mark>();
+                
         }
     }
 }

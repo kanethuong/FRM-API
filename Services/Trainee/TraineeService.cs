@@ -88,10 +88,7 @@ namespace kroniiapi.Services
         public async Task<int> UpdateTrainee(int id, Trainee trainee)
         {
             var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
-            if(JsonConvert.SerializeObject(existedTrainee).ToLower().Equals(JsonConvert.SerializeObject(trainee).ToLower())){
-                return 1;
-            }
-            else if (existedTrainee == null)
+            if (existedTrainee == null)
             {
                 return -1;
             }
