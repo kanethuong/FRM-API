@@ -152,5 +152,41 @@ namespace kroniiapi.Controllers
             return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
         }
 
+        /// <summary>
+        /// Get score of a trainer's class
+        /// </summary>
+        /// <param name="classId">class id</param>
+        /// <param name="trainerId">trainer id</param>
+        /// <param name="paginationParameter">pagination</param>
+        /// <returns>200: List of student mark in a class with pagination / 404:not found</returns>
+        [HttpGet("trainer/class/{classId:int}")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScoreByTrainerId(int classId, int trainerId, [FromQuery] PaginationParameter paginationParameter)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Change class sore
+        /// </summary>
+        /// <param name="traineeId">trainee id</param>
+        /// <param name="traineeMarkInput">Trainee Module and Mark</param>
+        /// <returns>200: Updated / 409: Conflict / 404: trainee not found</returns>
+        [HttpPut("trainee")]
+        public async Task<ActionResult> ChangeClassScore([FromBody] List<TraineeMarkInput> traineeMarkInput)
+        {
+            return null;
+        }
+        
+        /// <summary>
+        /// View trainee mark
+        /// </summary>
+        /// <param name="traineeId">trainee id</param>
+        /// <returns>200: Trainee mark response/ 404: Trainee not found</returns>
+        [HttpGet("{traineeId:int}/Score")]
+        public async Task<ActionResult<MarkResponse>> ViewTraineeMark (int traineeId)
+        {
+            return null;
+        }
+
     }
 }
