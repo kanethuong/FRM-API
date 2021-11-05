@@ -42,12 +42,11 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
-            if (newExamInput.DurationInMinute < 0)
-            {
-                return BadRequest(new ResponseDTO(400, "Cannot input negative duration"));
+            if(newExamInput.ExamDay <= DateTime.Now){
+                return BadRequest(new ResponseDTO(400,"Exam time can't be smaller than current time"));
             }
-            if (newExamInput.classId != null)
-            {
+            //Gắn traineeID trong newExamInput.class vào newExamInput.TraineeIdList và loại bỏ những trainee trùng
+            if(newExamInput.classId != null){
                 List<int> traineeIdList = new List<int>();
                 var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault());
                 foreach (Trainee item in traineeList)
@@ -91,7 +90,7 @@ namespace kroniiapi.Controllers
                 bool checkModule = modules.Contains(exam.ModuleId);
                 if (checkModule == false)
                 {
-                    return Ok(new ResponseDTO(404, "Trainee " + item.Fullname + " doesn't have module " + exam.ModuleId));
+                    return NotFound(new ResponseDTO(404, "Trainee " + item.Fullname + " doesn't have module " + exam.ModuleId));
                 }
             }
 

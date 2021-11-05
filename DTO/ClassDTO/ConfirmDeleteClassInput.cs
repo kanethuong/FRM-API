@@ -11,8 +11,6 @@ namespace kroniiapi.DTO.ClassDTO
         [Required]
         public int ClassId { get; set; }
         [Required]
-        public int DeleteClassRequestId { get; set; }
-        [Required]
         public bool IsDeactivate { get; set; }
     }
 }

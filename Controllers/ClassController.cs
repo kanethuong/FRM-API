@@ -106,11 +106,11 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="confirmDeleteClassInput">Confirm detail</param>
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
-        [HttpPut("request")]
-        //[Authorize(Policy = "ClassPut")]
-        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
+        [HttpPut("request/{deleteClassRequestId:int}")]
+        [Authorize(Policy = "ClassPut")]
+        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput,int deleteClassRequestId)
         {
-            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
+            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput,deleteClassRequestId);
             if (status == -1)
             {
                 return NotFound(new ResponseDTO(404, "Class or request not found"));
@@ -123,7 +123,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Request is rejected"));
             }
-            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
+            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(deleteClassRequestId);
             int deleteTraineeClass = await _classService.DeleteTraineeClass(confirmDeleteClassInput.ClassId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
