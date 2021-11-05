@@ -249,6 +249,23 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Get Trainee List in a class with correct trainer with pagination
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassIdAndTrainerId(int classId, int trainerId, PaginationParameter paginationParameter)
+        {
+            var trainerClassCheck = _dataContext.Classes.Any(c => c.TrainerId == trainerId && c.ClassId == classId);
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            int totalRecords = traineeList.Count();
+            var rs = traineeList.OrderBy(c => c.TraineeId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
@@ -458,6 +475,29 @@ namespace kroniiapi.Services
                 return -1;
             }
             return await _dataContext.SaveChangesAsync();
+        }
+        /// <summary>
+        /// Get Trainee List in a class with pagination
+        /// </summary>
+        /// <param name="trainerId">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter)
+        {
+            var classList = await _dataContext.Classes.Where(t => t.TrainerId == trainerId && t.IsDeactivated == false && t.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            int totalRecords = classList.Count();
+            var rs = classList.OrderByDescending(c => c.CreatedAt)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
+        }
+        public bool CheckClassExist(int id)
+        {
+            return  _dataContext.Classes.Any(c => c.ClassId == id &&
+            c.IsDeactivated == false);
+        }
+        public async Task<int> GetTrainerIdByClassId(int classId) {
+            return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).Select(c => c.TrainerId).FirstOrDefaultAsync();
         }
     }
 }
