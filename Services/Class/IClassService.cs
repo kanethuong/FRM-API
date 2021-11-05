@@ -13,7 +13,7 @@ namespace kroniiapi.Services
     {
         Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter);
         Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter);
-        Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput);
+        Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput,int deleteClassRequestId);
         Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter);
         Task<Class> GetClassByClassName(string className);
         Task<Class> GetClassDetail(int id);
@@ -29,5 +29,8 @@ namespace kroniiapi.Services
         Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId);
         Task<int> DeleteTraineeClass(int deleteRequestId);
         void DiscardChanges();
+        Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter);
+        bool CheckClassExist(int id);
+        Task<int> GetTrainerIdByClassId(int classId);
     }
 }

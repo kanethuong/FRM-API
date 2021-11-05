@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.FeedbackDTO;
+using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Services;
@@ -109,6 +110,43 @@ namespace kroniiapi.Controllers
                 return Conflict(new ResponseDTO(409,"Fail to update trainer wage"));
             }
         }
+
+        /// <summary>
+        /// Get the list module in 1 month
+        /// </summary>
+        /// <param name="id">Trainer id</param>
+        /// <param name="date"></param>
+        /// <returns>list module in 1 month</returns>
+        [HttpGet("{id:int}/timetable")]
+        public async Task<ActionResult<IEnumerable<TrainerTimeTable>>> ViewTimeTable(int id, DateTime date)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// View Trainee module in two day
+        /// </summary>
+        /// <param name="id">Trainer id</param>
+        /// <returns>200 :trainee module (two day) / 404: Trainee not found or Class has been deactivated</returns>
+        [HttpGet("{id:int}/dashboard")]
+        public async Task<ActionResult<IEnumerable<TrainerDashboard>>> ViewTrainerDashboard(int id)
+        {
+            return null;
+        }
+
+
+        /// <summary>
+        /// Edit trainer profile
+        /// </summary>
+        /// <param name="id">trainer id</param>
+        /// <param name="traineeProfileDetail">detail trainer profile</param>
+        /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
+        [HttpPut("{id:int}/profile")]
+        public async Task<ActionResult> EditProfile(int id, [FromBody] TrainerProfileDetailInput trainerProfileDetail)
+        {
+            return null;
+        }
+
 
     }
 }

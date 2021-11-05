@@ -30,7 +30,7 @@ namespace kroniiapi.Services
             }
             if (endDate == null)
             {
-                startDate = DateTime.MinValue;
+                endDate = DateTime.MaxValue;
             }
             return await _dataContext.Marks.Where(m => m.TraineeId == id && m.PublishedAt >= startDate && m.PublishedAt <= endDate).ToListAsync();
         }
@@ -62,7 +62,7 @@ namespace kroniiapi.Services
             }
             if (endDate == null)
             {
-                startDate = DateTime.MinValue;
+                endDate = DateTime.MaxValue;
             }
             return await _dataContext.Marks.Where(m => m.ModuleId == id && m.PublishedAt > startDate && m.PublishedAt < endDate).ToListAsync();
         }

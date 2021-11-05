@@ -98,11 +98,11 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="confirmDeleteClassInput">Confirm detail</param>
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
-        [HttpPut("request")]
-        //[Authorize(Policy = "ClassPut")]
-        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
+        [HttpPut("request/{deleteClassRequestId:int}")]
+        [Authorize(Policy = "ClassPut")]
+        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput,int deleteClassRequestId)
         {
-            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
+            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput,deleteClassRequestId);
             if (status == -1)
             {
                 return NotFound(new ResponseDTO(404, "Class or request not found"));
@@ -115,7 +115,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Request is rejected"));
             }
-            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
+            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(deleteClassRequestId);
             int deleteTraineeClass = await _classService.DeleteTraineeClass(confirmDeleteClassInput.ClassId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
@@ -577,5 +577,52 @@ namespace kroniiapi.Controllers
                 Errors = errors
             });
         }
+
+        /// <summary>
+        /// Get class list of trainer
+        /// </summary>
+        /// <param name="id">Trainer id</param>
+        /// <param name="paginationParameter"></param>
+        /// <returns>List with pagination/ 404: Not found</returns>
+        [HttpGet("trainer/{id:int}")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerClassListResponse>>>> GetClassListByTrainerId(int id, [FromQuery] PaginationParameter paginationParameter)
+        {
+            if (!_trainerService.CheckTrainerExist(id)) {
+                return NotFound(new ResponseDTO(404, "Trainer not found"));
+            }
+            (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassListByTrainerId(id, paginationParameter);
+            IEnumerable<TrainerClassListResponse> classListDto = _mapper.Map<IEnumerable<TrainerClassListResponse>>(classList);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Classes not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TrainerClassListResponse>>(totalRecord, classListDto));
+        }
+
+        /// <summary>
+        /// Assign a module to a trainer class
+        /// </summary>
+        /// <param name="trainerId">trainer id</param>
+        /// <param name="assignModuleInput">AssignModuleInput</param>
+        /// <returns>200: Assigned / 404: Class/Trainer is not exist / 409: Fail to assign</returns>
+        [HttpPost("module")]
+        public async Task<ActionResult> AssignModuleToClass(AssignModuleInput assignModuleInput)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Delete a module of class by trainer
+        /// </summary>
+        /// <param name="classId">class id</param>
+        /// <param name="trainerId">trainer id</param>
+        /// <param name="moduleId">module id</param>
+        /// <returns>200: Deleted / 404: Class/Trainer/Module is not exist / 409: Fail to delete</returns>
+        [HttpDelete("module/{moduleId:int}")]
+        public async Task<ActionResult> RemoveModule(AssignModuleInput assignModuleInput)
+        {
+            return null;
+        }
+
     }
 }

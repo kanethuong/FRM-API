@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace kroniiapi.DTO.ClassDTO
 {
-    public class ConfirmDeleteClassInput
+    public class AssignModuleInput
     {
         [Required]
         public int ClassId { get; set; }
-        [Required]
-        public bool IsDeactivate { get; set; }
+        public int ModuleId { get; set; }
+        public int TrainerId { get; set; }
+
     }
 }

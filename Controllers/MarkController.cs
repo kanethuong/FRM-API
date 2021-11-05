@@ -29,14 +29,15 @@ namespace kroniiapi.Controllers
         private readonly IModuleService _moduleService;
         private readonly IClassService _classService;
         private readonly IMarkService _markService;
-
+        private readonly ITrainerService _trainerService;
         public MarkController(ITraineeService traineeService,
                             ICertificateService certificateService,
                             IMegaHelper megaHelper,
                             IMapper mapper,
                             IModuleService moduleService,
                             IMarkService markService,
-                            IClassService classService
+                            IClassService classService,
+                            ITrainerService trainerService
                             )
         {
             _traineeService = traineeService;
@@ -46,6 +47,7 @@ namespace kroniiapi.Controllers
             _moduleService = moduleService;
             _markService = markService;
             _classService = classService;
+            _trainerService = trainerService;
         }
 
         /// <summary>
@@ -97,7 +99,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Your submission failed!"));
             }
-            return Created("",new ResponseDTO(201, "Your submission was successful!"));
+            return Created("", new ResponseDTO(201, "Your submission was successful!"));
         }
         /// <summary>
         /// Get the student mark with pagination of a class
@@ -120,21 +122,23 @@ namespace kroniiapi.Controllers
             {
                 MarkResponse markResponse = new MarkResponse();
                 markResponse.TraineeName = trainee.Fullname;
-                
+
                 var mark_empty = new List<Mark>();
                 var markList = new List<Mark>();
                 foreach (var module in moduleList)
                 {
-                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId,module.ModuleId,DateTime.MinValue,DateTime.Now);
-                    if (traineeMark == null) {
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                    if (traineeMark == null)
+                    {
                         Mark mark_zero = new Mark();
                         mark_zero.TraineeId = trainee.TraineeId;
                         mark_zero.ModuleId = module.ModuleId;
                         mark_zero.Score = 0;
                         markList.Add(mark_zero);
                     }
-                    else {
-                    markList.Add(traineeMark);
+                    else
+                    {
+                        markList.Add(traineeMark);
                     }
                 }
                 foreach (Mark m in markList)
@@ -150,6 +154,87 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Search student name not found!"));
             }
             return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
+        }
+
+        /// <summary>
+        /// Get score of a trainer's class
+        /// </summary>
+        /// <param name="classId">class id</param>
+        /// <param name="trainerId">trainer id</param>
+        /// <param name="paginationParameter">pagination</param>
+        /// <returns>200: List of student mark in a class with pagination / 404:not found</returns>
+        [HttpGet("trainer/class/{classId:int}")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScoreByTrainerId(int classId, int trainerId, [FromQuery] PaginationParameter paginationParameter)
+        {
+            if (!_trainerService.CheckTrainerExist(trainerId) || !_classService.CheckClassExist(classId)) {
+                return NotFound(new ResponseDTO(404,"Trainer not found or Class not found"));
+            }
+            int trainerCheck = await _classService.GetTrainerIdByClassId(classId);
+            if (!(trainerCheck == trainerId)) {
+                return NotFound(new ResponseDTO(404, "Cannot find that Trainer in this Class"));
+            }
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
+            var moduleList = await _moduleService.GetModulesByClassId(classId);
+            List<MarkResponse> markResponses = new List<MarkResponse>();
+            foreach (Trainee trainee in trainees)
+            {
+                MarkResponse markResponse = new MarkResponse();
+                markResponse.TraineeName = trainee.Fullname;
+
+                var mark_empty = new List<Mark>();
+                var markList = new List<Mark>();
+                foreach (var module in moduleList)
+                {
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                    if (traineeMark == null)
+                    {
+                        Mark mark_zero = new Mark();
+                        mark_zero.TraineeId = trainee.TraineeId;
+                        mark_zero.ModuleId = module.ModuleId;
+                        mark_zero.Score = 0;
+                        markList.Add(mark_zero);
+                    }
+                    else
+                    {
+                        markList.Add(traineeMark);
+                    }
+                }
+                foreach (Mark m in markList)
+                {
+                    m.Module = await _moduleService.GetModuleById(m.ModuleId);
+                }
+                markList.OrderBy(m => m.Module.ModuleId);
+                markResponse.ScoreList = _mapper.Map<List<ModuleMark>>(markList);
+                markResponses.Add(markResponse);
+            }
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Search student name not found!"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
+        }
+
+        /// <summary>
+        /// Change class sore
+        /// </summary>
+        /// <param name="traineeId">trainee id</param>
+        /// <param name="traineeMarkInput">Trainee Module and Mark</param>
+        /// <returns>200: Updated / 409: Conflict / 404: trainee not found</returns>
+        [HttpPut("trainee")]
+        public async Task<ActionResult> ChangeClassScore([FromBody] List<TraineeMarkInput> traineeMarkInput)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// View trainee mark
+        /// </summary>
+        /// <param name="traineeId">trainee id</param>
+        /// <returns>200: Trainee mark response/ 404: Trainee not found</returns>
+        [HttpGet("{traineeId:int}/Score")]
+        public async Task<ActionResult<MarkResponse>> ViewTraineeMark(int traineeId)
+        {
+            return null;
         }
 
     }
