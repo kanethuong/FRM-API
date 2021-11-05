@@ -30,9 +30,7 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(md => md.SlotDuration,c => c.MapFrom(s => s.Module.SlotDuration.TotalMinutes));
              CreateMap<Class,ClassRoom>()
                 .ForMember(ti => ti.RoomName,c => c.MapFrom(s => s.Room.RoomName));
-
-             CreateMap<Class,TrainerClassListResponse>();
-             CreateMap<Class,TrainerClassDetailResponse>();
+             CreateMap<Trainer,TrainerProfileDetailInput>();
         }
     }
 }
