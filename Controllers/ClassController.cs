@@ -587,7 +587,16 @@ namespace kroniiapi.Controllers
         [HttpGet("trainer/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerClassListResponse>>>> GetClassListByTrainerId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (!_trainerService.CheckTrainerExist(id)) {
+                return NotFound(new ResponseDTO(404, "Trainer not found"));
+            }
+            (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassListByTrainerId(id, paginationParameter);
+            IEnumerable<TrainerClassListResponse> classListDto = _mapper.Map<IEnumerable<TrainerClassListResponse>>(classList);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Classes not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TrainerClassListResponse>>(totalRecord, classListDto));
         }
 
         /// <summary>
