@@ -6,7 +6,7 @@ using kroniiapi.DTO.AdminDTO;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.ModuleDTO;
 
-namespace kroniiapi.DTO.TrainerDTO
+namespace kroniiapi.DTO.ClassDTO
 {
     public class TrainerClassDetailResponse
     {
@@ -15,6 +15,6 @@ namespace kroniiapi.DTO.TrainerDTO
         public string Description { get; set; }
         public ICollection<ModuleResponse> Modules { get; set; }
         public AdminResponse Admin { get; set; }
-        public ICollection<TraineeInclassResponse> Trainees { get; set; }
+        public IEnumerable<TraineeInclassResponse> Trainees { get; set; }
     }
 }
