@@ -597,7 +597,7 @@ namespace kroniiapi.Controllers
         /// <param name="assignModuleInput">AssignModuleInput</param>
         /// <returns>200: Assigned / 404: Class/Trainer is not exist / 409: Fail to assign</returns>
         [HttpPost("module")]
-        public async Task<ActionResult> AssignModuleToClass(int trainerId,List<AssignModuleInput> assignModuleInput)
+        public async Task<ActionResult> AssignModuleToClass(AssignModuleInput assignModuleInput)
         {
             return null;
         }
@@ -610,7 +610,7 @@ namespace kroniiapi.Controllers
         /// <param name="moduleId">module id</param>
         /// <returns>200: Deleted / 404: Class/Trainer/Module is not exist / 409: Fail to delete</returns>
         [HttpDelete("module/{moduleId:int}")]
-        public async Task<ActionResult> RemoveModule(int moduleId, int classId, int trainerId)
+        public async Task<ActionResult> RemoveModule(AssignModuleInput assignModuleInput)
         {
             return null;
         }
