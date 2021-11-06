@@ -38,6 +38,10 @@ namespace kroniiapi.DB
             // Auto increase Identity column
             modelBuilder.UseSerialColumns();
 
+            modelBuilder.Entity<Exam>()
+                .HasIndex(e => new { e.ExamName })
+                .IsTsVectorExpressionIndex("simple");
+
             // Role table to other account entities
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.Administrators)
