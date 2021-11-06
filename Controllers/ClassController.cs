@@ -632,14 +632,14 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> RemoveModule(AssignModuleInput assignModuleInput)
         {
             var classInfor = await _classService.GetClassByClassID(assignModuleInput.ClassId);
-            if(classInfor == null)
+            if (classInfor == null)
             {
                 return NotFound(new ResponseDTO(404, "Class is not exist"));
             }
-            if(classInfor.TrainerId != assignModuleInput.TrainerId)
-            {
-                return BadRequest(new ResponseDTO(409, "Trainer are not in this class"));
-            }
+            // if(classInfor.TrainerId != assignModuleInput.TrainerId)
+            // {
+            //     return BadRequest(new ResponseDTO(409, "Trainer are not in this class"));
+            // }
             var moduleMarkState = await _markService.GetMarkByModuleId(assignModuleInput.ModuleId, null, null);
             if (moduleMarkState.Count() != 0)
             {
@@ -653,11 +653,11 @@ namespace kroniiapi.Controllers
             }
 
             int removeStatus = await _classService.RemoveModuleFromClass(assignModuleInput.ClassId, assignModuleInput.ModuleId);
-            if(removeStatus == -1)
+            if (removeStatus == -1)
             {
                 return BadRequest(new ResponseDTO(409, "Class does not have this module"));
             }
-            else if(removeStatus == 1)
+            else if (removeStatus == 1)
             {
                 return Ok(new ResponseDTO(200, "Deleted!"));
             }

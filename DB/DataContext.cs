@@ -38,10 +38,6 @@ namespace kroniiapi.DB
             // Auto increase Identity column
             modelBuilder.UseSerialColumns();
 
-            modelBuilder.Entity<Exam>()
-                .HasIndex(e => new { e.ExamName })
-                .IsTsVectorExpressionIndex("simple");
-
             // Role table to other account entities
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.Administrators)
@@ -81,10 +77,10 @@ namespace kroniiapi.DB
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Trainer>()
-            .HasMany(t => t.ClassModules)
-            .WithOne(c => c.Trainer)
-            .HasForeignKey(c => c.TrainerId)
-            .OnDelete(DeleteBehavior.SetNull);
+                .HasMany(t => t.ClassModules)
+                .WithOne(c => c.Trainer)
+                .HasForeignKey(c => c.TrainerId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Class relationship
             modelBuilder.Entity<Class>()
@@ -149,7 +145,7 @@ namespace kroniiapi.DB
                 .HasForeignKey(c => c.AdminId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Feedback
+            // Feedback, Bonus and Punish
             modelBuilder.Entity<Trainee>()
                 .HasMany(t => t.Feedbacks)
                 .WithOne(af => af.Trainee)
