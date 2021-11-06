@@ -18,8 +18,6 @@ namespace kroniiapi.DB.Models
         public DateTime DOB { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        [Column(TypeName = "money")]
-        public decimal Wage { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsDeactivated { get; set; } = false;
         public DateTime? DeactivatedAt { get; set; }
@@ -29,9 +27,6 @@ namespace kroniiapi.DB.Models
         public Role Role { get; set; }
 
         // Many-One class
-        public ICollection<Class> Classes { get; set; }
-
-        // Many-One feedback
-        public ICollection<TrainerFeedback> TrainerFeedbacks { get; set; }
+        public ICollection<ClassModule> ClassModules { get; set; }
     }
 }

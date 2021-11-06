@@ -70,7 +70,13 @@ namespace kroniiapi.Services
         /// <returns>Exam list</returns>
         public async Task<Tuple<int, IEnumerable<Exam>>> GetExamList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Exam> rs = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+            IQueryable<Exam> exams = _dataContext.Exams;
+            if (paginationParameter.SearchName != "")
+            {
+                exams = exams.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.ExamName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Exam> rs = await exams
                 .GetCount(out var totalRecords)
                 .OrderByDescending(e => e.ExamDay)
                 .GetPage(paginationParameter)
@@ -86,6 +92,23 @@ namespace kroniiapi.Services
                     IsCancelled = e.IsCancelled
                 })
                 .ToListAsync();
+
+            // IEnumerable<Exam> rs = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+            //     .GetCount(out var totalRecords)
+            //     .OrderByDescending(e => e.ExamDay)
+            //     .GetPage(paginationParameter)
+            //     .Select(e => new Exam
+            //     {
+            //         ExamId = e.ExamId,
+            //         ExamName = e.ExamName,
+            //         Description = e.Description,
+            //         Module = e.Module,
+            //         ExamDay = e.ExamDay,
+            //         DurationInMinute = e.DurationInMinute,
+            //         Admin = e.Admin,
+            //         IsCancelled = e.IsCancelled
+            //     })
+            //     .ToListAsync();
 
             return Tuple.Create(totalRecords, rs);
         }

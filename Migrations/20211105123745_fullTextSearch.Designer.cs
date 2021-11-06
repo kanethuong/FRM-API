@@ -10,8 +10,8 @@ using kroniiapi.DB;
 namespace kroniiapi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20211030084051_AddAcceptedAtInCompanyRequests")]
-    partial class AddAcceptedAtInCompanyRequests
+    [Migration("20211105123745_fullTextSearch")]
+    partial class fullTextSearch
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -559,6 +559,9 @@ namespace kroniiapi.Migrations
                     b.HasKey("ExamId");
 
                     b.HasIndex("AdminId");
+
+                    b.HasIndex("ExamName")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "simple");
 
                     b.HasIndex("ModuleId");
 

@@ -16,14 +16,16 @@ namespace kroniiapi.Services
             _dataContext = dataContext;
         }
 
-        public async Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId,DateTime startDate, DateTime endDate){
+        public async Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId, DateTime startDate, DateTime endDate)
+        {
             Trainee trainee = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).FirstOrDefaultAsync();
-            IEnumerable<Calendar> calendars = await _dataContext.Calendars.Where(t => t.ClassId == trainee.ClassId && t.Date >= startDate && t.Date <= endDate )
-            .Select(m => new Calendar{
+            IEnumerable<Calendar> calendars = await _dataContext.Calendars.Where(t => t.ClassId == trainee.ClassId && t.Date >= startDate && t.Date <= endDate)
+            .Select(m => new Calendar
+            {
                 CalendarId = m.CalendarId,
                 Date = m.Date,
                 ClassId = m.ClassId,
-                SlotInDay = m.SlotInDay,
+                // SlotInDay = m.SlotInDay,
                 SyllabusSlot = m.SyllabusSlot,
                 ModuleId = m.ModuleId,
                 Module = m.Module,
@@ -36,21 +38,24 @@ namespace kroniiapi.Services
         {
             var calendarRoom = await _dataContext.Calendars
                                 .Where(c => c.CalendarId == calendarId)
-                                .Select(c => new Calendar {
+                                .Select(c => new Calendar
+                                {
                                     CalendarId = c.CalendarId,
                                     SyllabusSlot = c.SyllabusSlot,
-                                    SlotInDay = c.SlotInDay,
-                                    Class = new Class {
+                                    // SlotInDay = c.SlotInDay,
+                                    Class = new Class
+                                    {
                                         ClassId = c.ClassId,
                                         ClassName = c.Class.ClassName,
-                                        Room = new Room {
-                                            RoomId = c.Class.RoomId,
-                                            RoomName = c.Class.Room.RoomName,
-                                        }
+                                        // Room = new Room {
+                                        //     RoomId = c.Class.RoomId,
+                                        //     RoomName = c.Class.Room.RoomName,
+                                        // }
                                     }
                                 })
                                 .FirstOrDefaultAsync();
-            return calendarRoom.Class.Room.RoomName;
+            // return calendarRoom.Class.Room.RoomName;
+            return null;
         }
         /// <summary>
         /// Get Calendars Id List using Module Id and Class Id
