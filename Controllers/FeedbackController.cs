@@ -52,7 +52,7 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "There are no Trainee"));
             }
-            return Ok( whoToFeedback);
+            return Ok(whoToFeedback);
         }
 
         /// <summary>
@@ -63,29 +63,29 @@ namespace kroniiapi.Controllers
         [HttpPost("trainer")]
         public async Task<ActionResult> SendTrainerFeedback([FromBody] TrainerFeedbackInput trainerFeedbackInput)
         {
-            var (classId, message) = await _traineeService.GetClassIdByTraineeId(trainerFeedbackInput.TraineeId);
-            if (classId == -1)
-            {
-                return NotFound(new ResponseDTO(404, message));
-            }
-            if (trainerFeedbackInput.Rate < 0 || trainerFeedbackInput.Rate >5)
-            {
-                return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
-            }
-            TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
-            var (rs, feedbackMessage) = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
-            if (rs == -1)
-            {
-                return NotFound(new ResponseDTO(404, feedbackMessage));
-            }
-            if (rs == 0)
-            {
-                return NotFound(new ResponseDTO(404, feedbackMessage));
-            }
-            if (rs == 1)
-            {
-                return Ok(new ResponseDTO(200, feedbackMessage));
-            }
+            // var (classId, message) = await _traineeService.GetClassIdByTraineeId(trainerFeedbackInput.TraineeId);
+            // if (classId == -1)
+            // {
+            //     return NotFound(new ResponseDTO(404, message));
+            // }
+            // if (trainerFeedbackInput.Rate < 0 || trainerFeedbackInput.Rate >5)
+            // {
+            //     return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
+            // }
+            // TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
+            // var (rs, feedbackMessage) = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
+            // if (rs == -1)
+            // {
+            //     return NotFound(new ResponseDTO(404, feedbackMessage));
+            // }
+            // if (rs == 0)
+            // {
+            //     return NotFound(new ResponseDTO(404, feedbackMessage));
+            // }
+            // if (rs == 1)
+            // {
+            //     return Ok(new ResponseDTO(200, feedbackMessage));
+            // }
             return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
 
@@ -97,29 +97,29 @@ namespace kroniiapi.Controllers
         [HttpPost("admin")]
         public async Task<ActionResult> SendAdminFeedback([FromBody] AdminFeedbackInput adminFeedbackInput)
         {
-            var (classId, message) = await _traineeService.GetClassIdByTraineeId(adminFeedbackInput.TraineeId);
-            if (classId == -1)
-            {
-                return NotFound(new ResponseDTO(404, message));
-            }
-            if (adminFeedbackInput.Rate < 0 || adminFeedbackInput.Rate > 5)
-            {
-                return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
-            }
-            AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
-            var (rs, feedbackMessage) = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
-            if (rs == -1)
-            {
-                return NotFound(new ResponseDTO(404, feedbackMessage));
-            }
-            if (rs == 0)
-            {
-                return NotFound(new ResponseDTO(404, feedbackMessage));
-            }
-            if (rs == 1)
-            {
-                return Ok(new ResponseDTO(200, feedbackMessage));
-            }
+            // var (classId, message) = await _traineeService.GetClassIdByTraineeId(adminFeedbackInput.TraineeId);
+            // if (classId == -1)
+            // {
+            //     return NotFound(new ResponseDTO(404, message));
+            // }
+            // if (adminFeedbackInput.Rate < 0 || adminFeedbackInput.Rate > 5)
+            // {
+            //     return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
+            // }
+            // AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
+            // var (rs, feedbackMessage) = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
+            // if (rs == -1)
+            // {
+            //     return NotFound(new ResponseDTO(404, feedbackMessage));
+            // }
+            // if (rs == 0)
+            // {
+            //     return NotFound(new ResponseDTO(404, feedbackMessage));
+            // }
+            // if (rs == 1)
+            // {
+            //     return Ok(new ResponseDTO(200, feedbackMessage));
+            // }
             return BadRequest(new ResponseDTO(400, "Failed To Insert"));
         }
         /// <summary>
@@ -130,42 +130,42 @@ namespace kroniiapi.Controllers
         [HttpGet("{classId:int}")]
         public async Task<ActionResult<FeedbackResponse>> ViewClassFeedback(int classId)
         {
-            var class1 = await _classService.GetClassByClassID(classId);
-            if (class1.IsDeactivated == true)
-            {
-                return NotFound(new ResponseDTO(404, "Class not found!"));
-            }
-            Admin admin = await _adminService.getAdminByClassId(classId);
-            Trainer trainer = await _trainerService.getTrainerByClassId(classId);
+            // var class1 = await _classService.GetClassByClassID(classId);
+            // if (class1.IsDeactivated == true)
+            // {
+            //     return NotFound(new ResponseDTO(404, "Class not found!"));
+            // }
+            // Admin admin = await _adminService.getAdminByClassId(classId);
+            // Trainer trainer = await _trainerService.getTrainerByClassId(classId);
 
-            if ((admin == null || trainer == null) || (admin.IsDeactivated == true || trainer.IsDeactivated == true))
-            {
-                return NotFound(new ResponseDTO(404, "Admin or trainer not found!"));
-            }
+            // if ((admin == null || trainer == null) || (admin.IsDeactivated == true || trainer.IsDeactivated == true))
+            // {
+            //     return NotFound(new ResponseDTO(404, "Admin or trainer not found!"));
+            // }
 
-            FeedbackResponse feedbackResponses = new FeedbackResponse();
+            // FeedbackResponse feedbackResponses = new FeedbackResponse();
 
-            IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByClassId(classId);
-            IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByClassId(classId);
-
-            
-            IEnumerable<FeedbackContent> TrainerfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(trainerFeedbacks);
-            IEnumerable<FeedbackContent> AdminfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
+            // IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByClassId(classId);
+            // IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByClassId(classId);
 
 
-            TrainerFeedbackResponse trainerFeedbackResponse = new();
-            trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer);
-            trainerFeedbackResponse.Feedbacks = TrainerfeedbackContents;
+            // IEnumerable<FeedbackContent> TrainerfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(trainerFeedbacks);
+            // IEnumerable<FeedbackContent> AdminfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
 
-            AdminFeedbackResponse adminFeedbackResponse = new();
-            adminFeedbackResponse.Admin = _mapper.Map<AdminInFeedbackResponse>(admin);
-            adminFeedbackResponse.Feedbacks = AdminfeedbackContents;
 
-            feedbackResponses.TrainerFeedback = trainerFeedbackResponse;
-            feedbackResponses.AdminFeedback = adminFeedbackResponse;
+            // TrainerFeedbackResponse trainerFeedbackResponse = new();
+            // trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer);
+            // trainerFeedbackResponse.Feedbacks = TrainerfeedbackContents;
 
-            return feedbackResponses;
+            // AdminFeedbackResponse adminFeedbackResponse = new();
+            // adminFeedbackResponse.Admin = _mapper.Map<AdminInFeedbackResponse>(admin);
+            // adminFeedbackResponse.Feedbacks = AdminfeedbackContents;
 
+            // feedbackResponses.TrainerFeedback = trainerFeedbackResponse;
+            // feedbackResponses.AdminFeedback = adminFeedbackResponse;
+
+            // return feedbackResponses;
+            return null;
         }
     }
 }

@@ -24,9 +24,9 @@ namespace kroniiapi.AttendanceServicesss
             {
                 var attendanceNew = new Attendance
                 {
-                    CalendarId = calendarId,
+                    // CalendarId = calendarId,
                     TraineeId = item.TraineeId,
-                    IsAbsent = false,
+                    // IsAbsent = false,
                 };
                 _datacontext.Attendances.Add(attendanceNew);
             }
