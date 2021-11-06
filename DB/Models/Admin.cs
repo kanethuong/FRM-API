@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace kroniiapi.DB.Models
 {
@@ -18,9 +15,8 @@ namespace kroniiapi.DB.Models
         public DateTime DOB { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        [Column(TypeName = "money")]
-        public decimal Wage { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string Facebook { get; set; }
         public bool IsDeactivated { get; set; } = false;
         public DateTime? DeactivatedAt { get; set; }
 
@@ -36,9 +32,6 @@ namespace kroniiapi.DB.Models
 
         // One-Many application
         public ICollection<Application> Applications { get; set; }
-
-        // Many-One admin feedback
-        public ICollection<AdminFeedback> AdminFeedbacks { get; set; }
 
         // Many-One cost
         public ICollection<Cost> Costs { get; set; }

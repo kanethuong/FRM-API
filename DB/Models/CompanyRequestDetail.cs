@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace kroniiapi.DB.Models
 {
@@ -11,5 +8,7 @@ namespace kroniiapi.DB.Models
         public CompanyRequest CompanyRequest { get; set; }
         public int TraineeId { get; set; }
         public Trainee Trainee { get; set; }
+        [Column(TypeName = "money")]
+        public decimal Wage { get; set; }
     }
 }

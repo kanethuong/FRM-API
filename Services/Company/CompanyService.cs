@@ -57,30 +57,34 @@ namespace kroniiapi.Services
         /// <returns>Total record, report list</returns>
         public async Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter)
         {
-            var listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
+            IEnumerable<CompanyRequest> listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
               && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
                   c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
                   c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
-                .Select(c => new CompanyRequest{
-                            CompanyRequestId=c.CompanyRequestId,
-                            Company=new Company{
-                                Fullname=c.Company.Fullname
-                            },
-                            CompanyRequestDetails=c.CompanyRequestDetails.ToList(),
-                            AcceptedAt=c.AcceptedAt,
-                            ReportURL=c.ReportURL
+                .Select(c => new CompanyRequest
+                {
+                    CompanyRequestId = c.CompanyRequestId,
+                    Company = new Company
+                    {
+                        Fullname = c.Company.Fullname
+                    },
+                    CompanyRequestDetails = c.CompanyRequestDetails.ToList(),
+                    AcceptedAt = c.AcceptedAt,
+                    ReportURL = c.ReportURL
                 })
                 .OrderByDescending(c => c.AcceptedAt)
                 .ToListAsync();
 
             List<CompanyReport> listCompanyReport = new List<CompanyReport>();
-            foreach(var request in listRequestAccepted){
-                var report=new CompanyReport{
-                    CompanyRequestId=request.CompanyRequestId,
-                    CompanyName=request.Company.Fullname,
-                    NumberOfTrainee=request.CompanyRequestDetails.Count(),
-                    AcceptedAt=(DateTime)request.AcceptedAt,
-                    ReportURL=request.ReportURL
+            foreach (var request in listRequestAccepted)
+            {
+                var report = new CompanyReport
+                {
+                    CompanyRequestId = request.CompanyRequestId,
+                    CompanyName = request.Company.Fullname,
+                    NumberOfTrainee = request.CompanyRequestDetails.Count(),
+                    AcceptedAt = (DateTime)request.AcceptedAt,
+                    ReportURL = request.ReportURL
                 };
                 listCompanyReport.Add(report);
             }
@@ -145,7 +149,6 @@ namespace kroniiapi.Services
             existedCompany.AvatarURL = company.AvatarURL;
             existedCompany.Phone = company.Phone;
             existedCompany.Address = company.Address;
-            existedCompany.Gender = company.Gender;
 
             int rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();
@@ -241,11 +244,14 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="requestId">ID of Request</param>
         /// <returns>Company request</returns>
-        public async Task<CompanyRequest> GetCompanyRequestDetail(int requestId){
+        public async Task<CompanyRequest> GetCompanyRequestDetail(int requestId)
+        {
             var CompanyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId)
-            .Select(comreq => new CompanyRequest {
+            .Select(comreq => new CompanyRequest
+            {
                 CompanyRequestId = comreq.CompanyRequestId,
-                Company = new Company {
+                Company = new Company
+                {
                     Fullname = comreq.Company.Fullname
                 },
                 Content = comreq.Content,
@@ -259,7 +265,8 @@ namespace kroniiapi.Services
         /// <param name="requestId">ID of Request</param>
         /// <param name="paginationParameter">Pagination Parameter</param>
         /// <returns>Trainee list</returns>
-        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter) {
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter)
+        {
             var traineeIds = await _dataContext.CompanyRequestDetails.Where(comreq => comreq.CompanyRequestId == requestId)
             .Select(comreq => comreq.TraineeId).ToListAsync();
             var traineeLists = new List<Trainee>();

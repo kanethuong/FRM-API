@@ -13,5 +13,6 @@ namespace kroniiapi.DTO.TraineeDTO
         public string Email { get; set; }
         public DateTime DOB { get; set; }
         public decimal Wage { get; set; }
+        public int ClassId { get; set; }
     }
 }

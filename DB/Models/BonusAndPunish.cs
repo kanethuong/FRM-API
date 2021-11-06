@@ -5,15 +5,13 @@ using System.Threading.Tasks;
 
 namespace kroniiapi.DB.Models
 {
-    public class TrainerFeedback
+    public class BonusAndPunish
     {
-        public int TrainerFeedbackId { get; set; }
-        public int Rate { get; set; }
-        public string Content { get; set; }
+        public int BonusAndPunishId { get; set; }
+        public float Score { get; set; }
+        public string Reason { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public int TraineeId { get; set; }
         public Trainee Trainee { get; set; }
-        public int TrainerId { get; set; }
-        public Trainer Trainer { get; set; }
     }
 }
