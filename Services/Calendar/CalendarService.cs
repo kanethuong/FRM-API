@@ -16,10 +16,12 @@ namespace kroniiapi.Services
             _dataContext = dataContext;
         }
 
-        public async Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId,DateTime startDate, DateTime endDate){
+        public async Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId, DateTime startDate, DateTime endDate)
+        {
             Trainee trainee = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).FirstOrDefaultAsync();
-            IEnumerable<Calendar> calendars = await _dataContext.Calendars.Where(t => t.ClassId == trainee.ClassId && t.Date >= startDate && t.Date <= endDate )
-            .Select(m => new Calendar{
+            IEnumerable<Calendar> calendars = await _dataContext.Calendars.Where(t => t.ClassId == trainee.ClassId && t.Date >= startDate && t.Date <= endDate)
+            .Select(m => new Calendar
+            {
                 CalendarId = m.CalendarId,
                 Date = m.Date,
                 ClassId = m.ClassId,
@@ -36,14 +38,17 @@ namespace kroniiapi.Services
         {
             var calendarRoom = await _dataContext.Calendars
                                 .Where(c => c.CalendarId == calendarId)
-                                .Select(c => new Calendar {
+                                .Select(c => new Calendar
+                                {
                                     CalendarId = c.CalendarId,
                                     SyllabusSlot = c.SyllabusSlot,
                                     SlotInDay = c.SlotInDay,
-                                    Class = new Class {
+                                    Class = new Class
+                                    {
                                         ClassId = c.ClassId,
                                         ClassName = c.Class.ClassName,
-                                        Room = new Room {
+                                        Room = new Room
+                                        {
                                             RoomId = c.Class.RoomId,
                                             RoomName = c.Class.Room.RoomName,
                                         }
@@ -62,6 +67,32 @@ namespace kroniiapi.Services
         {
             var idList = await _dataContext.Calendars.Where(c => c.ModuleId == moduleId && c.ClassId == classId).Select(c => c.CalendarId).ToListAsync();
             return idList;
+        }
+        public async Task<IEnumerable<Calendar>> GetCalendarsByTrainerId(int trainerId, DateTime startDate, DateTime endDate)
+        {
+            var classes = await _dataContext.Classes.Where(c => c.TrainerId == trainerId && c.IsDeactivated == false).ToListAsync();
+            List<Calendar> calendars = new List<Calendar>();
+            foreach (var item in classes)
+            {
+                calendars.AddRange(await _dataContext.Calendars.Where(t => t.ClassId == item.ClassId && t.Date >= startDate && t.Date <= endDate)
+           .Select(m => new Calendar
+           {
+               CalendarId = m.CalendarId,
+               Date = m.Date,
+               ClassId = m.ClassId,
+               SlotInDay = m.SlotInDay,
+               SyllabusSlot = m.SyllabusSlot,
+               ModuleId = m.ModuleId,
+               Module = m.Module,
+               Class = new Class{
+                   Room = new Room{
+                       RoomName = m.Class.Room.RoomName
+                   }
+               }
+           }
+           ).OrderBy(c => c.Date).ToListAsync());
+            }
+            return calendars;
         }
     }
 }
