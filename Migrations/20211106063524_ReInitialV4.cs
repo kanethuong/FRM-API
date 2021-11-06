@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace kroniiapi.Migrations
 {
-    public partial class InitialV3 : Migration
+    public partial class ReInitialV4 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,9 +44,12 @@ namespace kroniiapi.Migrations
                     ModuleName = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     NoOfSlot = table.Column<int>(type: "integer", nullable: false),
+                    SlotDuration = table.Column<TimeSpan>(type: "interval", nullable: false),
                     IconURL = table.Column<string>(type: "text", nullable: true),
                     SyllabusURL = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    MaxScore = table.Column<float>(type: "real", nullable: false),
+                    PassingScore = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -119,8 +122,8 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
-                    Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Facebook = table.Column<string>(type: "text", nullable: true),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
@@ -149,7 +152,7 @@ namespace kroniiapi.Migrations
                     Email = table.Column<string>(type: "text", nullable: true),
                     Phone = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
-                    Gender = table.Column<string>(type: "text", nullable: true),
+                    Facebook = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -181,7 +184,6 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
-                    Wage = table.Column<decimal>(type: "money", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -195,6 +197,32 @@ namespace kroniiapi.Migrations
                         column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "RoleId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Classes",
+                columns: table => new
+                {
+                    ClassId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                    ClassName = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    StartDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    EndDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
+                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    AdminId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Classes", x => x.ClassId);
+                    table.ForeignKey(
+                        name: "FK_Classes_Admins_AdminId",
+                        column: x => x.AdminId,
+                        principalTable: "Admins",
+                        principalColumn: "AdminId",
                         onDelete: ReferentialAction.SetNull);
                 });
 
@@ -270,6 +298,7 @@ namespace kroniiapi.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ReportURL = table.Column<string>(type: "text", nullable: true),
                     IsAccepted = table.Column<bool>(type: "boolean", nullable: true),
+                    AcceptedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     CompanyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -284,46 +313,6 @@ namespace kroniiapi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Classes",
-                columns: table => new
-                {
-                    ClassId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
-                    ClassName = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    StartDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    EndDay = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
-                    DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    AdminId = table.Column<int>(type: "integer", nullable: false),
-                    TrainerId = table.Column<int>(type: "integer", nullable: false),
-                    RoomId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Classes", x => x.ClassId);
-                    table.ForeignKey(
-                        name: "FK_Classes_Admins_AdminId",
-                        column: x => x.AdminId,
-                        principalTable: "Admins",
-                        principalColumn: "AdminId",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Classes_Rooms_RoomId",
-                        column: x => x.RoomId,
-                        principalTable: "Rooms",
-                        principalColumn: "RoomId",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Classes_Trainers_TrainerId",
-                        column: x => x.TrainerId,
-                        principalTable: "Trainers",
-                        principalColumn: "TrainerId",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Calendars",
                 columns: table => new
                 {
@@ -331,7 +320,6 @@ namespace kroniiapi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     SyllabusSlot = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    SlotInDay = table.Column<int>(type: "integer", nullable: false),
                     ModuleId = table.Column<int>(type: "integer", nullable: false),
                     ClassId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -358,7 +346,10 @@ namespace kroniiapi.Migrations
                 {
                     ClassId = table.Column<int>(type: "integer", nullable: false),
                     ModuleId = table.Column<int>(type: "integer", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    AssignedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    WeightNumber = table.Column<float>(type: "real", nullable: false),
+                    TrainerId = table.Column<int>(type: "integer", nullable: false),
+                    RoomId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -375,6 +366,18 @@ namespace kroniiapi.Migrations
                         principalTable: "Modules",
                         principalColumn: "ModuleId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ClassModules_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_ClassModules_Trainers_TrainerId",
+                        column: x => x.TrainerId,
+                        principalTable: "Trainers",
+                        principalColumn: "TrainerId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -422,8 +425,10 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
-                    TuitionFee = table.Column<decimal>(type: "money", nullable: false),
+                    Facebook = table.Column<string>(type: "text", nullable: true),
                     Wage = table.Column<decimal>(type: "money", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: true),
+                    OnBoard = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -444,35 +449,6 @@ namespace kroniiapi.Migrations
                         column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "RoleId",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AdminFeedbacks",
-                columns: table => new
-                {
-                    AdminFeedbackId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
-                    Rate = table.Column<int>(type: "integer", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    TraineeId = table.Column<int>(type: "integer", nullable: false),
-                    AdminId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AdminFeedbacks", x => x.AdminFeedbackId);
-                    table.ForeignKey(
-                        name: "FK_AdminFeedbacks_Admins_AdminId",
-                        column: x => x.AdminId,
-                        principalTable: "Admins",
-                        principalColumn: "AdminId",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_AdminFeedbacks_Trainees_TraineeId",
-                        column: x => x.TraineeId,
-                        principalTable: "Trainees",
-                        principalColumn: "TraineeId",
                         onDelete: ReferentialAction.SetNull);
                 });
 
@@ -519,22 +495,40 @@ namespace kroniiapi.Migrations
                 name: "Attendances",
                 columns: table => new
                 {
-                    CalendarId = table.Column<int>(type: "integer", nullable: false),
-                    TraineeId = table.Column<int>(type: "integer", nullable: false),
-                    IsAbsent = table.Column<bool>(type: "boolean", nullable: true),
-                    Reason = table.Column<string>(type: "text", nullable: true)
+                    AttendanceId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                    Status = table.Column<string>(type: "text", nullable: true),
+                    Reason = table.Column<string>(type: "text", nullable: true),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    TraineeId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Attendances", x => new { x.CalendarId, x.TraineeId });
-                    table.ForeignKey(
-                        name: "FK_Attendances_Calendars_CalendarId",
-                        column: x => x.CalendarId,
-                        principalTable: "Calendars",
-                        principalColumn: "CalendarId",
-                        onDelete: ReferentialAction.SetNull);
+                    table.PrimaryKey("PK_Attendances", x => x.AttendanceId);
                     table.ForeignKey(
                         name: "FK_Attendances_Trainees_TraineeId",
+                        column: x => x.TraineeId,
+                        principalTable: "Trainees",
+                        principalColumn: "TraineeId",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BonusAndPunishes",
+                columns: table => new
+                {
+                    BonusAndPunishId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                    Score = table.Column<float>(type: "real", nullable: false),
+                    Reason = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    TraineeId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BonusAndPunishes", x => x.BonusAndPunishId);
+                    table.ForeignKey(
+                        name: "FK_BonusAndPunishes_Trainees_TraineeId",
                         column: x => x.TraineeId,
                         principalTable: "Trainees",
                         principalColumn: "TraineeId",
@@ -572,7 +566,8 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     CompanyRequestId = table.Column<int>(type: "integer", nullable: false),
-                    TraineeId = table.Column<int>(type: "integer", nullable: false)
+                    TraineeId = table.Column<int>(type: "integer", nullable: false),
+                    Wage = table.Column<decimal>(type: "money", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -589,6 +584,39 @@ namespace kroniiapi.Migrations
                         principalTable: "Trainees",
                         principalColumn: "TraineeId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Feedbacks",
+                columns: table => new
+                {
+                    FeedbackId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                    TopicContent = table.Column<int>(type: "integer", nullable: false),
+                    TopicObjective = table.Column<int>(type: "integer", nullable: false),
+                    ApproriateTopicLevel = table.Column<int>(type: "integer", nullable: false),
+                    TopicUsefulness = table.Column<int>(type: "integer", nullable: false),
+                    TrainingMaterial = table.Column<int>(type: "integer", nullable: false),
+                    TrainerKnowledge = table.Column<int>(type: "integer", nullable: false),
+                    SubjectCoverage = table.Column<int>(type: "integer", nullable: false),
+                    InstructionAndCommunicate = table.Column<int>(type: "integer", nullable: false),
+                    TrainerSupport = table.Column<int>(type: "integer", nullable: false),
+                    Logistics = table.Column<int>(type: "integer", nullable: false),
+                    InformationToTrainees = table.Column<int>(type: "integer", nullable: false),
+                    AdminSupport = table.Column<int>(type: "integer", nullable: false),
+                    OtherComment = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    TraineeId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Feedbacks", x => x.FeedbackId);
+                    table.ForeignKey(
+                        name: "FK_Feedbacks_Trainees_TraineeId",
+                        column: x => x.TraineeId,
+                        principalTable: "Trainees",
+                        principalColumn: "TraineeId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -622,8 +650,7 @@ namespace kroniiapi.Migrations
                 columns: table => new
                 {
                     TraineeId = table.Column<int>(type: "integer", nullable: false),
-                    ExamId = table.Column<int>(type: "integer", nullable: false),
-                    Score = table.Column<float>(type: "real", nullable: false)
+                    ExamId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -642,33 +669,27 @@ namespace kroniiapi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "TrainerFeedbacks",
-                columns: table => new
+            migrationBuilder.InsertData(
+                table: "ApplicationCategories",
+                columns: new[] { "ApplicationCategoryId", "CategoryName", "SampleFileURL" },
+                values: new object[,]
                 {
-                    TrainerFeedbackId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
-                    Rate = table.Column<int>(type: "integer", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    TraineeId = table.Column<int>(type: "integer", nullable: false),
-                    TrainerId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
+                    { 1, "Đơn đề nghị thôi học", "https://mega.nz/file/FZwxVYDY#osv1wM3x-JQ6jilW4zOO65eZA0_xFuiUqCey2G3Uprw" },
+                    { 2, "Đơn chuyển cơ sở", "https://mega.nz/file/ZNpRTArA#y3JkAukljPtNsvINoub99zs6PEydE-OUIyqDyRLSx6I" },
+                    { 3, "Đơn chuyển ngành học", "https://mega.nz/file/AIw1EIab#wjMq0nv4p2LyVebEbLcKXII4uXyF0xtaUXyBN2yUyU0" },
+                    { 4, "Đơn bảo lưu học phần", "https://mega.nz/file/cVoBGC4R#1pgTUuPfGvk1abJZMb_MUsZ4d_3UgBqKOMNDVlm2Auo" },
+                    { 5, "Đơn đăng ký thi cải thiện điểm", "https://mega.nz/file/lcxBGSLK#zl6kU7vF9dHvk203H1sv4gb-SjRe5EHyATFqRZF9XjI" },
+                    { 6, "Đơn xác nhận thực tập", "https://mega.nz/file/FZoRjYiZ#kcbdQ0Mb4jzhNSXLP0jQGaJZgtSmJ3SIy0QD2ddpi4Q" },
+                    { 7, "Đơn khiếu nại điểm danh", "https://mega.nz/file/tRphHCCJ#3kqNCGZT9XNzDNAe4WDYI2tOMqw_WI7sGR-cdGKHsz0" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "CostTypes",
+                columns: new[] { "CostTypeId", "CostTypeName" },
+                values: new object[,]
                 {
-                    table.PrimaryKey("PK_TrainerFeedbacks", x => x.TrainerFeedbackId);
-                    table.ForeignKey(
-                        name: "FK_TrainerFeedbacks_Trainees_TraineeId",
-                        column: x => x.TraineeId,
-                        principalTable: "Trainees",
-                        principalColumn: "TraineeId",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_TrainerFeedbacks_Trainers_TrainerId",
-                        column: x => x.TrainerId,
-                        principalTable: "Trainers",
-                        principalColumn: "TrainerId",
-                        onDelete: ReferentialAction.SetNull);
+                    { 1, "Cơ sở vật chất" },
+                    { 2, "Tổ chức Event" }
                 });
 
             migrationBuilder.InsertData(
@@ -676,11 +697,11 @@ namespace kroniiapi.Migrations
                 columns: new[] { "RoleId", "RoleName" },
                 values: new object[,]
                 {
-                    { 1, "Administrator" },
-                    { 2, "Admin" },
-                    { 3, "Trainer" },
+                    { 5, "Company" },
                     { 4, "Trainee" },
-                    { 5, "Company" }
+                    { 3, "Trainer" },
+                    { 2, "Admin" },
+                    { 1, "Administrator" }
                 });
 
             migrationBuilder.InsertData(
@@ -688,24 +709,17 @@ namespace kroniiapi.Migrations
                 columns: new[] { "RoomId", "RoomName" },
                 values: new object[,]
                 {
-                    { 1, "B203" },
-                    { 2, "B209" },
-                    { 3, "B315" },
-                    { 4, "G201" },
-                    { 5, "G202" },
-                    { 6, "G205" },
-                    { 7, "G303" }
+                    { 1, "G101" },
+                    { 2, "G102" },
+                    { 3, "G103" },
+                    { 4, "G104" },
+                    { 5, "G105" },
+                    { 6, "B101" },
+                    { 7, "B102" },
+                    { 8, "B103" },
+                    { 9, "B104" },
+                    { 10, "B105" }
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AdminFeedbacks_AdminId",
-                table: "AdminFeedbacks",
-                column: "AdminId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AdminFeedbacks_TraineeId",
-                table: "AdminFeedbacks",
-                column: "TraineeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Administrators_RoleId",
@@ -738,6 +752,11 @@ namespace kroniiapi.Migrations
                 column: "TraineeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BonusAndPunishes_TraineeId",
+                table: "BonusAndPunishes",
+                column: "TraineeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Calendars_ClassId",
                 table: "Calendars",
                 column: "ClassId");
@@ -758,19 +777,19 @@ namespace kroniiapi.Migrations
                 column: "AdminId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Classes_RoomId",
-                table: "Classes",
-                column: "RoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Classes_TrainerId",
-                table: "Classes",
-                column: "TrainerId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ClassModules_ModuleId",
                 table: "ClassModules",
                 column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClassModules_RoomId",
+                table: "ClassModules",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClassModules_TrainerId",
+                table: "ClassModules",
+                column: "TrainerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Companies_RoleId",
@@ -818,6 +837,11 @@ namespace kroniiapi.Migrations
                 column: "ModuleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Feedbacks_TraineeId",
+                table: "Feedbacks",
+                column: "TraineeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Marks_TraineeId",
                 table: "Marks",
                 column: "TraineeId");
@@ -838,16 +862,6 @@ namespace kroniiapi.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TrainerFeedbacks_TraineeId",
-                table: "TrainerFeedbacks",
-                column: "TraineeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TrainerFeedbacks_TrainerId",
-                table: "TrainerFeedbacks",
-                column: "TrainerId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Trainers_RoleId",
                 table: "Trainers",
                 column: "RoleId");
@@ -856,9 +870,6 @@ namespace kroniiapi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AdminFeedbacks");
-
-            migrationBuilder.DropTable(
                 name: "Administrators");
 
             migrationBuilder.DropTable(
@@ -866,6 +877,12 @@ namespace kroniiapi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Attendances");
+
+            migrationBuilder.DropTable(
+                name: "BonusAndPunishes");
+
+            migrationBuilder.DropTable(
+                name: "Calendars");
 
             migrationBuilder.DropTable(
                 name: "Certificates");
@@ -883,19 +900,22 @@ namespace kroniiapi.Migrations
                 name: "DeleteClassRequests");
 
             migrationBuilder.DropTable(
+                name: "Feedbacks");
+
+            migrationBuilder.DropTable(
                 name: "Marks");
 
             migrationBuilder.DropTable(
                 name: "TraineeExams");
 
             migrationBuilder.DropTable(
-                name: "TrainerFeedbacks");
-
-            migrationBuilder.DropTable(
                 name: "ApplicationCategories");
 
             migrationBuilder.DropTable(
-                name: "Calendars");
+                name: "Rooms");
+
+            migrationBuilder.DropTable(
+                name: "Trainers");
 
             migrationBuilder.DropTable(
                 name: "CompanyRequests");
@@ -920,12 +940,6 @@ namespace kroniiapi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Admins");
-
-            migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
-                name: "Trainers");
 
             migrationBuilder.DropTable(
                 name: "Roles");
