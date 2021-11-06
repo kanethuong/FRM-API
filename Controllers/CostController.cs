@@ -25,6 +25,7 @@ namespace kroniiapi.Controllers
             _mapper = mapper;
             _adminService = adminService;
         }
+
         /// <summary>
         /// Get all cost with pagination
         /// </summary>
@@ -43,6 +44,7 @@ namespace kroniiapi.Controllers
             var costResponse = _mapper.Map<IEnumerable<CostResponse>>(costList);
             return Ok(new PaginationResponse<IEnumerable<CostResponse>>(totalRecord, costResponse));
         }
+
         /// <summary>
         /// create new cost
         /// </summary>
@@ -71,6 +73,7 @@ namespace kroniiapi.Controllers
             }
             return Created("", new ResponseDTO(201, "Successfully inserted"));
         }
+
         [HttpGet("type")]
         public async Task<ActionResult<IEnumerable<CostTypeResponse>>> GetCostType()
         {

@@ -23,8 +23,8 @@ namespace kroniiapi.DB
         public DbSet<TraineeExam> TraineeExams { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<ApplicationCategory> ApplicationCategories { get; set; }
-        public DbSet<AdminFeedback> AdminFeedbacks { get; set; }
-        public DbSet<TrainerFeedback> TrainerFeedbacks { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<BonusAndPunish> BonusAndPunishes { get; set; }
         public DbSet<Cost> Costs { get; set; }
         public DbSet<CostType> CostTypes { get; set; }
         public DbSet<DeleteClassRequest> DeleteClassRequests { get; set; }
@@ -37,10 +37,6 @@ namespace kroniiapi.DB
         {
             // Auto increase Identity column
             modelBuilder.UseSerialColumns();
-
-            modelBuilder.Entity<Exam>()
-                .HasIndex(e => new { e.ExamName })
-                .IsTsVectorExpressionIndex("simple");
 
             // Role table to other account entities
             modelBuilder.Entity<Role>()
@@ -73,17 +69,24 @@ namespace kroniiapi.DB
                 .HasForeignKey(c => c.RoleId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Map room and trainer to ClassModule
+            modelBuilder.Entity<Room>()
+                .HasMany(r => r.ClassModules)
+                .WithOne(c => c.Room)
+                .HasForeignKey(c => c.RoomId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Trainer>()
+            .HasMany(t => t.ClassModules)
+            .WithOne(c => c.Trainer)
+            .HasForeignKey(c => c.TrainerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
             // Class relationship
             modelBuilder.Entity<Class>()
                 .HasMany(c => c.Trainees)
                 .WithOne(t => t.Class)
                 .HasForeignKey(t => t.ClassId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<Room>()
-                .HasMany(r => r.Classes)
-                .WithOne(c => c.Room)
-                .HasForeignKey(c => c.RoomId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Admin>()
@@ -92,17 +95,11 @@ namespace kroniiapi.DB
                 .HasForeignKey(c => c.AdminId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Trainer>()
-                .HasMany(t => t.Classes)
-                .WithOne(c => c.Trainer)
-                .HasForeignKey(c => c.TrainerId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             modelBuilder.Entity<Class>()
                 .HasMany(c => c.DeleteClassRequests)
                 .WithOne(d => d.Class)
                 .HasForeignKey(d => d.ClassId)
-                .OnDelete(DeleteBehavior.SetNull); ;
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Class>()
                 .HasMany(c => c.Calendars)
@@ -149,26 +146,14 @@ namespace kroniiapi.DB
                 .OnDelete(DeleteBehavior.SetNull);
 
             // Feedback
-            modelBuilder.Entity<Admin>()
-                .HasMany(a => a.AdminFeedbacks)
-                .WithOne(af => af.Admin)
-                .HasForeignKey(af => af.AdminId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             modelBuilder.Entity<Trainee>()
-                .HasMany(t => t.AdminFeedbacks)
+                .HasMany(t => t.Feedbacks)
                 .WithOne(af => af.Trainee)
                 .HasForeignKey(af => af.TraineeId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Trainer>()
-                .HasMany(t => t.TrainerFeedbacks)
-                .WithOne(tf => tf.Trainer)
-                .HasForeignKey(tf => tf.TrainerId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             modelBuilder.Entity<Trainee>()
-                .HasMany(t => t.TrainerFeedbacks)
+                .HasMany(t => t.BonusAndPunishes)
                 .WithOne(tf => tf.Trainee)
                 .HasForeignKey(tf => tf.TraineeId)
                 .OnDelete(DeleteBehavior.SetNull);
@@ -261,14 +246,6 @@ namespace kroniiapi.DB
                 );
 
             // Attendance
-            modelBuilder.Entity<Attendance>().HasKey(at => new { at.CalendarId, at.TraineeId });
-
-            modelBuilder.Entity<Attendance>()
-                .HasOne<Calendar>(at => at.Calendar)
-                .WithMany(c => c.Attendances)
-                .HasForeignKey(at => at.CalendarId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             modelBuilder.Entity<Attendance>()
                 .HasOne<Trainee>(at => at.Trainee)
                 .WithMany(t => t.Attendances)
@@ -338,37 +315,110 @@ namespace kroniiapi.DB
                 new Room
                 {
                     RoomId = 1,
-                    RoomName = "B203"
+                    RoomName = "G101"
                 },
                 new Room
                 {
                     RoomId = 2,
-                    RoomName = "B209"
+                    RoomName = "G102"
                 },
                 new Room
                 {
                     RoomId = 3,
-                    RoomName = "B315"
+                    RoomName = "G103"
                 },
                 new Room
                 {
                     RoomId = 4,
-                    RoomName = "G201"
+                    RoomName = "G104"
                 },
                 new Room
                 {
                     RoomId = 5,
-                    RoomName = "G202"
+                    RoomName = "G105"
                 },
                 new Room
                 {
                     RoomId = 6,
-                    RoomName = "G205"
+                    RoomName = "B101"
                 },
                 new Room
                 {
                     RoomId = 7,
-                    RoomName = "G303"
+                    RoomName = "B102"
+                },
+                new Room
+                {
+                    RoomId = 8,
+                    RoomName = "B103"
+                },
+                new Room
+                {
+                    RoomId = 9,
+                    RoomName = "B104"
+                },
+                new Room
+                {
+                    RoomId = 10,
+                    RoomName = "B105"
+                }
+            );
+
+            modelBuilder.Entity<CostType>().HasData(
+                new CostType
+                {
+                    CostTypeId = 1,
+                    CostTypeName = "Cơ sở vật chất"
+                },
+                new CostType
+                {
+                    CostTypeId = 2,
+                    CostTypeName = "Tổ chức Event"
+                }
+            );
+
+            modelBuilder.Entity<ApplicationCategory>().HasData(
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 1,
+                    CategoryName = "Đơn đề nghị thôi học",
+                    SampleFileURL = "https://mega.nz/file/FZwxVYDY#osv1wM3x-JQ6jilW4zOO65eZA0_xFuiUqCey2G3Uprw"
+                },
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 2,
+                    CategoryName = "Đơn chuyển cơ sở",
+                    SampleFileURL = "https://mega.nz/file/ZNpRTArA#y3JkAukljPtNsvINoub99zs6PEydE-OUIyqDyRLSx6I"
+                },
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 3,
+                    CategoryName = "Đơn chuyển ngành học",
+                    SampleFileURL = "https://mega.nz/file/AIw1EIab#wjMq0nv4p2LyVebEbLcKXII4uXyF0xtaUXyBN2yUyU0"
+                },
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 4,
+                    CategoryName = "Đơn bảo lưu học phần",
+                    SampleFileURL = "https://mega.nz/file/cVoBGC4R#1pgTUuPfGvk1abJZMb_MUsZ4d_3UgBqKOMNDVlm2Auo"
+                },
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 5,
+                    CategoryName = "Đơn đăng ký thi cải thiện điểm",
+                    SampleFileURL = "https://mega.nz/file/lcxBGSLK#zl6kU7vF9dHvk203H1sv4gb-SjRe5EHyATFqRZF9XjI"
+                },
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 6,
+                    CategoryName = "Đơn xác nhận thực tập",
+                    SampleFileURL = "https://mega.nz/file/FZoRjYiZ#kcbdQ0Mb4jzhNSXLP0jQGaJZgtSmJ3SIy0QD2ddpi4Q"
+                },
+                new ApplicationCategory
+                {
+                    ApplicationCategoryId = 7,
+                    CategoryName = "Đơn khiếu nại điểm danh",
+                    SampleFileURL = "https://mega.nz/file/tRphHCCJ#3kqNCGZT9XNzDNAe4WDYI2tOMqw_WI7sGR-cdGKHsz0"
                 }
             );
         }

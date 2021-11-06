@@ -23,14 +23,6 @@ namespace kroniiapi.DB.Models
         public int AdminId { get; set; }
         public Admin Admin { get; set; }
 
-        // One-Many trainer
-        public int TrainerId { get; set; }
-        public Trainer Trainer { get; set; }
-
-        // One-Many room
-        public int RoomId { get; set; }
-        public Room Room { get; set; }
-
         // Many-Many module
         public ICollection<Module> Modules { get; set; }
         public ICollection<ClassModule> ClassModules { get; set; }

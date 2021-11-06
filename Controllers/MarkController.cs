@@ -70,6 +70,7 @@ namespace kroniiapi.Controllers
             }
             return Ok(new PaginationResponse<IEnumerable<TraineeMarkAndSkill>>(totalRecord, markAndSkills));
         }
+
         /// <summary>
         /// submit trainee certificate (upload to mega)
         /// </summary>
@@ -101,6 +102,7 @@ namespace kroniiapi.Controllers
             }
             return Created("", new ResponseDTO(201, "Your submission was successful!"));
         }
+
         /// <summary>
         /// Get the student mark with pagination of a class
         /// </summary>
@@ -166,11 +168,13 @@ namespace kroniiapi.Controllers
         [HttpGet("trainer/class/{classId:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScoreByTrainerId(int classId, int trainerId, [FromQuery] PaginationParameter paginationParameter)
         {
-            if (!_trainerService.CheckTrainerExist(trainerId) || !_classService.CheckClassExist(classId)) {
-                return NotFound(new ResponseDTO(404,"Trainer not found or Class not found"));
+            if (!_trainerService.CheckTrainerExist(trainerId) || !_classService.CheckClassExist(classId))
+            {
+                return NotFound(new ResponseDTO(404, "Trainer not found or Class not found"));
             }
             int trainerCheck = await _classService.GetTrainerIdByClassId(classId);
-            if (!(trainerCheck == trainerId)) {
+            if (!(trainerCheck == trainerId))
+            {
                 return NotFound(new ResponseDTO(404, "Cannot find that Trainer in this Class"));
             }
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
@@ -227,7 +231,7 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// View trainee mark
+        /// /// View trainee mark
         /// </summary>
         /// <param name="traineeId">trainee id</param>
         /// <returns>200: Trainee mark response/ 404: Trainee not found</returns>

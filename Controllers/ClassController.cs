@@ -62,11 +62,11 @@ namespace kroniiapi.Controllers
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
 
-            foreach (Class c in classList)
-            {
-                c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
-                c.Admin = await _adminService.GetAdminById(c.AdminId);
-            }
+            // foreach (Class c in classList)
+            // {
+            //     c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
+            //     c.Admin = await _adminService.GetAdminById(c.AdminId);
+            // }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if (totalRecord == 0)
             {
@@ -100,9 +100,9 @@ namespace kroniiapi.Controllers
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
         [HttpPut("request/{deleteClassRequestId:int}")]
         [Authorize(Policy = "ClassPut")]
-        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput,int deleteClassRequestId)
+        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput, int deleteClassRequestId)
         {
-            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput,deleteClassRequestId);
+            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput, deleteClassRequestId);
             if (status == -1)
             {
                 return NotFound(new ResponseDTO(404, "Class or request not found"));
@@ -156,6 +156,7 @@ namespace kroniiapi.Controllers
             var cdr = _mapper.Map<ClassDetailResponse>(s);
             return Ok(cdr);
         }
+
         /// <summary>
         /// Get the detail information of a class 
         /// </summary>
@@ -287,7 +288,7 @@ namespace kroniiapi.Controllers
             if (result != 1)
             {
                 return BadRequest(new ResponseDTO(400, message));
-            } 
+            }
             else
                 return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
@@ -587,7 +588,8 @@ namespace kroniiapi.Controllers
         [HttpGet("trainer/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerClassListResponse>>>> GetClassListByTrainerId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            if (!_trainerService.CheckTrainerExist(id)) {
+            if (!_trainerService.CheckTrainerExist(id))
+            {
                 return NotFound(new ResponseDTO(404, "Trainer not found"));
             }
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassListByTrainerId(id, paginationParameter);
