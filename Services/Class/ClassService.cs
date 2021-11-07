@@ -477,6 +477,11 @@ namespace kroniiapi.Services
             }
             return await _dataContext.SaveChangesAsync();
         }
+
+        public async Task<ClassModule> GetClassModule(int classId, int moduleId)
+        {
+            return await _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefaultAsync();
+        }
         /// <summary>
         /// Get Trainee List in a class with pagination
         /// </summary>
