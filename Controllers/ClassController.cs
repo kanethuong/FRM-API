@@ -164,6 +164,7 @@ namespace kroniiapi.Controllers
             var cdr = _mapper.Map<ClassDetailResponse>(s);
             return Ok(cdr);
         }
+
         /// <summary>
         /// Get the detail information of a class 
         /// </summary>
@@ -635,7 +636,6 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Class is not exist"));
             }
-
             var moduleMarkState = await _markService.GetMarkByModuleId(assignModuleInput.ModuleId, null, null);
             if (moduleMarkState.Count() != 0)
             {
