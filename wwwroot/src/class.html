@@ -141,7 +141,7 @@
         <p>By DatLT</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/class/request</p>
+            <p>/api/Class/request/{deleteClassRequestId}</p>
         </div>
 
         <!-- Role, Method and Status code -->
@@ -164,10 +164,10 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
+    deleteClassRequestId : int
                 <p>
                 <pre><code>{
     "classId": int,
-    "deleteClassRequestId": int,
     "isDeactivate": boolean
 }</code></pre>
                 </p>
@@ -222,8 +222,6 @@
                 <p>
                 <pre><code>{
     "classId": int,
-    "deleteClassRequestId": int,
-    "isDeactivate": boolean
 }</code></pre>
                 </p>
             </div>
