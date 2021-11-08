@@ -464,12 +464,43 @@ namespace kroniiapi.Services
             return returnThing;
         }
 
+        /// <summary>
+        /// Remove class module in calendar table
+        /// </summary>
+        /// <returns>1 if success/ 0 if fail</returns>
+        public async Task<int> RemoveClassModuleFromCalendar(int classId, int moduleId)
+        {
+            IEnumerable<Calendar> listForDelete = _dataContext.Calendars.Where(t => t.ClassId == classId && t.ModuleId == moduleId);
+            int numberOfDeleteRecord = listForDelete.Count();
+            _dataContext.Calendars.RemoveRange(listForDelete);
+            if(await _dataContext.SaveChangesAsync() == numberOfDeleteRecord)
+            {
+                return 1;
+            }
+            else
+            {
+                _dataContext.ChangeTracker.Clear();
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// remove record from table class-module
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="moduleId"></param>
+        /// <returns>-1:not found / 0:fail / 1:success</returns>
         public async Task<int> RemoveModuleFromClass(int classId, int moduleId)
         {
             var classModuleForDelete =  _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
+            int deleteFromCalendarStatus = await RemoveClassModuleFromCalendar(classId, moduleId);
+            if(deleteFromCalendarStatus == 0)
+            {
+                return 0;
+            }
             if(classModuleForDelete != null)
             {
-                _dataContext.ClassModules.Remove(classModuleForDelete);
+                _dataContext.ClassModules.RemoveRange(classModuleForDelete);
             }
             else
             {
