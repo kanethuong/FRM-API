@@ -76,55 +76,56 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<List<Object>>> ViewTraineeDashboard(int id)
         {
-            var checkTrainee = await _traineeService.GetTraineeById(id);
-            if (checkTrainee == null)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee not found!"));
-            }
-            var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
-            if (classCheck == null || classCheck.IsDeactivated == true)
-            {
-                return NotFound(new ResponseDTO(404, "Class not found"));
-            }
-            TimeSpan oneSecond = new TimeSpan(00, 00, -1);
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
-            var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(7).Add(oneSecond));
-            //Trainee trainee = await _traineeService.GetTraineeById(id);
+            // var checkTrainee = await _traineeService.GetTraineeById(id);
+            // if (checkTrainee == null)
+            // {
+            //     return NotFound(new ResponseDTO(404, "Trainee not found!"));
+            // }
+            // var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
+            // if (classCheck == null || classCheck.IsDeactivated == true)
+            // {
+            //     return NotFound(new ResponseDTO(404, "Class not found"));
+            // }
+            // TimeSpan oneSecond = new TimeSpan(00, 00, -1);
+            // var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            // var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(7).Add(oneSecond));
+            // //Trainee trainee = await _traineeService.GetTraineeById(id);
 
-            if (calenders.Count() != 0)
-            {
-                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-                foreach (var item in calenders)
-                {
-                    item.Class.Trainer = trainer;
-                    item.Class.Room = room;
-                }
-            }
+            // if (calenders.Count() != 0)
+            // {
+            //     Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+            //     Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+            //     foreach (var item in calenders)
+            //     {
+            //         item.Class.Trainer = trainer;
+            //         item.Class.Room = room;
+            //     }
+            // }
 
-            var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
-            var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
-            if (examInDashboard.Count() != 0)
-            {
-                Room room = await _roomService.GetRoomByTraineeId(id);
-                foreach (var item in examInDashboard)
-                {
-                    item.RoomId = room.RoomId;
-                    item.RoomName = room.RoomName;
-                }
-            }
-            List<Object> listObject = new List<Object>();
-            foreach (var item in moduleInDashboard)
-            {
-                var o = (Object)item;
-                listObject.Add(o);
-            }
-            foreach (var item in examInDashboard)
-            {
-                var o = (Object)item;
-                listObject.Add(o);
-            }
-            return Ok(listObject);
+            // var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
+            // var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
+            // if (examInDashboard.Count() != 0)
+            // {
+            //     Room room = await _roomService.GetRoomByTraineeId(id);
+            //     foreach (var item in examInDashboard)
+            //     {
+            //         item.RoomId = room.RoomId;
+            //         item.RoomName = room.RoomName;
+            //     }
+            // }
+            // List<Object> listObject = new List<Object>();
+            // foreach (var item in moduleInDashboard)
+            // {
+            //     var o = (Object)item;
+            //     listObject.Add(o);
+            // }
+            // foreach (var item in examInDashboard)
+            // {
+            //     var o = (Object)item;
+            //     listObject.Add(o);
+            // }
+            // return Ok(listObject);
+            return null;
         }
 
         /// <summary>
@@ -246,62 +247,63 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<List<Object>>> ViewTimeTable(int id, DateTime date)
         {
-            TimeSpan oneday = new TimeSpan(23, 59, 59);
-            var startDate = new DateTime(date.Year, date.Month, 1);
-            var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-            startDate = startDate.AddMonths(-1);
-            endDate = endDate.AddMonths(1);
-            endDate = endDate.Add(oneday);
+            // TimeSpan oneday = new TimeSpan(23, 59, 59);
+            // var startDate = new DateTime(date.Year, date.Month, 1);
+            // var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            // startDate = startDate.AddMonths(-1);
+            // endDate = endDate.AddMonths(1);
+            // endDate = endDate.Add(oneday);
 
-            var checkTrainee = await _traineeService.GetTraineeById(id);
-            if (checkTrainee == null)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee not found!"));
-            }
-            var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
-            if (classCheck == null || classCheck.IsDeactivated == true)
-            {
-                return NotFound(new ResponseDTO(404, "Class not found"));
-            }
-            var calenders = await _calendarService.GetCalendarsByTraineeId(id, startDate, endDate);
-            var exam = await _examService.GetExamListByTraineeId(id, startDate, endDate);
-            //Trainee trainee = await _traineeService.GetTraineeById(id);
+            // var checkTrainee = await _traineeService.GetTraineeById(id);
+            // if (checkTrainee == null)
+            // {
+            //     return NotFound(new ResponseDTO(404, "Trainee not found!"));
+            // }
+            // var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
+            // if (classCheck == null || classCheck.IsDeactivated == true)
+            // {
+            //     return NotFound(new ResponseDTO(404, "Class not found"));
+            // }
+            // var calenders = await _calendarService.GetCalendarsByTraineeId(id, startDate, endDate);
+            // var exam = await _examService.GetExamListByTraineeId(id, startDate, endDate);
+            // //Trainee trainee = await _traineeService.GetTraineeById(id);
 
-            if (calenders.Count() != 0)
-            {
-                Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-                Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-                foreach (var item in calenders)
-                {
-                    item.Class.Trainer = trainer;
-                    item.Class.Room = room;
-                }
-            }
+            // if (calenders.Count() != 0)
+            // {
+            //     Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
+            //     Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
+            //     foreach (var item in calenders)
+            //     {
+            //         item.Class.Trainer = trainer;
+            //         item.Class.Room = room;
+            //     }
+            // }
 
-            var moduleInTimeTable = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
-            var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
-            if (examInTimeTable.Count() != 0)
-            {
-                Room room = await _roomService.GetRoomByTraineeId(id);
-                foreach (var item in examInTimeTable)
-                {
-                    item.RoomId = room.RoomId;
-                    item.RoomName = room.RoomName;
-                }
-            }
+            // var moduleInTimeTable = _mapper.Map<IEnumerable<ModuleInTimeTable>>(calenders);
+            // var examInTimeTable = _mapper.Map<IEnumerable<ExamInTimeTable>>(exam);
+            // if (examInTimeTable.Count() != 0)
+            // {
+            //     Room room = await _roomService.GetRoomByTraineeId(id);
+            //     foreach (var item in examInTimeTable)
+            //     {
+            //         item.RoomId = room.RoomId;
+            //         item.RoomName = room.RoomName;
+            //     }
+            // }
 
-            List<Object> listObject = new List<Object>();
-            foreach (var item in moduleInTimeTable)
-            {
-                var o = (Object)item;
-                listObject.Add(o);
-            }
-            foreach (var item in examInTimeTable)
-            {
-                var o = (Object)item;
-                listObject.Add(o);
-            }
-            return Ok(listObject);
+            // List<Object> listObject = new List<Object>();
+            // foreach (var item in moduleInTimeTable)
+            // {
+            //     var o = (Object)item;
+            //     listObject.Add(o);
+            // }
+            // foreach (var item in examInTimeTable)
+            // {
+            //     var o = (Object)item;
+            //     listObject.Add(o);
+            // }
+            // return Ok(listObject);
+            return null;
         }
         /// <summary>
         /// Get all trainee not have class

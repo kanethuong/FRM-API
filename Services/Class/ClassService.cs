@@ -102,7 +102,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="confirmDeleteClassInput"></param>
         /// <returns>1 if Success to Change & 0 if false to change & -1 if invalid & 2 if is rejected</returns>
-        public async Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput)
+        public async Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput, int deleteClassRequestId)
         {
             if (confirmDeleteClassInput.IsDeactivate == true)
             {
@@ -111,7 +111,7 @@ namespace kroniiapi.Services
                 {
                     return -1;
                 }
-                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
+                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == deleteClassRequestId).FirstOrDefaultAsync();
                 if (existedRequest == null)
                 {
                     return -1;
@@ -133,21 +133,22 @@ namespace kroniiapi.Services
             }
             else if (confirmDeleteClassInput.IsDeactivate == false)
             {
-                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == confirmDeleteClassInput.DeleteClassRequestId).FirstOrDefaultAsync();
+                var existedRequest = await _dataContext.DeleteClassRequests.Where(d => d.DeleteClassRequestId == deleteClassRequestId).FirstOrDefaultAsync();
                 existedRequest.IsAccepted = false;
                 await _dataContext.SaveChangesAsync();
                 return 2;
             }
             return -1;
         }
-        public async Task<int> DeleteTraineeClass(int deleteClassId){
+        public async Task<int> DeleteTraineeClass(int deleteClassId)
+        {
             var traineeList = await _dataContext.Trainees.Where(c => c.ClassId == deleteClassId).ToListAsync();
             foreach (var item in traineeList)
             {
                 item.ClassId = null;
             }
-             int status = await _dataContext.SaveChangesAsync();
-             return status;
+            int status = await _dataContext.SaveChangesAsync();
+            return status;
         }
 
         public async Task<int> RejectAllOtherDeleteRequest(int deleteRequestId)
@@ -208,20 +209,20 @@ namespace kroniiapi.Services
                     AvatarURL = c.Admin.AvatarURL,
                     Email = c.Admin.Email,
                 },
-                TrainerId = c.TrainerId,
-                Trainer = new Trainer
-                {
-                    Fullname = c.Trainer.Fullname,
-                    AvatarURL = c.Trainer.AvatarURL,
-                    Email = c.Trainer.Email,
-                },
-                RoomId = c.RoomId,
-                Room = new Room
-                {
-                    RoomId = c.Room.RoomId,
-                    RoomName = c.Room.RoomName,
-                    Classes = c.Room.Classes,
-                },
+                // TrainerId = c.TrainerId,
+                // Trainer = new Trainer
+                // {
+                //     Fullname = c.Trainer.Fullname,
+                //     AvatarURL = c.Trainer.AvatarURL,
+                //     Email = c.Trainer.Email,
+                // },
+                // RoomId = c.RoomId,
+                // Room = new Room
+                // {
+                //     RoomId = c.Room.RoomId,
+                //     RoomName = c.Room.RoomName,
+                //     Classes = c.Room.Classes,
+                // },
                 ClassModules = c.ClassModules,
                 Modules = c.Modules,
                 DeleteClassRequests = c.DeleteClassRequests,
@@ -241,6 +242,23 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter)
         {
             var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            int totalRecords = traineeList.Count();
+            var rs = traineeList.OrderBy(c => c.TraineeId)
+                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+                     .Take(paginationParameter.PageSize);
+            return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
+        /// Get Trainee List in a class with correct trainer with pagination
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassIdAndTrainerId(int classId, int trainerId, PaginationParameter paginationParameter)
+        {
+            // var trainerClassCheck = _dataContext.Classes.Any(c => c.TrainerId == trainerId && c.ClassId == classId);
+            var traineeList = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false && t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
             int totalRecords = traineeList.Count();
             var rs = traineeList.OrderBy(c => c.TraineeId)
                      .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
@@ -413,13 +431,13 @@ namespace kroniiapi.Services
                                                     Email = c.Class.Admin.Email,
                                                     AvatarURL = c.Class.Admin.AvatarURL,
                                                 },
-                                                TrainerId = c.Class.TrainerId,
-                                                Trainer = new Trainer
-                                                {
-                                                    Fullname = c.Class.Trainer.Fullname,
-                                                    Email = c.Class.Trainer.Email,
-                                                    AvatarURL = c.Class.Trainer.AvatarURL,
-                                                }
+                                                // TrainerId = c.Class.TrainerId,
+                                                // Trainer = new Trainer
+                                                // {
+                                                //     Fullname = c.Class.Trainer.Fullname,
+                                                //     Email = c.Class.Trainer.Email,
+                                                //     AvatarURL = c.Class.Trainer.AvatarURL,
+                                                // }
                                             }
                                         }).FirstOrDefaultAsync();
             if (traineeToView == null)
@@ -430,10 +448,10 @@ namespace kroniiapi.Services
             {
                 trainer = new TrainerInFeedbackResponse
                 {
-                    TrainerId = traineeToView.Class.TrainerId,
-                    Fullname = traineeToView.Class.Trainer.Fullname,
-                    Email = traineeToView.Class.Trainer.Email,
-                    AvatarURL = traineeToView.Class.Trainer.AvatarURL
+                    // TrainerId = traineeToView.Class.TrainerId,
+                    // Fullname = traineeToView.Class.Trainer.Fullname,
+                    // Email = traineeToView.Class.Trainer.Email,
+                    // AvatarURL = traineeToView.Class.Trainer.AvatarURL
                 },
                 admin = new AdminInFeedbackResponse
                 {
@@ -444,6 +462,51 @@ namespace kroniiapi.Services
                 }
             };
             return returnThing;
+        }
+
+        public async Task<int> RemoveModuleFromClass(int classId, int moduleId)
+        {
+            var classModuleForDelete =  _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
+            if(classModuleForDelete != null)
+            {
+                _dataContext.ClassModules.Remove(classModuleForDelete);
+            }
+            else
+            {
+                return -1;
+            }
+            return await _dataContext.SaveChangesAsync();
+        }
+
+        public async Task<ClassModule> GetClassModule(int classId, int moduleId)
+        {
+            return await _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefaultAsync();
+        }
+        /// <summary>
+        /// Get Trainee List in a class with pagination
+        /// </summary>
+        /// <param name="trainerId">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter)
+        {
+            // var classList = await _dataContext.Classes.Where(t => t.TrainerId == trainerId && t.IsDeactivated == false && t.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            // int totalRecords = classList.Count();
+            // var rs = classList.OrderByDescending(c => c.CreatedAt)
+            //          .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
+            //          .Take(paginationParameter.PageSize);
+            // return Tuple.Create(totalRecords, rs);
+            return null;
+        }
+        public bool CheckClassExist(int id)
+        {
+            return _dataContext.Classes.Any(c => c.ClassId == id &&
+           c.IsDeactivated == false);
+        }
+        public async Task<int> GetTrainerIdByClassId(int classId)
+        {
+            // return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).Select(c => c.TrainerId).FirstOrDefaultAsync();
+            return 0;
         }
     }
 }

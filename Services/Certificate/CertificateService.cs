@@ -43,6 +43,10 @@ namespace kroniiapi.Services
             return certificate.CertificateURL;
         }
 
+        public async Task<ICollection<Certificate>> GetCertificatesURLByModuleId(int Moduleid)
+        {
+            return await _dataContext.Certificates.Where(m => m.ModuleId == Moduleid).ToListAsync();
+        }
 
     }
 }
