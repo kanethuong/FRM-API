@@ -639,7 +639,7 @@ namespace kroniiapi.Controllers
             var moduleMarkState = await _markService.GetMarkByModuleId(assignModuleInput.ModuleId, null, null);
             if (moduleMarkState.Count() != 0)
             {
-                return NotFound(new ResponseDTO(404, "Trainee in this class has score with this module"));
+                return NotFound(new ResponseDTO(404, "Trainee in this class has mark with this module"));
             }
 
             var moduleCertificateState = await _certificateService.GetCertificatesURLByModuleId(assignModuleInput.ModuleId);
@@ -649,6 +649,10 @@ namespace kroniiapi.Controllers
             }
 
             var classModuleInfor = await _classService.GetClassModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            if (classModuleInfor == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class-Module not found"));
+            }
             if (classModuleInfor.TrainerId != assignModuleInput.TrainerId)
             {
                 return BadRequest(new ResponseDTO(409, "This trainer dont teach this class"));
