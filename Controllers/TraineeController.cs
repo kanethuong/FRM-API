@@ -76,56 +76,58 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<List<Object>>> ViewTraineeDashboard(int id)
         {
-            // var checkTrainee = await _traineeService.GetTraineeById(id);
-            // if (checkTrainee == null)
-            // {
-            //     return NotFound(new ResponseDTO(404, "Trainee not found!"));
-            // }
-            // var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
-            // if (classCheck == null || classCheck.IsDeactivated == true)
-            // {
-            //     return NotFound(new ResponseDTO(404, "Class not found"));
-            // }
-            // TimeSpan oneSecond = new TimeSpan(00, 00, -1);
-            // var calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
-            // var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(7).Add(oneSecond));
-            // //Trainee trainee = await _traineeService.GetTraineeById(id);
-
-            // if (calenders.Count() != 0)
-            // {
-            //     Trainer trainer = await _trainerService.GetTrainerById(calenders.FirstOrDefault().Class.TrainerId);
-            //     Room room = await _roomService.GetRoomById(calenders.FirstOrDefault().Class.RoomId);
-            //     foreach (var item in calenders)
-            //     {
-            //         item.Class.Trainer = trainer;
-            //         item.Class.Room = room;
-            //     }
-            // }
-
-            // var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
-            // var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
-            // if (examInDashboard.Count() != 0)
-            // {
-            //     Room room = await _roomService.GetRoomByTraineeId(id);
-            //     foreach (var item in examInDashboard)
-            //     {
-            //         item.RoomId = room.RoomId;
-            //         item.RoomName = room.RoomName;
-            //     }
-            // }
-            // List<Object> listObject = new List<Object>();
-            // foreach (var item in moduleInDashboard)
-            // {
-            //     var o = (Object)item;
-            //     listObject.Add(o);
-            // }
-            // foreach (var item in examInDashboard)
-            // {
-            //     var o = (Object)item;
-            //     listObject.Add(o);
-            // }
-            // return Ok(listObject);
-            return null;
+            var checkTrainee = await _traineeService.GetTraineeById(id);
+            if (checkTrainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found!"));
+            }
+            var classCheck = await _classService.GetClassByClassID(checkTrainee.ClassId.GetValueOrDefault());
+            if (classCheck == null || classCheck.IsDeactivated == true)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+            TimeSpan oneSecond = new TimeSpan(00, 00, -1);
+            List<Calendar> calenders = await _calendarService.GetCalendarsByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            var exam = await _examService.GetExamListByTraineeId(id, DateTime.Today, DateTime.Today.AddDays(7).Add(oneSecond));
+            Trainee trainee = await _traineeService.GetTraineeById(id);
+            var moduleInDashboard = _mapper.Map<IEnumerable<ModuleInTraineeDashboard>>(calenders);
+             var examInDashboard = _mapper.Map<IEnumerable<ExamInTraineeDashboard>>(exam);
+            if (moduleInDashboard.Count() != 0)
+            {
+                int i =0;
+                foreach (var item in moduleInDashboard)
+                {
+                    Trainer tempTrainer = await _trainerService.GetTrainerByCalendarId(calenders[i].CalendarId);
+                    item.Class.TrainerName = tempTrainer.Fullname;
+                    item.Class.TrainerAvatarURL = tempTrainer.AvatarURL;
+                    item.Class.TrainerEmail = tempTrainer.Email;
+                    Room tempRoom = await _roomService.GetRoom(classCheck.ClassId,item.ModuleId);
+                    item.Class.RoomName = tempRoom.RoomName;
+                    i++;
+                }
+            }
+            if (examInDashboard.Count() != 0)
+            {
+                foreach (var item in examInDashboard)
+                {
+                    Room room = await _roomService.GetRoom(classCheck.ClassId,item.ModuleId);
+                    item.RoomId = room.RoomId;
+                    item.RoomName = room.RoomName;
+                }
+            }
+            List<Object> listObject = new List<Object>();
+            foreach (var item in moduleInDashboard)
+            {
+                var o = (Object)item;
+                listObject.Add(o);
+            }
+            foreach (var item in examInDashboard)
+            {
+                var o = (Object)item;
+                listObject.Add(o);
+            }
+             return Ok(listObject);
+            
         }
 
         /// <summary>

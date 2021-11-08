@@ -16,10 +16,10 @@ namespace kroniiapi.Services
             _dataContext = dataContext;
         }
 
-        public async Task<IEnumerable<Calendar>> GetCalendarsByTraineeId(int traineeId, DateTime startDate, DateTime endDate)
+        public async Task<List<Calendar>> GetCalendarsByTraineeId(int traineeId, DateTime startDate, DateTime endDate)
         {
             Trainee trainee = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).FirstOrDefaultAsync();
-            IEnumerable<Calendar> calendars = await _dataContext.Calendars.Where(t => t.ClassId == trainee.ClassId && t.Date >= startDate && t.Date <= endDate)
+            List<Calendar> calendars = await _dataContext.Calendars.Where(t => t.ClassId == trainee.ClassId && t.Date >= startDate && t.Date <= endDate)
             .Select(m => new Calendar
             {
                 CalendarId = m.CalendarId,
@@ -70,18 +70,25 @@ namespace kroniiapi.Services
         }
         public async Task<IEnumerable<Calendar>> GetCalendarsByTrainerId(int trainerId, DateTime startDate, DateTime endDate)
         {
-            var classesModules = await _dataContext.ClassModules.Where(c => c.TrainerId == trainerId ).ToListAsync();
+            var classesModules = await _dataContext.ClassModules.Where(c => c.TrainerId == trainerId).ToListAsync();
             //Add and check class if deactivated
             var classes = new List<Class>();
             foreach (var item in classesModules)
             {
                 classes.Add(await _dataContext.Classes.Where(c => c.ClassId == item.ClassId && c.IsDeactivated == false).FirstOrDefaultAsync());
             }
-
-            List<Calendar> calendars = new List<Calendar>();
+            //Delete duplicated class
+            classes = classes.Distinct().ToList();
+            List<ClassModule> classesModulesLegit = new List<ClassModule>();
             foreach (var item in classes)
             {
-                calendars.AddRange(await _dataContext.Calendars.Where(t => t.ClassId == item.ClassId && t.Date >= startDate && t.Date <= endDate)
+                classesModulesLegit.AddRange(classesModules.Where(t => t.ClassId == item.ClassId).ToList());
+            }
+            List<Calendar> calendars = new List<Calendar>();
+
+            foreach (var item in classesModulesLegit)
+            {
+                calendars.AddRange(await _dataContext.Calendars.Where(t => t.ClassId == item.ClassId && t.ModuleId == item.ModuleId && t.Date >= startDate && t.Date <= endDate)
            .Select(m => new Calendar
            {
                CalendarId = m.CalendarId,
@@ -89,11 +96,21 @@ namespace kroniiapi.Services
                ClassId = m.ClassId,
                SyllabusSlot = m.SyllabusSlot,
                ModuleId = m.ModuleId,
-               Module = m.Module,
-               Class = m.Class,
+               Module = new Module
+               {
+                   ModuleName = m.Module.ModuleName,
+                   ModuleId = m.ModuleId,
+                   SlotDuration = m.Module.SlotDuration
+               },
+               Class = new Class
+               {
+                   ClassName = m.Class.ClassName
+               }
            }
            ).OrderBy(c => c.Date).ToListAsync());
             }
+            //delete null calendar
+            calendars.RemoveAll(t => t == null);
             return calendars;
         }
     }

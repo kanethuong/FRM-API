@@ -193,5 +193,11 @@ namespace kroniiapi.Services
             return _dataContext.Trainers.Any(t => t.TrainerId == id &&
            t.IsDeactivated == false);
         }
+        public async Task<Trainer> GetTrainerByCalendarId(int id){
+            Calendar calendar = await _dataContext.Calendars.Where(c => c.CalendarId == id).FirstOrDefaultAsync();
+            var tId = await _dataContext.ClassModules.Where(m => m.ModuleId == calendar.ModuleId && m.ClassId == calendar.ClassId ).Select(t => t.TrainerId).FirstOrDefaultAsync();
+            Trainer t = await _dataContext.Trainers.Where(m => m.TrainerId == tId).FirstOrDefaultAsync();
+            return t;
+        }
     }
 }

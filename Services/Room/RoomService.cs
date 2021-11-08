@@ -30,8 +30,8 @@ namespace kroniiapi.Services
             // return room;
             return null;
         }
-        public async Task<Room> GetRoom(int classId,int moduleId,int trainerId){
-            var room = await _dataContext.ClassModules.Where(e => e.ClassId == classId && e.ModuleId == moduleId && e.TrainerId == trainerId).Select(r => r.Room).FirstOrDefaultAsync();
+        public async Task<Room> GetRoom(int classId,int moduleId){
+            var room = await _dataContext.ClassModules.Where(e => e.ClassId == classId && e.ModuleId == moduleId ).Select(r => r.Room).FirstOrDefaultAsync();
             return room;
         }
 
