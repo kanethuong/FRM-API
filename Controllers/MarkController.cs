@@ -1,3 +1,4 @@
+using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -225,20 +226,84 @@ namespace kroniiapi.Controllers
         /// <param name="traineeMarkInput">Trainee Module and Mark</param>
         /// <returns>200: Updated / 409: Conflict / 404: trainee not found</returns>
         [HttpPut("trainee")]
-        public async Task<ActionResult> ChangeClassScore([FromBody] List<TraineeMarkInput> traineeMarkInput)
+        public async Task<ActionResult> ChangeClassScore([FromBody] TraineeMarkInput traineeMarkInput)
         {
-            return null;
+            Mark mark = _mapper.Map<Mark>(traineeMarkInput);
+            Trainee trainee = await _traineeService.GetTraineeById(mark.TraineeId);
+            if (trainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found"));
+            }
+            Module module = await _moduleService.GetModuleById(mark.ModuleId);
+            if (module == null)
+            {
+                return NotFound(new ResponseDTO(404, "Module not found"));
+            }
+            if(mark.Score < 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Score cannot be negative"));
+            }
+            var checkExist = await _markService.GetMarkByTraineeIdAndModuleId(mark.TraineeId, mark.ModuleId);
+            if (checkExist == null)
+            {
+                var newMark = await _markService.InsertNewMark(mark);
+                if (newMark == 1)
+                {
+                    return Ok(new ResponseDTO(200, "Update trainee's score success"));
+                }
+            }
+            if (await _markService.UpdateMark(mark) == 1)
+            {
+                return Ok(new ResponseDTO(200, "Update trainee's score success"));
+            }
+            else
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update trainee score"));
+            }
+
         }
 
         /// <summary>
-        /// /// View trainee mark
+        /// View trainee mark
         /// </summary>
         /// <param name="traineeId">trainee id</param>
         /// <returns>200: Trainee mark response/ 404: Trainee not found</returns>
         [HttpGet("{traineeId:int}/Score")]
         public async Task<ActionResult<MarkResponse>> ViewTraineeMark(int traineeId)
         {
-            return null;
+            Trainee trainee = await _traineeService.GetTraineeById(traineeId);
+            if (trainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found"));
+            }
+            var moduleList = await _moduleService.GetModulesByTraineeId(traineeId);
+
+            MarkResponse markResponse = new MarkResponse();
+            markResponse.TraineeName = trainee.Fullname;
+            var markList = new List<Mark>();
+            foreach (var module in moduleList)
+            {
+                var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                if (traineeMark == null)
+                {
+                    Mark mark_zero = new Mark();
+                    mark_zero.TraineeId = trainee.TraineeId;
+                    mark_zero.ModuleId = module.ModuleId;
+                    mark_zero.Score = 0;
+                    markList.Add(mark_zero);
+                }
+                else
+                {
+                    markList.Add(traineeMark);
+                }
+            }
+            foreach (Mark m in markList)
+            {
+                m.Module = await _moduleService.GetModuleById(m.ModuleId);
+            }
+            markList.OrderBy(m => m.Module.ModuleId);
+            markResponse.ScoreList = _mapper.Map<List<ModuleMark>>(markList);
+            return Ok(_mapper.Map<MarkResponse>(markResponse));
         }
 
     }
