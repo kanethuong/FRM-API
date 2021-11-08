@@ -25,7 +25,7 @@ namespace kroniiapi.Services
                 CalendarId = m.CalendarId,
                 Date = m.Date,
                 ClassId = m.ClassId,
-                SlotInDay = m.SlotInDay,
+                // SlotInDay = m.SlotInDay,
                 SyllabusSlot = m.SyllabusSlot,
                 ModuleId = m.ModuleId,
                 Module = m.Module,
@@ -42,20 +42,20 @@ namespace kroniiapi.Services
                                 {
                                     CalendarId = c.CalendarId,
                                     SyllabusSlot = c.SyllabusSlot,
-                                    SlotInDay = c.SlotInDay,
+                                    // SlotInDay = c.SlotInDay,
                                     Class = new Class
                                     {
                                         ClassId = c.ClassId,
                                         ClassName = c.Class.ClassName,
-                                        Room = new Room
-                                        {
-                                            RoomId = c.Class.RoomId,
-                                            RoomName = c.Class.Room.RoomName,
-                                        }
+                                        // Room = new Room {
+                                        //     RoomId = c.Class.RoomId,
+                                        //     RoomName = c.Class.Room.RoomName,
+                                        // }
                                     }
                                 })
                                 .FirstOrDefaultAsync();
-            return calendarRoom.Class.Room.RoomName;
+            // return calendarRoom.Class.Room.RoomName;
+            return null;
         }
         /// <summary>
         /// Get Calendars Id List using Module Id and Class Id
@@ -70,7 +70,14 @@ namespace kroniiapi.Services
         }
         public async Task<IEnumerable<Calendar>> GetCalendarsByTrainerId(int trainerId, DateTime startDate, DateTime endDate)
         {
-            var classes = await _dataContext.Classes.Where(c => c.TrainerId == trainerId && c.IsDeactivated == false).ToListAsync();
+            var classesModules = await _dataContext.ClassModules.Where(c => c.TrainerId == trainerId ).ToListAsync();
+            //Add and check class if deactivated
+            var classes = new List<Class>();
+            foreach (var item in classesModules)
+            {
+                classes.Add(await _dataContext.Classes.Where(c => c.ClassId == item.ClassId && c.IsDeactivated == false).FirstOrDefaultAsync());
+            }
+
             List<Calendar> calendars = new List<Calendar>();
             foreach (var item in classes)
             {
@@ -80,15 +87,10 @@ namespace kroniiapi.Services
                CalendarId = m.CalendarId,
                Date = m.Date,
                ClassId = m.ClassId,
-               SlotInDay = m.SlotInDay,
                SyllabusSlot = m.SyllabusSlot,
                ModuleId = m.ModuleId,
                Module = m.Module,
-               Class = new Class{
-                   Room = new Room{
-                       RoomName = m.Class.Room.RoomName
-                   }
-               }
+               Class = m.Class,
            }
            ).OrderBy(c => c.Date).ToListAsync());
             }

@@ -97,7 +97,7 @@ namespace kroniiapi.Services
             existedTrainer.DOB = trainer.DOB;
             existedTrainer.Address = trainer.Address;
             existedTrainer.Gender = trainer.Gender;
-            existedTrainer.Wage = trainer.Wage;
+            // existedTrainer.Wage = trainer.Wage;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -169,7 +169,8 @@ namespace kroniiapi.Services
             {
                 return null;
             }
-            return await _dataContext.Trainers.Where(t => t.TrainerId == class1.TrainerId && t.IsDeactivated == false).FirstOrDefaultAsync();
+            // return await _dataContext.Trainers.Where(t => t.TrainerId == class1.TrainerId && t.IsDeactivated == false).FirstOrDefaultAsync();
+            return null;
         }
         /// <summary>
         /// Get all trainer with pagination
