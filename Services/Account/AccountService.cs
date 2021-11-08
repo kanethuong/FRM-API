@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB;
@@ -83,7 +85,13 @@ namespace kroniiapi.Services
             totalAccount.Sort((x, y) => y.CreatedAt.CompareTo(x.CreatedAt));
             return totalAccount;
         }
-
+        private string ConvertToUnsign(string str)
+        {
+            Regex regex = new Regex("\\p{IsCombiningDiacriticalMarks}+");
+            string temp = str.Normalize(NormalizationForm.FormD);
+            return regex.Replace(temp, String.Empty)
+                        .Replace('\u0111', 'd').Replace('\u0110', 'D');
+        }
         /// <summary>
         /// get all account in 5 role
         /// </summary>
@@ -91,22 +99,26 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<AccountResponse>>> GetAccountList(PaginationParameter paginationParameter)
         {
+            string searchName = paginationParameter.SearchName;
+            searchName = searchName.Replace(":*|", " ").Replace(":*", "");
+            searchName = ConvertToUnsign(searchName);
+
             IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
-                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
+                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
             IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
-                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
+                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
             IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t
-                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
+                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
             IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
-                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
+                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
 
             IEnumerable<AccountResponse> totalAccount = await addAccountToTotalList(admins, trainers, trainees, companies);
 
@@ -541,22 +553,26 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<DeletedAccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter)
         {
-            IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t =>
-                 t.IsDeactivated == true && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
-            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t =>
-                 t.IsDeactivated == true && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
-            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t =>
-                 t.IsDeactivated == true && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
-            IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t =>
-                 t.IsDeactivated == true && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())
-                || t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
+            string searchName = paginationParameter.SearchName;
+            searchName = searchName.Replace(":*|", " ").Replace(":*", "");
+            searchName = ConvertToUnsign(searchName);
+
+            IEnumerable<Admin> admins = _dataContext.Admins.ToList().Where(t
+                 => t.IsDeactivated == true && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
+            IEnumerable<Trainer> trainers = _dataContext.Trainers.ToList().Where(t
+                 => t.IsDeactivated == true && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
+            IEnumerable<Trainee> trainees = _dataContext.Trainees.ToList().Where(t
+                 => t.IsDeactivated == true && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
+            IEnumerable<Company> companies = _dataContext.Companies.ToList().Where(t
+                 => t.IsDeactivated == true && (t.Email.ToUpper().Contains(searchName.ToUpper())
+                || t.Username.ToUpper().Contains(searchName.ToUpper())
+                || ConvertToUnsign(t.Fullname).ToUpper().Contains(searchName.ToUpper())));
 
             List<DeletedAccountResponse> totalAccount = new List<DeletedAccountResponse>();
 
