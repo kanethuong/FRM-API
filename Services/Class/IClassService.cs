@@ -29,8 +29,10 @@ namespace kroniiapi.Services
         Task<FeedbackViewForTrainee> GetFeedbackViewForTrainee(int traineeId);
         Task<int> DeleteTraineeClass(int deleteRequestId);
         void DiscardChanges();
+        Task<int> RemoveModuleFromClass(int classId, int moduleId);
         Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter);
         bool CheckClassExist(int id);
         Task<int> GetTrainerIdByClassId(int classId);
+        Task<ClassModule> GetClassModule(int classId, int moduleId);
     }
 }

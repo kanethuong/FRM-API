@@ -10,8 +10,8 @@ using kroniiapi.DB;
 namespace kroniiapi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20211020012744_InitialV3")]
-    partial class InitialV3
+    [Migration("20211108093850_updateRoomId")]
+    partial class updateRoomId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -46,6 +46,9 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<string>("Facebook")
+                        .HasColumnType("text");
+
                     b.Property<string>("Fullname")
                         .HasColumnType("text");
 
@@ -67,45 +70,11 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Username")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Wage")
-                        .HasColumnType("money");
-
                     b.HasKey("AdminId");
 
                     b.HasIndex("RoleId");
 
                     b.ToTable("Admins");
-                });
-
-            modelBuilder.Entity("kroniiapi.DB.Models.AdminFeedback", b =>
-                {
-                    b.Property<int>("AdminFeedbackId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
-
-                    b.Property<int>("AdminId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Rate")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TraineeId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("AdminFeedbackId");
-
-                    b.HasIndex("AdminId");
-
-                    b.HasIndex("TraineeId");
-
-                    b.ToTable("AdminFeedbacks");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Administrator", b =>
@@ -204,27 +173,102 @@ namespace kroniiapi.Migrations
                     b.HasKey("ApplicationCategoryId");
 
                     b.ToTable("ApplicationCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            ApplicationCategoryId = 1,
+                            CategoryName = "Đơn đề nghị thôi học",
+                            SampleFileURL = "https://mega.nz/file/FZwxVYDY#osv1wM3x-JQ6jilW4zOO65eZA0_xFuiUqCey2G3Uprw"
+                        },
+                        new
+                        {
+                            ApplicationCategoryId = 2,
+                            CategoryName = "Đơn chuyển cơ sở",
+                            SampleFileURL = "https://mega.nz/file/ZNpRTArA#y3JkAukljPtNsvINoub99zs6PEydE-OUIyqDyRLSx6I"
+                        },
+                        new
+                        {
+                            ApplicationCategoryId = 3,
+                            CategoryName = "Đơn chuyển ngành học",
+                            SampleFileURL = "https://mega.nz/file/AIw1EIab#wjMq0nv4p2LyVebEbLcKXII4uXyF0xtaUXyBN2yUyU0"
+                        },
+                        new
+                        {
+                            ApplicationCategoryId = 4,
+                            CategoryName = "Đơn bảo lưu học phần",
+                            SampleFileURL = "https://mega.nz/file/cVoBGC4R#1pgTUuPfGvk1abJZMb_MUsZ4d_3UgBqKOMNDVlm2Auo"
+                        },
+                        new
+                        {
+                            ApplicationCategoryId = 5,
+                            CategoryName = "Đơn đăng ký thi cải thiện điểm",
+                            SampleFileURL = "https://mega.nz/file/lcxBGSLK#zl6kU7vF9dHvk203H1sv4gb-SjRe5EHyATFqRZF9XjI"
+                        },
+                        new
+                        {
+                            ApplicationCategoryId = 6,
+                            CategoryName = "Đơn xác nhận thực tập",
+                            SampleFileURL = "https://mega.nz/file/FZoRjYiZ#kcbdQ0Mb4jzhNSXLP0jQGaJZgtSmJ3SIy0QD2ddpi4Q"
+                        },
+                        new
+                        {
+                            ApplicationCategoryId = 7,
+                            CategoryName = "Đơn khiếu nại điểm danh",
+                            SampleFileURL = "https://mega.nz/file/tRphHCCJ#3kqNCGZT9XNzDNAe4WDYI2tOMqw_WI7sGR-cdGKHsz0"
+                        });
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Attendance", b =>
                 {
-                    b.Property<int>("CalendarId")
-                        .HasColumnType("integer");
+                    b.Property<int>("AttendanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
-                    b.Property<int>("TraineeId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsAbsent")
-                        .HasColumnType("boolean");
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Reason")
                         .HasColumnType("text");
 
-                    b.HasKey("CalendarId", "TraineeId");
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TraineeId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AttendanceId");
 
                     b.HasIndex("TraineeId");
 
                     b.ToTable("Attendances");
+                });
+
+            modelBuilder.Entity("kroniiapi.DB.Models.BonusAndPunish", b =>
+                {
+                    b.Property<int>("BonusAndPunishId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<float>("Score")
+                        .HasColumnType("real");
+
+                    b.Property<int>("TraineeId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("BonusAndPunishId");
+
+                    b.HasIndex("TraineeId");
+
+                    b.ToTable("BonusAndPunishes");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Calendar", b =>
@@ -241,9 +285,6 @@ namespace kroniiapi.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("ModuleId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SlotInDay")
                         .HasColumnType("integer");
 
                     b.Property<int>("SyllabusSlot")
@@ -307,22 +348,12 @@ namespace kroniiapi.Migrations
                     b.Property<bool>("IsDeactivated")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("RoomId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("StartDay")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("TrainerId")
-                        .HasColumnType("integer");
 
                     b.HasKey("ClassId");
 
                     b.HasIndex("AdminId");
-
-                    b.HasIndex("RoomId");
-
-                    b.HasIndex("TrainerId");
 
                     b.ToTable("Classes");
                 });
@@ -338,9 +369,22 @@ namespace kroniiapi.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainerId")
+                        .HasColumnType("integer");
+
+                    b.Property<float>("WeightNumber")
+                        .HasColumnType("real");
+
                     b.HasKey("ClassId", "ModuleId");
 
                     b.HasIndex("ModuleId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("TrainerId");
 
                     b.ToTable("ClassModules");
                 });
@@ -367,10 +411,10 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<string>("Fullname")
+                    b.Property<string>("Facebook")
                         .HasColumnType("text");
 
-                    b.Property<string>("Gender")
+                    b.Property<string>("Fullname")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeactivated")
@@ -402,6 +446,9 @@ namespace kroniiapi.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
@@ -431,6 +478,9 @@ namespace kroniiapi.Migrations
 
                     b.Property<int>("TraineeId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("Wage")
+                        .HasColumnType("money");
 
                     b.HasKey("CompanyRequestId", "TraineeId");
 
@@ -483,6 +533,18 @@ namespace kroniiapi.Migrations
                     b.HasKey("CostTypeId");
 
                     b.ToTable("CostTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            CostTypeId = 1,
+                            CostTypeName = "Cơ sở vật chất"
+                        },
+                        new
+                        {
+                            CostTypeId = 2,
+                            CostTypeName = "Tổ chức Event"
+                        });
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.DeleteClassRequest", b =>
@@ -562,6 +624,65 @@ namespace kroniiapi.Migrations
                     b.ToTable("Exams");
                 });
 
+            modelBuilder.Entity("kroniiapi.DB.Models.Feedback", b =>
+                {
+                    b.Property<int>("FeedbackId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+
+                    b.Property<int>("AdminSupport")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ApproriateTopicLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("InformationToTrainees")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InstructionAndCommunicate")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Logistics")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OtherComment")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SubjectCoverage")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TopicContent")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TopicObjective")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TopicUsefulness")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TraineeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainerKnowledge")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainerSupport")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrainingMaterial")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FeedbackId");
+
+                    b.HasIndex("TraineeId");
+
+                    b.ToTable("Feedbacks");
+                });
+
             modelBuilder.Entity("kroniiapi.DB.Models.Mark", b =>
                 {
                     b.Property<int>("ModuleId")
@@ -599,11 +720,20 @@ namespace kroniiapi.Migrations
                     b.Property<string>("IconURL")
                         .HasColumnType("text");
 
+                    b.Property<float>("MaxScore")
+                        .HasColumnType("real");
+
                     b.Property<string>("ModuleName")
                         .HasColumnType("text");
 
                     b.Property<int>("NoOfSlot")
                         .HasColumnType("integer");
+
+                    b.Property<float>("PassingScore")
+                        .HasColumnType("real");
+
+                    b.Property<TimeSpan>("SlotDuration")
+                        .HasColumnType("interval");
 
                     b.Property<string>("SyllabusURL")
                         .HasColumnType("text");
@@ -673,37 +803,52 @@ namespace kroniiapi.Migrations
                         new
                         {
                             RoomId = 1,
-                            RoomName = "B203"
+                            RoomName = "G101"
                         },
                         new
                         {
                             RoomId = 2,
-                            RoomName = "B209"
+                            RoomName = "G102"
                         },
                         new
                         {
                             RoomId = 3,
-                            RoomName = "B315"
+                            RoomName = "G103"
                         },
                         new
                         {
                             RoomId = 4,
-                            RoomName = "G201"
+                            RoomName = "G104"
                         },
                         new
                         {
                             RoomId = 5,
-                            RoomName = "G202"
+                            RoomName = "G105"
                         },
                         new
                         {
                             RoomId = 6,
-                            RoomName = "G205"
+                            RoomName = "B101"
                         },
                         new
                         {
                             RoomId = 7,
-                            RoomName = "G303"
+                            RoomName = "B102"
+                        },
+                        new
+                        {
+                            RoomId = 8,
+                            RoomName = "B103"
+                        },
+                        new
+                        {
+                            RoomId = 9,
+                            RoomName = "B104"
+                        },
+                        new
+                        {
+                            RoomId = 10,
+                            RoomName = "B105"
                         });
                 });
 
@@ -735,6 +880,9 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<string>("Facebook")
+                        .HasColumnType("text");
+
                     b.Property<string>("Fullname")
                         .HasColumnType("text");
 
@@ -742,6 +890,9 @@ namespace kroniiapi.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeactivated")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("OnBoard")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
@@ -753,8 +904,8 @@ namespace kroniiapi.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("TuitionFee")
-                        .HasColumnType("money");
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
 
                     b.Property<string>("Username")
                         .HasColumnType("text");
@@ -778,9 +929,6 @@ namespace kroniiapi.Migrations
 
                     b.Property<int>("ExamId")
                         .HasColumnType("integer");
-
-                    b.Property<float>("Score")
-                        .HasColumnType("real");
 
                     b.HasKey("TraineeId", "ExamId");
 
@@ -835,45 +983,11 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Username")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Wage")
-                        .HasColumnType("money");
-
                     b.HasKey("TrainerId");
 
                     b.HasIndex("RoleId");
 
                     b.ToTable("Trainers");
-                });
-
-            modelBuilder.Entity("kroniiapi.DB.Models.TrainerFeedback", b =>
-                {
-                    b.Property<int>("TrainerFeedbackId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
-
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Rate")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TraineeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TrainerId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("TrainerFeedbackId");
-
-                    b.HasIndex("TraineeId");
-
-                    b.HasIndex("TrainerId");
-
-                    b.ToTable("TrainerFeedbacks");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Admin", b =>
@@ -885,25 +999,6 @@ namespace kroniiapi.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("kroniiapi.DB.Models.AdminFeedback", b =>
-                {
-                    b.HasOne("kroniiapi.DB.Models.Admin", "Admin")
-                        .WithMany("AdminFeedbacks")
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.HasOne("kroniiapi.DB.Models.Trainee", "Trainee")
-                        .WithMany("AdminFeedbacks")
-                        .HasForeignKey("TraineeId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.Navigation("Admin");
-
-                    b.Navigation("Trainee");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Administrator", b =>
@@ -945,19 +1040,22 @@ namespace kroniiapi.Migrations
 
             modelBuilder.Entity("kroniiapi.DB.Models.Attendance", b =>
                 {
-                    b.HasOne("kroniiapi.DB.Models.Calendar", "Calendar")
-                        .WithMany("Attendances")
-                        .HasForeignKey("CalendarId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
                     b.HasOne("kroniiapi.DB.Models.Trainee", "Trainee")
                         .WithMany("Attendances")
                         .HasForeignKey("TraineeId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.Navigation("Calendar");
+                    b.Navigation("Trainee");
+                });
+
+            modelBuilder.Entity("kroniiapi.DB.Models.BonusAndPunish", b =>
+                {
+                    b.HasOne("kroniiapi.DB.Models.Trainee", "Trainee")
+                        .WithMany("BonusAndPunishes")
+                        .HasForeignKey("TraineeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.Navigation("Trainee");
                 });
@@ -1008,23 +1106,7 @@ namespace kroniiapi.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.HasOne("kroniiapi.DB.Models.Room", "Room")
-                        .WithMany("Classes")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.HasOne("kroniiapi.DB.Models.Trainer", "Trainer")
-                        .WithMany("Classes")
-                        .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
                     b.Navigation("Admin");
-
-                    b.Navigation("Room");
-
-                    b.Navigation("Trainer");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.ClassModule", b =>
@@ -1041,9 +1123,24 @@ namespace kroniiapi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("kroniiapi.DB.Models.Room", "Room")
+                        .WithMany("ClassModules")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("kroniiapi.DB.Models.Trainer", "Trainer")
+                        .WithMany("ClassModules")
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
                     b.Navigation("Class");
 
                     b.Navigation("Module");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("Trainer");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Company", b =>
@@ -1144,6 +1241,17 @@ namespace kroniiapi.Migrations
                     b.Navigation("Module");
                 });
 
+            modelBuilder.Entity("kroniiapi.DB.Models.Feedback", b =>
+                {
+                    b.HasOne("kroniiapi.DB.Models.Trainee", "Trainee")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("TraineeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.Navigation("Trainee");
+                });
+
             modelBuilder.Entity("kroniiapi.DB.Models.Mark", b =>
                 {
                     b.HasOne("kroniiapi.DB.Models.Module", "Module")
@@ -1211,29 +1319,8 @@ namespace kroniiapi.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("kroniiapi.DB.Models.TrainerFeedback", b =>
-                {
-                    b.HasOne("kroniiapi.DB.Models.Trainee", "Trainee")
-                        .WithMany("TrainerFeedbacks")
-                        .HasForeignKey("TraineeId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.HasOne("kroniiapi.DB.Models.Trainer", "Trainer")
-                        .WithMany("TrainerFeedbacks")
-                        .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.Navigation("Trainee");
-
-                    b.Navigation("Trainer");
-                });
-
             modelBuilder.Entity("kroniiapi.DB.Models.Admin", b =>
                 {
-                    b.Navigation("AdminFeedbacks");
-
                     b.Navigation("Applications");
 
                     b.Navigation("Classes");
@@ -1248,11 +1335,6 @@ namespace kroniiapi.Migrations
             modelBuilder.Entity("kroniiapi.DB.Models.ApplicationCategory", b =>
                 {
                     b.Navigation("Applications");
-                });
-
-            modelBuilder.Entity("kroniiapi.DB.Models.Calendar", b =>
-                {
-                    b.Navigation("Attendances");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Class", b =>
@@ -1314,33 +1396,31 @@ namespace kroniiapi.Migrations
 
             modelBuilder.Entity("kroniiapi.DB.Models.Room", b =>
                 {
-                    b.Navigation("Classes");
+                    b.Navigation("ClassModules");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Trainee", b =>
                 {
-                    b.Navigation("AdminFeedbacks");
-
                     b.Navigation("Applications");
 
                     b.Navigation("Attendances");
+
+                    b.Navigation("BonusAndPunishes");
 
                     b.Navigation("Certificates");
 
                     b.Navigation("CompanyRequestDetails");
 
+                    b.Navigation("Feedbacks");
+
                     b.Navigation("Marks");
 
                     b.Navigation("TraineeExams");
-
-                    b.Navigation("TrainerFeedbacks");
                 });
 
             modelBuilder.Entity("kroniiapi.DB.Models.Trainer", b =>
                 {
-                    b.Navigation("Classes");
-
-                    b.Navigation("TrainerFeedbacks");
+                    b.Navigation("ClassModules");
                 });
 #pragma warning restore 612, 618
         }

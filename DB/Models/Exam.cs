@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace kroniiapi.DB.Models
 {
@@ -35,6 +33,5 @@ namespace kroniiapi.DB.Models
         public Trainee Trainee { get; set; }
         public int ExamId { get; set; }
         public Exam Exam { get; set; }
-        public float Score { get; set; }
     }
 }

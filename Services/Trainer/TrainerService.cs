@@ -97,7 +97,7 @@ namespace kroniiapi.Services
             existedTrainer.DOB = trainer.DOB;
             existedTrainer.Address = trainer.Address;
             existedTrainer.Gender = trainer.Gender;
-            existedTrainer.Wage = trainer.Wage;
+            // existedTrainer.Wage = trainer.Wage;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -169,7 +169,8 @@ namespace kroniiapi.Services
             {
                 return null;
             }
-            return await _dataContext.Trainers.Where(t => t.TrainerId == class1.TrainerId && t.IsDeactivated == false).FirstOrDefaultAsync();
+            // return await _dataContext.Trainers.Where(t => t.TrainerId == class1.TrainerId && t.IsDeactivated == false).FirstOrDefaultAsync();
+            return null;
         }
         /// <summary>
         /// Get all trainer with pagination
@@ -178,19 +179,33 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter)
         {
-            var trainerList = await _dataContext.Trainers.Where(t
-                 => t.IsDeactivated == false && (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
-                                                .OrderByDescending(t => t.CreatedAt)
-                                                .ToListAsync();
-            return Tuple.Create(trainerList.Count(), PaginationHelper.GetPage(trainerList,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            IQueryable<Trainer> trainers = _dataContext.Trainers.Where(t=> t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
+            {
+                trainers = trainers.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                                 + " "
+                                                                                 + EF.Functions.Unaccent(e.Username.ToLower())
+                                                                                 + " "
+                                                                                 + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Trainer> rs = await trainers
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
         }
         public bool CheckTrainerExist(int id)
         {
             return _dataContext.Trainers.Any(t => t.TrainerId == id &&
            t.IsDeactivated == false);
+        }
+        public async Task<Trainer> GetTrainerByCalendarId(int id){
+            Calendar calendar = await _dataContext.Calendars.Where(c => c.CalendarId == id).FirstOrDefaultAsync();
+            var tId = await _dataContext.ClassModules.Where(m => m.ModuleId == calendar.ModuleId && m.ClassId == calendar.ClassId ).Select(t => t.TrainerId).FirstOrDefaultAsync();
+            Trainer t = await _dataContext.Trainers.Where(m => m.TrainerId == tId).FirstOrDefaultAsync();
+            return t;
         }
     }
 }

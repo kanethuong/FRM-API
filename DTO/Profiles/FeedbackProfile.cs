@@ -12,15 +12,15 @@ namespace kroniiapi.DTO.Profiles
     {
         public FeedbackProfile()
         {
-            CreateMap<TrainerFeedback, FeedbackContent>();  //Map rate and content of trainerfeedback to feedbackcontent
-            CreateMap<Trainer, TrainerInFeedbackResponse>();   // Map trainer name and avatar of trainer model to trainer in feedback
+            // CreateMap<TrainerFeedback, FeedbackContent>();  //Map rate and content of trainerfeedback to feedbackcontent
+            // CreateMap<Trainer, TrainerInFeedbackResponse>();   // Map trainer name and avatar of trainer model to trainer in feedback
 
 
-            CreateMap<Admin, AdminInFeedbackResponse>(); // Map admin name and avatar of admin model to admin in feedback
-            CreateMap<AdminFeedback, FeedbackContent>(); //Map rate and content of adminfeedback to feedbackcontent
+            // CreateMap<Admin, AdminInFeedbackResponse>(); // Map admin name and avatar of admin model to admin in feedback
+            // CreateMap<AdminFeedback, FeedbackContent>(); //Map rate and content of adminfeedback to feedbackcontent
 
-            CreateMap<AdminFeedbackInput, AdminFeedback>();
-            CreateMap<TrainerFeedbackInput, TrainerFeedback>();
+            // CreateMap<AdminFeedbackInput, AdminFeedback>();
+            // CreateMap<TrainerFeedbackInput, TrainerFeedback>();
         }
     }
 }

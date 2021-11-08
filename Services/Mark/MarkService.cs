@@ -81,7 +81,7 @@ namespace kroniiapi.Services
             {
                 ModuleId = mark.ModuleId,
                 TraineeId = mark.TraineeId,
-                Score = 0,
+                Score = mark.Score,
             };
             _dataContext.Add(newMark);
             return await _dataContext.SaveChangesAsync();
@@ -91,7 +91,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="mark"></param>
         /// <returns>-1 if invalid input & 0 if failed to update & 1 if success</returns>
-        public async Task<int> UpdateMark( Mark mark){
+        public async Task<int> UpdateMark(Mark mark){
             var markUpdate = await _dataContext.Marks.Where(m => m.ModuleId == mark.ModuleId && m.TraineeId == mark.TraineeId).FirstOrDefaultAsync();
             if (markUpdate == null)
             {

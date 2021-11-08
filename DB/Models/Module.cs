@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace kroniiapi.DB.Models
 {
@@ -15,6 +14,10 @@ namespace kroniiapi.DB.Models
         public string IconURL { get; set; }
         public string SyllabusURL { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [Range(0, 10, ErrorMessage = "Mark or Score can only from 0 to 10")]
+        public float MaxScore { get; set; } = 10;
+        [Range(0, 10, ErrorMessage = "Mark or Score can only from 0 to 10")]
+        public float PassingScore { get; set; } = 6;
 
         // Many-Many class
         public ICollection<Class> Classes { get; set; }
@@ -42,5 +45,10 @@ namespace kroniiapi.DB.Models
         public int ModuleId { get; set; }
         public Module Module { get; set; }
         public DateTime AssignedAt { get; set; } = DateTime.Now;
+        public float WeightNumber { get; set; }
+        public int TrainerId { get; set; }
+        public Trainer Trainer { get; set; }
+        public int? RoomId { get; set; }
+        public Room Room { get; set; }
     }
 }

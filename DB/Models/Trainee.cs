@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace kroniiapi.DB.Models
 {
@@ -18,10 +16,11 @@ namespace kroniiapi.DB.Models
         public DateTime DOB { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        [Column(TypeName = "money")]
-        public decimal TuitionFee { get; set; }
+        public string Facebook { get; set; }
         [Column(TypeName = "money")]
         public decimal Wage { get; set; }
+        public string Status { get; set; }
+        public bool OnBoard { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsDeactivated { get; set; } = false;
         public DateTime? DeactivatedAt { get; set; }
@@ -49,14 +48,14 @@ namespace kroniiapi.DB.Models
         // Many-One application
         public ICollection<Application> Applications { get; set; }
 
-        // Many-Many admin feedback
-        public ICollection<AdminFeedback> AdminFeedbacks { get; set; }
+        // Many-One feedback
+        public ICollection<Feedback> Feedbacks { get; set; }
+
+        // Many-One Bonus and Punish
+        public ICollection<BonusAndPunish> BonusAndPunishes { get; set; }
 
         // Many-Many calendar by attendance
         public ICollection<Attendance> Attendances { get; set; }
-
-        // Many-Many trainer feedback
-        public ICollection<TrainerFeedback> TrainerFeedbacks { get; set; }
 
         // Many-Many company request
         public ICollection<CompanyRequest> CompanyRequests { get; set; }

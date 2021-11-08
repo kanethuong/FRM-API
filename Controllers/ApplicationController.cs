@@ -24,18 +24,17 @@ namespace kroniiapi.Controllers
         private readonly IMapper _mapper;
         private readonly IMegaHelper _megaHelper;
         public ApplicationController(IMapper mapper,
-
-                                 ITraineeService traineeService,
-
-                                 IApplicationService applicationService,
-                                 IMegaHelper megaHelper
-                                 )
+                                ITraineeService traineeService,
+                                IApplicationService applicationService,
+                                IMegaHelper megaHelper
+                                )
         {
             _mapper = mapper;
             _traineeService = traineeService;
             _applicationService = applicationService;
             _megaHelper = megaHelper;
         }
+
         /// <summary>
         /// get application list of trainee
         /// </summary>
@@ -80,7 +79,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Application category is not found"));
             }
-            return Created("", new ResponseDTO(201, "Successfully inserted")); 
+            return Created("", new ResponseDTO(201, "Successfully inserted"));
         }
 
         /// <summary>
@@ -136,7 +135,7 @@ namespace kroniiapi.Controllers
         /// <param name="confirmApplicationInput">Confirm Application Input DTO</param>
         /// <returns></returns>
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> ConfirmApplication(int id,[FromBody] ConfirmApplicationInput confirmApplicationInput)
+        public async Task<ActionResult> ConfirmApplication(int id, [FromBody] ConfirmApplicationInput confirmApplicationInput)
         {
             int rs = await _applicationService.ConfirmApplication(id, confirmApplicationInput);
             if (rs == -1)
