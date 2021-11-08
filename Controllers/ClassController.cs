@@ -33,13 +33,19 @@ namespace kroniiapi.Controllers
         private readonly ITraineeService _traineeService;
         private readonly ITimetableService _timetableService;
 
+        private readonly IMarkService _markService;
+
+        private readonly ICertificateService _certificateService;
+
         public ClassController(IClassService classService,
                                ITraineeService traineeService,
                                IAdminService adminService,
                                IModuleService moduleService,
                                ITrainerService trainerService,
                                IMapper mapper,
-                               ITimetableService timetableService)
+                               ITimetableService timetableService,
+                               IMarkService markService,
+                               ICertificateService certificateService)
         {
             _classService = classService;
             _adminService = adminService;
@@ -49,6 +55,8 @@ namespace kroniiapi.Controllers
             _timetableService = timetableService;
             _adminService = adminService;
             _traineeService = traineeService;
+            _markService = markService;
+            _certificateService = certificateService;
         }
 
         /// <summary>
@@ -64,7 +72,7 @@ namespace kroniiapi.Controllers
 
             foreach (Class c in classList)
             {
-                c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
+                //c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
                 c.Admin = await _adminService.GetAdminById(c.AdminId);
             }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
@@ -98,11 +106,11 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="confirmDeleteClassInput">Confirm detail</param>
         /// <returns>200: Update done / 404: Class or request not found / 409: Class or request deactivated</returns>
-        [HttpPut("request")]
-        //[Authorize(Policy = "ClassPut")]
-        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput)
+        [HttpPut("request/{deleteClassRequestId:int}")]
+        [Authorize(Policy = "ClassPut")]
+        public async Task<ActionResult> ConfirmDeleteClassRequest([FromBody] ConfirmDeleteClassInput confirmDeleteClassInput,int deleteClassRequestId)
         {
-            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput);
+            int status = await _classService.UpdateDeletedClass(confirmDeleteClassInput,deleteClassRequestId);
             if (status == -1)
             {
                 return NotFound(new ResponseDTO(404, "Class or request not found"));
@@ -115,7 +123,7 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Request is rejected"));
             }
-            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(confirmDeleteClassInput.DeleteClassRequestId);
+            int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(deleteClassRequestId);
             int deleteTraineeClass = await _classService.DeleteTraineeClass(confirmDeleteClassInput.ClassId);
             return Ok(new ResponseDTO(200, "Update done"));
         }
@@ -287,7 +295,7 @@ namespace kroniiapi.Controllers
             if (result != 1)
             {
                 return BadRequest(new ResponseDTO(400, message));
-            } 
+            }
             else
                 return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
@@ -587,7 +595,16 @@ namespace kroniiapi.Controllers
         [HttpGet("trainer/{id:int}")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerClassListResponse>>>> GetClassListByTrainerId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            if (!_trainerService.CheckTrainerExist(id)) {
+                return NotFound(new ResponseDTO(404, "Trainer not found"));
+            }
+            (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassListByTrainerId(id, paginationParameter);
+            IEnumerable<TrainerClassListResponse> classListDto = _mapper.Map<IEnumerable<TrainerClassListResponse>>(classList);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Classes not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<TrainerClassListResponse>>(totalRecord, classListDto));
         }
 
         /// <summary>
@@ -612,8 +629,43 @@ namespace kroniiapi.Controllers
         [HttpDelete("module/{moduleId:int}")]
         public async Task<ActionResult> RemoveModule(AssignModuleInput assignModuleInput)
         {
-            return null;
-        }
+            var classInfor = await _classService.GetClassByClassID(assignModuleInput.ClassId);
+            if(classInfor == null)
+            {
+                return NotFound(new ResponseDTO(404, "Class is not exist"));
+            }
 
+            var moduleMarkState = await _markService.GetMarkByModuleId(assignModuleInput.ModuleId, null, null);
+            if (moduleMarkState.Count() != 0)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee in this class has score with this module"));
+            }
+
+            var moduleCertificateState = await _certificateService.GetCertificatesURLByModuleId(assignModuleInput.ModuleId);
+            if (moduleCertificateState.Count() != 0)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee in this class has certificate with this module"));
+            }
+
+            var classModuleInfor = await _classService.GetClassModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            if(classModuleInfor.TrainerId != assignModuleInput.TrainerId)
+            {
+                return BadRequest(new ResponseDTO(409, "This trainer dont teach this class"));
+            }
+
+            int removeStatus = await _classService.RemoveModuleFromClass(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            if(removeStatus == -1)
+            {
+                return BadRequest(new ResponseDTO(409, "Class does not have this module"));
+            }
+            else if(removeStatus == 1)
+            {
+                return Ok(new ResponseDTO(200, "Deleted!"));
+            }
+            else
+            {
+                return BadRequest(new ResponseDTO(409, "Fail to delete! Unexpected error"));
+            }
+        }
     }
 }

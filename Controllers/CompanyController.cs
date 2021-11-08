@@ -20,8 +20,7 @@ namespace kroniiapi.Controllers
         private readonly ICompanyService _companyService;
         private readonly IMapper _mapper;
         public CompanyController(IMapper mapper,
-
-                                 ICompanyService companyService)
+                                ICompanyService companyService)
         {
             _mapper = mapper;
             _companyService = companyService;
@@ -41,6 +40,7 @@ namespace kroniiapi.Controllers
             }
             return Ok(new PaginationResponse<IEnumerable<CompanyRequestResponse>>(totalRecords, companyRequestResponses));
         }
+
         /// <summary>
         /// View all company report with pagination (CompanyRequest with isAccepted == true)
         /// </summary>
@@ -51,12 +51,14 @@ namespace kroniiapi.Controllers
         {
             (int totalRecord, IEnumerable<CompanyReport> reportList) = await _companyService.GetCompanyReportList(paginationParameter);
 
-            if(totalRecord==0){
-                return NotFound(new ResponseDTO(404,"Searched company cannot be found"));
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Company report not found"));
             }
-            
-            return Ok(new PaginationResponse<IEnumerable<CompanyReport>>(totalRecord,reportList));
+
+            return Ok(new PaginationResponse<IEnumerable<CompanyReport>>(totalRecord, reportList));
         }
+
         /// <summary>
         /// View Company Request Detail 
         /// </summary>
@@ -66,12 +68,14 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<RequestDetail>> ViewCompanyRequestDetail(int id)
         {
             var companyRequest = await _companyService.GetCompanyRequestDetail(id);
-            if (companyRequest == null) {
+            if (companyRequest == null)
+            {
                 return NotFound(new ResponseDTO(404, "Company request not found!"));
             }
             RequestDetail requestDetail = _mapper.Map<RequestDetail>(companyRequest);
             return Ok(requestDetail);
         }
+
         /// <summary>
         /// View all trainee in company request with pagination
         /// </summary>
@@ -89,6 +93,7 @@ namespace kroniiapi.Controllers
             }
             return Ok(new PaginationResponse<IEnumerable<TraineeInRequest>>(totalRecords, traineeDTO));
         }
+
         /// <summary>
         /// Send accept or reject company request
         /// </summary>
@@ -96,7 +101,7 @@ namespace kroniiapi.Controllers
         /// <param name="isAccepted">accept or reject</param>
         /// <returns></returns>
         [HttpPut("request/{id:int}")]
-        public async Task<ActionResult> ConfirmCompanyRequest(int id,[FromBody] ConfirmCompanyRequestInput input)
+        public async Task<ActionResult> ConfirmCompanyRequest(int id, [FromBody] ConfirmCompanyRequestInput input)
         {
             var rs = await _companyService.ConfirmCompanyRequest(id, input.isAccepted);
             if (rs == -1)
