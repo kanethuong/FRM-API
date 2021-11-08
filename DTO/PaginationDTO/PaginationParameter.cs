@@ -15,8 +15,11 @@ namespace kroniiapi.DTO.PaginationDTO
             get { return _searchName; }
             set
             {
-                value.Trim();
-                if (value != null) _searchName = value.Replace(" ", ":*|") + ":*";
+                if (value != null)
+                {
+                    value.Trim();
+                    _searchName = value.Replace(" ", ":*|") + ":*";
+                }
                 else _searchName = "";
             }
         }
