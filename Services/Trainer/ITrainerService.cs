@@ -19,5 +19,6 @@ namespace kroniiapi.Services
         Task<Trainer> getTrainerByClassId(int id);
         Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter);
         bool CheckTrainerExist(int id);
+        Task<Trainer> GetTrainerByCalendarId(int id);
     }
 }
