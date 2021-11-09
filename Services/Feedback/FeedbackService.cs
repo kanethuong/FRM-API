@@ -84,31 +84,36 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="trainerFeedback"></param>
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
-        // public async Task<(int, string)> InsertNewTrainerFeedback(TrainerFeedback trainerFeedback)
-        // {
-        //     if (!_dataContext.Trainees.Any(t => t.TraineeId == trainerFeedback.TraineeId))
-        //     {
-        //         return (0, "Don't have this Trainee");
-        //     }
-        //     if (!_dataContext.Trainers.Any(t => t.TrainerId == trainerFeedback.TrainerId))
-        //     {
-        //         return (0,"Don't have this Trainer");
-        //     }
-        //     var trainee = await _dataContext.Trainees.Where(c => c.TraineeId == trainerFeedback.TraineeId).FirstOrDefaultAsync();
-        //     if (!_dataContext.Classes.Any(c => c.TrainerId == trainerFeedback.TrainerId && c.ClassId == trainee.ClassId))
-        //     {
-        //         return (-1, "Trainer doesn't train Trainee");
-        //     }
-        //     if (_dataContext.TrainerFeedbacks.Any(
-        //         f => f.TrainerId == trainerFeedback.TrainerId && f.TraineeId == trainerFeedback.TraineeId
-        //     ))
-        //     {
-        //         return (-1,"Trainee has feedback this Trainer");
-        //     }
-        //     _dataContext.Add(trainerFeedback);
-        //     await _dataContext.SaveChangesAsync();
-        //     return (1, "Success");
-        // }
+        public async Task<(int, string)> InsertNewFeedback(Feedback feedback)
+        {
+            if (!_dataContext.Trainees.Any(t => t.TraineeId == feedback.TraineeId))
+            {
+                return (-1, "Don't have this Trainee");
+            }
+            // if trainer has feedback this month, update feedback
+            var fbInMonthBefore = await _dataContext.Feedbacks.Where(
+                        f => f.TraineeId == feedback.TraineeId && f.CreatedAt.Month == DateTime.Now.Month).FirstOrDefaultAsync();
+            if (fbInMonthBefore != null)
+            {
+                fbInMonthBefore.TopicContent = feedback.TopicContent;
+                fbInMonthBefore.TopicObjective = feedback.TopicObjective;
+                fbInMonthBefore.ApproriateTopicLevel = feedback.ApproriateTopicLevel;
+                fbInMonthBefore.TopicUsefulness = feedback.TopicUsefulness;
+                fbInMonthBefore.TrainingMaterial = feedback.TrainingMaterial;
+                fbInMonthBefore.TrainerKnowledge = feedback.TrainerKnowledge;
+                fbInMonthBefore.SubjectCoverage = feedback.SubjectCoverage;
+                fbInMonthBefore.InstructionAndCommunicate = feedback.InstructionAndCommunicate;
+                fbInMonthBefore.TrainerSupport = feedback.TrainerSupport;
+                fbInMonthBefore.Logistics = feedback.Logistics;
+                fbInMonthBefore.InformationToTrainees = feedback.InformationToTrainees;
+                fbInMonthBefore.AdminSupport = feedback.AdminSupport;
+                fbInMonthBefore.OtherComment = feedback.OtherComment;
+            }
+            else _dataContext.Feedbacks.Add(feedback);
+            int row = await _dataContext.SaveChangesAsync();
+            return (row, "Send feedback successfully");
+
+        }
 
         /// <summary>
         /// Get trainer feedback by trainer ID
