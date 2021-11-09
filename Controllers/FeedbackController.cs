@@ -34,94 +34,33 @@ namespace kroniiapi.Controllers
             _trainerService = trainerService;
             _traineeService = traineeService;
         }
+
         /// <summary>
-        /// View Trainer and admin information to be ready to send feedback
+        /// send feedback
         /// </summary>
-        /// <param name="id">trainee id</param>
-        /// <returns>trainee and admin info </returns>
-        [HttpGet("{traineeId:int}/feedbackInfo")]
-        public async Task<ActionResult<FeedbackViewForTrainee>> ViewFeedbackInfo(int traineeId)
+        /// <param name="feedbackInput">detail of feedback</param>
+        /// <returns>201: created / </returns>
+        [HttpPost]
+        public async Task<ActionResult> SendFeedback([FromBody] FeedbackInput feedbackInput)
         {
-            var (classId, message) = await _traineeService.GetClassIdByTraineeId(traineeId);
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(feedbackInput.TraineeId);
             if (classId == -1)
             {
                 return NotFound(new ResponseDTO(404, message));
             }
-            var whoToFeedback = await _classService.GetFeedbackViewForTrainee(traineeId);
-            if (whoToFeedback == null)
+            Feedback feedback = _mapper.Map<Feedback>(feedbackInput);
+            var (rs, feedbackMessage) = await _feedbackService.InsertNewFeedback(feedback);
+            if (rs == -1)
             {
-                return NotFound(new ResponseDTO(404, "There are no Trainee"));
+                return NotFound(new ResponseDTO(404, feedbackMessage));
             }
-            return Ok(whoToFeedback);
+            if (rs == 1)
+            {
+                return Created("",new ResponseDTO(201, feedbackMessage));
+            }
+            return BadRequest(new ResponseDTO(400, "Failed to send feedback"));
         }
 
-        /// <summary>
-        /// send trainer feedback
-        /// </summary>
-        /// <param name="trainerFeedbackInput">detail of feedback</param>
-        /// <returns>201: created / </returns>
-        [HttpPost("trainer")]
-        public async Task<ActionResult> SendTrainerFeedback([FromBody] TrainerFeedbackInput trainerFeedbackInput)
-        {
-            // var (classId, message) = await _traineeService.GetClassIdByTraineeId(trainerFeedbackInput.TraineeId);
-            // if (classId == -1)
-            // {
-            //     return NotFound(new ResponseDTO(404, message));
-            // }
-            // if (trainerFeedbackInput.Rate < 0 || trainerFeedbackInput.Rate >5)
-            // {
-            //     return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
-            // }
-            // TrainerFeedback trainerFeedback = _mapper.Map<TrainerFeedback>(trainerFeedbackInput);
-            // var (rs, feedbackMessage) = await _feedbackService.InsertNewTrainerFeedback(trainerFeedback);
-            // if (rs == -1)
-            // {
-            //     return NotFound(new ResponseDTO(404, feedbackMessage));
-            // }
-            // if (rs == 0)
-            // {
-            //     return NotFound(new ResponseDTO(404, feedbackMessage));
-            // }
-            // if (rs == 1)
-            // {
-            //     return Ok(new ResponseDTO(200, feedbackMessage));
-            // }
-            return BadRequest(new ResponseDTO(400, "Failed To Insert"));
-        }
-
-        /// <summary>
-        /// send admin feedback
-        /// </summary>
-        /// <param name="adminFeedbackInput">detail of feedback</param>
-        /// <returns>201: created / </returns>
-        [HttpPost("admin")]
-        public async Task<ActionResult> SendAdminFeedback([FromBody] AdminFeedbackInput adminFeedbackInput)
-        {
-            // var (classId, message) = await _traineeService.GetClassIdByTraineeId(adminFeedbackInput.TraineeId);
-            // if (classId == -1)
-            // {
-            //     return NotFound(new ResponseDTO(404, message));
-            // }
-            // if (adminFeedbackInput.Rate < 0 || adminFeedbackInput.Rate > 5)
-            // {
-            //     return BadRequest(new ResponseDTO(400, "Rate must be between 1 and 5"));
-            // }
-            // AdminFeedback adminFeedback = _mapper.Map<AdminFeedback>(adminFeedbackInput);
-            // var (rs, feedbackMessage) = await _feedbackService.InsertNewAdminFeedback(adminFeedback);
-            // if (rs == -1)
-            // {
-            //     return NotFound(new ResponseDTO(404, feedbackMessage));
-            // }
-            // if (rs == 0)
-            // {
-            //     return NotFound(new ResponseDTO(404, feedbackMessage));
-            // }
-            // if (rs == 1)
-            // {
-            //     return Ok(new ResponseDTO(200, feedbackMessage));
-            // }
-            return BadRequest(new ResponseDTO(400, "Failed To Insert"));
-        }
         /// <summary>
         /// Get the trainer feedbacks and admin feedbacks of a class
         /// </summary>
