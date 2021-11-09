@@ -343,6 +343,76 @@
     </div>
 </div>
 
+<!-- View class mark by trainer ID -->
+<div id="viewClassScoreByTrainerID">
+    <!-- Function Title -->
+    <div class="w-75 border-bottom mb-3">
+        <h3>View Trainer's Class Score</h3>
+    </div>
+    <p>By HoangNN</p>
+    <div>
+        <h5>Endpoint</h5>
+        <p>/api/mark/trainer/class/{classId}</p>
+    </div>
+
+    <!-- Role, Method and Status code -->
+    <div class="row mb-3">
+        <div class="col-4 border-end">
+            <h5>Allow</h5>
+            <p>Administrator</p>
+        </div>
+        <div class="col-4 border-end">
+            <h5>Method</h5>
+            <p>GET</p>
+        </div>
+        <div class="col-4">
+            <h5>Status</h5>
+            <p>200 404</p>
+        </div>
+    </div>
+
+    <!-- Parameter & file -->
+    <div class="row mb-3">
+        <div class="col-6 border-end">
+            <h5>Parameter</h5>
+            <p>classId: ID of class</p>
+            <p>trainerId: ID of trainer</p>
+            <p>pageNumber: Position of page</p>
+            <p>pageSize: Number items per page</p>
+            <p>searchName: Trainee name field</p>
+        </div>
+    </div>
+
+    <!-- Request body and Response body  -->
+    <div class="row mb-3">
+        <div class="col-6 border-end">
+            <h5>Request Body</h5>
+            <p>No</p>
+        </div>
+        <div class="col-6">
+            <h5>Response Body</h5>
+            <p>
+            <pre><code>
+{
+    "totalRecords": int,
+    "payload": [
+        {
+        "traineeName": "string",
+        "scoreList": [
+            {
+            "moduleName": "string",
+            "score": int
+                }
+            ]
+        }
+    ]
+}
+    </code></pre>
+            </p>
+        </div>
+    </div>
+</div>
+
 <!-- Change class score -->
 <div id="changeClassScore">
     <!-- Function Title -->

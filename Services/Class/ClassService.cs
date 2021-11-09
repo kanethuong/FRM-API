@@ -8,6 +8,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -172,13 +173,18 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            IQueryable<Class> classes = _dataContext.Classes.Where(c => c.IsDeactivated == true);
+            if (paginationParameter.SearchName != "")
+            {
+                classes = classes.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.ClassName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
 
-            int totalRecords = listClass.Count();
-
-            var rs = listClass.OrderBy(c => c.ClassId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
+            IEnumerable<Class> rs = await classes
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
 
             return Tuple.Create(totalRecords, rs);
         }
@@ -321,16 +327,19 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <param name="moduleIdList"></param>
-        public async Task AddDataToClassModule(int classId, ICollection<int> moduleIdList)
+        public async Task AddDataToClassModule(int classId, ICollection<TrainerModule> trainerModuleList)
         {
-            foreach (var moduleId in moduleIdList)
+            foreach (var trainerModule in trainerModuleList)
             {
-                ClassModule classModule = await _dataContext.ClassModules.Where(cm => cm.ClassId == classId && cm.ModuleId == moduleId).FirstOrDefaultAsync();
+                ClassModule classModule = await _dataContext.ClassModules.Where(cm => cm.ClassId == classId
+                                                                                      && cm.ModuleId == trainerModule.ModuleId).FirstOrDefaultAsync();
                 if (classModule is not null) continue;
                 classModule = new ClassModule()
                 {
                     ClassId = classId,
-                    ModuleId = moduleId
+                    ModuleId = trainerModule.ModuleId,
+                    TrainerId = trainerModule.TrainerId,
+                    WeightNumber = trainerModule.WeightNumber
                 };
                 _dataContext.ClassModules.Add(classModule);
             }
@@ -355,7 +364,7 @@ namespace kroniiapi.Services
             rowInserted = await SaveChange();
             var newClass = await GetClassByClassName(newClassInput.ClassName);
             await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            await AddDataToClassModule(newClass.ClassId, newClassInput.ModuleIdList);
+            await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
             await SaveChange();
             return rowInserted;
         }
@@ -473,7 +482,7 @@ namespace kroniiapi.Services
             IEnumerable<Calendar> listForDelete = _dataContext.Calendars.Where(t => t.ClassId == classId && t.ModuleId == moduleId);
             int numberOfDeleteRecord = listForDelete.Count();
             _dataContext.Calendars.RemoveRange(listForDelete);
-            if(await _dataContext.SaveChangesAsync() == numberOfDeleteRecord)
+            if (await _dataContext.SaveChangesAsync() == numberOfDeleteRecord)
             {
                 return 1;
             }
@@ -492,13 +501,13 @@ namespace kroniiapi.Services
         /// <returns>-1:not found / 0:fail / 1:success</returns>
         public async Task<int> RemoveModuleFromClass(int classId, int moduleId)
         {
-            var classModuleForDelete =  _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
+            var classModuleForDelete = _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
             int deleteFromCalendarStatus = await RemoveClassModuleFromCalendar(classId, moduleId);
-            if(deleteFromCalendarStatus == 0)
+            if (deleteFromCalendarStatus == 0)
             {
                 return 0;
             }
-            if(classModuleForDelete != null)
+            if (classModuleForDelete != null)
             {
                 _dataContext.ClassModules.RemoveRange(classModuleForDelete);
             }
