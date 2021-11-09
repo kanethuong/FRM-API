@@ -66,6 +66,7 @@ namespace kroniiapi.Services
             rowUpdated = await _dataContext.SaveChangesAsync();
             return rowUpdated;
         }
+
         /// <summary>
         /// Get module by class id
         /// </summary>
@@ -83,6 +84,25 @@ namespace kroniiapi.Services
             }
             return modules;
         }
+
+        /// <summary>
+        /// Get module by class id
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Module>> GetModulesByClassIdAndTrainerId(int classId, int trainerId)
+        {
+            List<int> moduleId = await _dataContext.ClassModules.Where(m => m.ClassId == classId && m.TrainerId == trainerId).Select(m => m.ModuleId).ToListAsync();
+            List<Module> modules = new List<Module>();
+            foreach (int i in moduleId)
+            {
+                Module m = new Module();
+                m = await GetModuleById(i);
+                modules.Add(m);
+            }
+            return modules;
+        }
+
         /// <summary>
         /// Get module by trainee id
         /// </summary>
