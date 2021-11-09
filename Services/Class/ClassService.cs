@@ -550,5 +550,26 @@ namespace kroniiapi.Services
             return _dataContext.Classes.Any(c => c.ClassId == id &&
            c.IsDeactivated == false);
         }
+<<<<<<< HEAD
+=======
+        public async Task<int> GetTrainerIdByClassId(int classId)
+        {
+            // return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).Select(c => c.TrainerId).FirstOrDefaultAsync();
+            return 0;
+        }
+
+        /// <summary>
+        /// Assign a module to class
+        /// </summary>
+        /// <param name="classModule"></param>
+        /// <returns>0: assign fail / 1: assign success</returns>
+        public async Task<int> AssignModuleToClass(ClassModule classModule)
+        {
+            int rowInserted=0;
+            _dataContext.ClassModules.Add(classModule);
+            rowInserted=await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+>>>>>>> 0f6135415adec9a5157e9ca7ba7e810e2a11aaff
     }
 }
