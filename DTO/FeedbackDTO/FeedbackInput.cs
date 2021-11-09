@@ -9,20 +9,44 @@ namespace kroniiapi.DTO.FeedbackDTO
     public class FeedbackInput
     {
         [Required]
-        public int TraineeId { get; set; }
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TopicContent { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TopicObjective { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int ApproriateTopicLevel { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TopicUsefulness { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TrainingMaterial { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TrainerKnowledge { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int SubjectCoverage { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int InstructionAndCommunicate { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TrainerSupport { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int Logistics { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int InformationToTrainees { get; set; }
+        [Required]
+        [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int AdminSupport { get; set; }
+        [Required]
         public string OtherComment { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [Required]
+        public int TraineeId { get; set; }
     }
 }

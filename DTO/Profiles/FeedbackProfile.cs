@@ -22,8 +22,8 @@ namespace kroniiapi.DTO.Profiles
             // CreateMap<AdminFeedbackInput, AdminFeedback>();
             // CreateMap<TrainerFeedbackInput, TrainerFeedback>();
 
-            CreateMap<FeedbackInput, Feedback>();
             CreateMap<Feedback, FeedbackResponse>();
+            CreateMap<FeedbackInput, Feedback>();
         }
     }
 }

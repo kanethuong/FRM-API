@@ -210,7 +210,6 @@ namespace kroniiapi.Services
             List<CompanyRequest> rs = await listRequest
                 .GetCount(out var totalRecords)
                 .OrderByDescending(e => e.CreatedAt)
-                .GetPage(paginationParameter)
                 .Select(c => new CompanyRequest
                 {
                     CompanyRequestId = c.CompanyRequestId,
@@ -228,7 +227,7 @@ namespace kroniiapi.Services
                     .ToListAsync();
             List<CompanyRequestResponse> companyRequestResponses = new List<CompanyRequestResponse>();
 
-            foreach (var item in listRequest)
+            foreach (var item in rs)
             {
                 CompanyRequestResponse itemToResponse = new CompanyRequestResponse()
                 {
@@ -241,8 +240,7 @@ namespace kroniiapi.Services
                 companyRequestResponses.Add(itemToResponse);
                 
             }
-            return Tuple.Create(companyRequestResponses.Count(), PaginationHelper.GetPage(companyRequestResponses,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            return Tuple.Create(totalRecords, companyRequestResponses.GetPage(paginationParameter));
         }
         /// <summary>
         /// Get Company Request Detail

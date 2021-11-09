@@ -36,15 +36,29 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// Send new feedback to system. Every trainee can send upto a number of month they are learning
-        /// If trainee resend a feedbacck in a month update it not insert.
+        /// send feedback
         /// </summary>
-        /// <param name="trainerFeedbackInput">detail of feedback</param>
-        /// <returns>201: created / 400: / 404: trainee not found</returns>
+        /// <param name="feedbackInput">detail of feedback</param>
+        /// <returns>201: created / </returns>
         [HttpPost]
-        public async Task<ActionResult> SendTrainer([FromBody] FeedbackInput FeedbackInput)
+        public async Task<ActionResult> SendFeedback([FromBody] FeedbackInput feedbackInput)
         {
-            return null;
+            var (classId, message) = await _traineeService.GetClassIdByTraineeId(feedbackInput.TraineeId);
+            if (classId == -1)
+            {
+                return NotFound(new ResponseDTO(404, message));
+            }
+            Feedback feedback = _mapper.Map<Feedback>(feedbackInput);
+            var (rs, feedbackMessage) = await _feedbackService.InsertNewFeedback(feedback);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, feedbackMessage));
+            }
+            if (rs == 1)
+            {
+                return Created("", new ResponseDTO(201, feedbackMessage));
+            }
+            return BadRequest(new ResponseDTO(400, "Failed to send feedback"));
         }
 
         /// <summary>
