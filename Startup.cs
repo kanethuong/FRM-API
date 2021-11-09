@@ -34,6 +34,7 @@ using kroniiapi.Helper.Converter;
 using Microsoft.OpenApi.Any;
 using kroniiapi.Services.Attendance;
 using kroniiapi.AttendanceServicesss;
+using kroniiapi.Services.Report;
 
 namespace kroniiapi
 {
@@ -156,6 +157,8 @@ namespace kroniiapi
             services.AddScoped<ICostService, CostService>();
             services.AddScoped<ITimetableService, TimetableService>();
             services.AddScoped<IAttendanceService, AttendanceService>();
+            services.AddScoped<IReportService, ReportService>();
+
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
