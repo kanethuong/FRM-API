@@ -51,14 +51,9 @@ namespace kroniiapi.Controllers
         {
             (int totalRecord, IEnumerable<CompanyReport> reportList) = await _companyService.GetCompanyReportList(paginationParameter);
 
-<<<<<<< HEAD
-            if(totalRecord==0){
-                return NotFound(new ResponseDTO(404,"Company report not found"));
-=======
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "Company report not found"));
->>>>>>> 657beaab9601094f05d439c93ff9e12d3c6fea9b
             }
 
             return Ok(new PaginationResponse<IEnumerable<CompanyReport>>(totalRecord, reportList));

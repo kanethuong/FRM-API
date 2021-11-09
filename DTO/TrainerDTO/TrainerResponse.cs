@@ -11,6 +11,6 @@ namespace kroniiapi.DTO.TrainerDTO
         public string Fullname { get; set; }
         public string AvatarURL { get; set; }
         public string Email { get; set; }
-        public decimal Wage { get; set; }
+        public string Facebook { get; set; }
     }
 }

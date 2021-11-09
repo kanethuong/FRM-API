@@ -618,7 +618,40 @@ namespace kroniiapi.Controllers
         [HttpPost("module")]
         public async Task<ActionResult> AssignModuleToClass(AssignModuleInput assignModuleInput)
         {
-            return null;
+            var moduleToAssign = await _moduleService.GetModuleById(assignModuleInput.ModuleId);
+            if (moduleToAssign == null)
+            {
+                return NotFound(new ResponseDTO(404, "Module is not exist"));
+            }
+
+            var isClassExist = _classService.CheckClassExist(assignModuleInput.ClassId);
+            if (isClassExist == false)
+            {
+                return NotFound(new ResponseDTO(404, "Class is not exist"));
+            }
+
+            var isTrainerExist = _trainerService.CheckTrainerExist(assignModuleInput.TrainerId);
+            if (isTrainerExist == false)
+            {
+                return NotFound(new ResponseDTO(404, "Trainer is not exist"));
+            }
+
+            var classModuleInfor = await _classService.GetClassModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            if (classModuleInfor != null)
+            {
+                return Conflict(new ResponseDTO(409, "Module is already assigned to class"));
+            }
+
+            ClassModule classModule = _mapper.Map<ClassModule>(assignModuleInput);
+            int rs = await _classService.AssignModuleToClass(classModule);
+            if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to assign module to class"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Assign module to class success"));
+            }
         }
 
         /// <summary>
@@ -629,7 +662,7 @@ namespace kroniiapi.Controllers
         /// <param name="moduleId">module id</param>
         /// <returns>200: Deleted / 404: Class/Trainer/Module is not exist / 409: Fail to delete</returns>
         [HttpDelete("module/{moduleId:int}")]
-        public async Task<ActionResult> RemoveModule(AssignModuleInput assignModuleInput)
+        public async Task<ActionResult> RemoveModule(RemoveModuleInput assignModuleInput)
         {
             var classInfor = await _classService.GetClassByClassID(assignModuleInput.ClassId);
             if (classInfor == null)

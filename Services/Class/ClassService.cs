@@ -479,7 +479,7 @@ namespace kroniiapi.Services
             IEnumerable<Calendar> listForDelete = _dataContext.Calendars.Where(t => t.ClassId == classId && t.ModuleId == moduleId);
             int numberOfDeleteRecord = listForDelete.Count();
             _dataContext.Calendars.RemoveRange(listForDelete);
-            if(await _dataContext.SaveChangesAsync() == numberOfDeleteRecord)
+            if (await _dataContext.SaveChangesAsync() == numberOfDeleteRecord)
             {
                 return 1;
             }
@@ -498,13 +498,13 @@ namespace kroniiapi.Services
         /// <returns>-1:not found / 0:fail / 1:success</returns>
         public async Task<int> RemoveModuleFromClass(int classId, int moduleId)
         {
-            var classModuleForDelete =  _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
+            var classModuleForDelete = _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
             int deleteFromCalendarStatus = await RemoveClassModuleFromCalendar(classId, moduleId);
-            if(deleteFromCalendarStatus == 0)
+            if (deleteFromCalendarStatus == 0)
             {
                 return 0;
             }
-            if(classModuleForDelete != null)
+            if (classModuleForDelete != null)
             {
                 _dataContext.ClassModules.RemoveRange(classModuleForDelete);
             }
@@ -544,6 +544,19 @@ namespace kroniiapi.Services
         {
             // return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).Select(c => c.TrainerId).FirstOrDefaultAsync();
             return 0;
+        }
+
+        /// <summary>
+        /// Assign a module to class
+        /// </summary>
+        /// <param name="classModule"></param>
+        /// <returns>0: assign fail / 1: assign success</returns>
+        public async Task<int> AssignModuleToClass(ClassModule classModule)
+        {
+            int rowInserted=0;
+            _dataContext.ClassModules.Add(classModule);
+            rowInserted=await _dataContext.SaveChangesAsync();
+            return rowInserted;
         }
     }
 }

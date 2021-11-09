@@ -87,7 +87,7 @@ namespace kroniiapi.Services
         /// <returns>-1:not existed / 0:fail / 1:success</returns>
         public async Task<int> UpdateTrainee(int id, Trainee trainee)
         {
-            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
             if (existedTrainee == null)
             {
                 return -1;
@@ -98,6 +98,7 @@ namespace kroniiapi.Services
             existedTrainee.Address = trainee.Address;
             existedTrainee.Gender = trainee.Gender;
             existedTrainee.Wage = trainee.Wage;
+            existedTrainee.Facebook = trainee.Facebook;
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -111,7 +112,7 @@ namespace kroniiapi.Services
         /// <returns>-1:not existed / 0:fail / 1:success</returns>
         public async Task<int> UpdateAvatar(int id, string avatarUrl)
         {
-            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id).FirstOrDefaultAsync();
+            var existedTrainee = await _dataContext.Trainees.Where(t => t.TraineeId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
             if (existedTrainee == null)
             {
                 return -1;

@@ -23,7 +23,7 @@ namespace kroniiapi.Controllers
         private readonly ICalendarService _calendarService;
         private readonly IRoomService _roomService;
         private readonly IMapper _mapper;
-        public TrainerController(IMapper mapper, ITrainerService trainerService, IFeedbackService feedbackService,ICalendarService calendarService,IRoomService roomService)
+        public TrainerController(IMapper mapper, ITrainerService trainerService, IFeedbackService feedbackService, ICalendarService calendarService, IRoomService roomService)
         {
             _mapper = mapper;
             _trainerService = trainerService;
@@ -69,55 +69,6 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// Get list of trainer feedbacks
-        /// </summary>
-        /// <param name="id">trainer id</param>
-        /// <returns>200: list of feedback / 404: trainer not found</returns>
-        [HttpGet("{id:int}/feedback")]
-        public async Task<ActionResult<IEnumerable<FeedbackContent>>> ViewTrainerFeedback(int id)
-        {
-            // if(_trainerService.CheckTrainerExist(id)==false){
-            //     return NotFound(new ResponseDTO(404,"Trainer cannot be found"));
-            // }
-            // IEnumerable<TrainerFeedback> listFeedback = await _feedbackService.GetTrainerFeedbackByTrainerId(id);
-            // IEnumerable<FeedbackContent> feedbackContents=_mapper.Map<IEnumerable<FeedbackContent>>(listFeedback);
-            // if(!feedbackContents.Any()){
-            //     return NotFound(new ResponseDTO(404,"Currently there is no feedback about this trainer"));
-            // }
-            // return Ok(feedbackContents);
-            return null;
-        }
-
-        /// <summary>
-        /// Update trainer wage
-        /// </summary>
-        /// <param name="id">trainer id</param>
-        /// <param name="wage">wage of trainer</param>
-        /// <returns>200: Update trainer wage success / 404: Trainer cannot be found / 400,409: Fail to update trainer wage</returns>
-        [HttpPut("{id:int}/wage")]
-        public async Task<ActionResult> UpdateTrainerWage(int id, [FromBody] decimal wage)
-        {
-            // Trainer trainer = await _trainerService.GetTrainerById(id);
-            // if(trainer==null){
-            //     return NotFound(new ResponseDTO(404,"Trainer cannot be found"));
-            // }
-            // if(trainer.Wage==wage){
-            //     return Ok(new ResponseDTO(200,"Update trainer wage success"));
-            // }
-            // if(wage<0){
-            //     return BadRequest(new ResponseDTO(400,"Fail to update trainer wage"));
-            // }
-
-            // trainer.Wage=wage;
-            // if(await _trainerService.UpdateTrainer(id,trainer)==1){
-            //     return Ok(new ResponseDTO(200,"Update trainer wage success"));
-            // }else{
-            //     return Conflict(new ResponseDTO(409,"Fail to update trainer wage"));
-            // }
-            return null;
-        }
-
-        /// <summary>
         /// Get the list module in 1 month
         /// </summary>
         /// <param name="id">Trainer id</param>
@@ -137,15 +88,16 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<IEnumerable<TrainerDashboard>>> ViewTrainerDashboard(int id)
         {
-            if(id==0 || _trainerService.CheckTrainerExist(id) == false){
-                return NotFound(new ResponseDTO(404,"Trainer cannot be found"));
+            if (id == 0 || _trainerService.CheckTrainerExist(id) == false)
+            {
+                return NotFound(new ResponseDTO(404, "Trainer cannot be found"));
             }
             TimeSpan oneSecond = new TimeSpan(00, 00, -1);
-            var calendars = await _calendarService.GetCalendarsByTrainerId(id,DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            var calendars = await _calendarService.GetCalendarsByTrainerId(id, DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
             IEnumerable<TrainerDashboard> tdbDto = _mapper.Map<IEnumerable<TrainerDashboard>>(calendars);
             foreach (var item in tdbDto)
             {
-                Room r = await _roomService.GetRoom(item.ClassId,item.ModuleId);
+                Room r = await _roomService.GetRoom(item.ClassId, item.ModuleId);
                 item.RoomName = r.RoomName;
             }
             return Ok(tdbDto);
@@ -161,7 +113,31 @@ namespace kroniiapi.Controllers
         [HttpPut("{id:int}/profile")]
         public async Task<ActionResult> EditProfile(int id, [FromBody] TrainerProfileDetailInput trainerProfileDetail)
         {
-            return null;
+            Trainer trainer = _mapper.Map<Trainer>(trainerProfileDetail);
+            Trainer existedTrainer = await _trainerService.GetTrainerById(id);
+            if (existedTrainer == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainer profile cannot be found"));
+            }else if (
+                existedTrainer.Fullname.ToLower().Equals(trainer.Fullname.ToLower()) &&
+                existedTrainer.Phone.ToLower().Equals(trainer.Phone.ToLower()) &&
+                existedTrainer.DOB.ToString().ToLower().Equals(trainer.DOB.ToString().ToLower()) &&
+                existedTrainer.Address.ToLower().Equals(trainer.Address.ToLower()) &&
+                existedTrainer.Gender.ToLower().Equals(trainer.Gender.ToLower()) &&
+                existedTrainer.Facebook.ToLower().Equals(trainer.Facebook.ToLower())
+            )
+            {
+                return Ok(new ResponseDTO(200, "Update profile success"));
+            }
+            int rs = await _trainerService.UpdateTrainer(id, trainer);
+            if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update trainer profile"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Update profile success"));
+            }
         }
 
 
