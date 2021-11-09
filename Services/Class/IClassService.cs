@@ -32,7 +32,6 @@ namespace kroniiapi.Services
         Task<int> RemoveModuleFromClass(int classId, int moduleId);
         Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter);
         bool CheckClassExist(int id);
-        //Task<int> GetTrainerIdByClassId(int classId);
         Task<ClassModule> GetClassModule(int classId, int moduleId);
         Task<int> AssignModuleToClass(ClassModule classModule);
     }

@@ -542,20 +542,12 @@ namespace kroniiapi.Services
             .OrderBy(c => c.CreatedAt)
             .GetPage(paginationParameter)
             .ToList();
-
             return Tuple.Create(totalRecords,rs);
         }
         public bool CheckClassExist(int id)
         {
             return _dataContext.Classes.Any(c => c.ClassId == id &&
            c.IsDeactivated == false);
-        }
-<<<<<<< HEAD
-=======
-        public async Task<int> GetTrainerIdByClassId(int classId)
-        {
-            // return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).Select(c => c.TrainerId).FirstOrDefaultAsync();
-            return 0;
         }
 
         /// <summary>
@@ -570,6 +562,5 @@ namespace kroniiapi.Services
             rowInserted=await _dataContext.SaveChangesAsync();
             return rowInserted;
         }
->>>>>>> 0f6135415adec9a5157e9ca7ba7e810e2a11aaff
     }
 }
