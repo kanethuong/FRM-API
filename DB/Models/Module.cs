@@ -48,7 +48,7 @@ namespace kroniiapi.DB.Models
         public float WeightNumber { get; set; }
         public int TrainerId { get; set; }
         public Trainer Trainer { get; set; }
-        public int RoomId { get; set; }
+        public int? RoomId { get; set; }
         public Room Room { get; set; }
     }
 }

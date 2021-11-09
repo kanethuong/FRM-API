@@ -15,5 +15,6 @@ namespace kroniiapi.Services
         Task<IEnumerable<Module>> GetModulesByClassId(int classId);
         Task<Tuple<int, IEnumerable<Module>>> GetAllModule(PaginationParameter paginationParameter);
         Task<IEnumerable<int>> GetModulesIdByTraineeId(int traineeId);
+        Task<IEnumerable<Module>> GetModulesByTraineeId(int traineeId);
     }
 }

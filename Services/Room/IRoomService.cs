@@ -10,5 +10,6 @@ namespace kroniiapi.Services
     {
         Task<Room> GetRoomById(int id);
         Task<Room> GetRoomByTraineeId(int traineeId);
+        Task<Room> GetRoom(int classId,int moduleId);
     }
 }

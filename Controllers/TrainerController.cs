@@ -20,12 +20,16 @@ namespace kroniiapi.Controllers
     {
         private readonly ITrainerService _trainerService;
         private readonly IFeedbackService _feedbackService;
+        private readonly ICalendarService _calendarService;
+        private readonly IRoomService _roomService;
         private readonly IMapper _mapper;
-        public TrainerController(IMapper mapper, ITrainerService trainerService, IFeedbackService feedbackService)
+        public TrainerController(IMapper mapper, ITrainerService trainerService, IFeedbackService feedbackService,ICalendarService calendarService,IRoomService roomService)
         {
             _mapper = mapper;
             _trainerService = trainerService;
             _feedbackService = feedbackService;
+            _calendarService = calendarService;
+            _roomService = roomService;
         }
 
         /// <summary>
@@ -133,7 +137,18 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<IEnumerable<TrainerDashboard>>> ViewTrainerDashboard(int id)
         {
-            return null;
+            if(id==0 || _trainerService.CheckTrainerExist(id) == false){
+                return NotFound(new ResponseDTO(404,"Trainer cannot be found"));
+            }
+            TimeSpan oneSecond = new TimeSpan(00, 00, -1);
+            var calendars = await _calendarService.GetCalendarsByTrainerId(id,DateTime.Today, DateTime.Today.AddDays(2).Add(oneSecond));
+            IEnumerable<TrainerDashboard> tdbDto = _mapper.Map<IEnumerable<TrainerDashboard>>(calendars);
+            foreach (var item in tdbDto)
+            {
+                Room r = await _roomService.GetRoom(item.ClassId,item.ModuleId);
+                item.RoomName = r.RoomName;
+            }
+            return Ok(tdbDto);
         }
 
 
