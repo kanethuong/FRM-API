@@ -277,7 +277,6 @@ namespace kroniiapi.Services
             List<Application> rs = await application
                 .GetCount(out var totalRecords)
                 .OrderByDescending(e => e.CreatedAt)
-                .GetPage(paginationParameter)
                 .Select(a => new Application
                 {
                     TraineeId = a.TraineeId,
@@ -285,17 +284,13 @@ namespace kroniiapi.Services
                     ApplicationURL = a.ApplicationURL,
                     ApplicationId = a.ApplicationId,
                     ApplicationCategoryId = a.ApplicationCategoryId,
-                    ApplicationCategory = new ApplicationCategory
-                    {
-                        ApplicationCategoryId = a.ApplicationCategoryId,
-                        CategoryName = a.ApplicationCategory.CategoryName,
-                    },
+                    ApplicationCategory = a.ApplicationCategory,
                     IsAccepted = a.IsAccepted,
                 })
                 .ToListAsync();
             List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
 
-            foreach (var item in application)
+            foreach (var item in rs)
             {
                 var itemToResponse = new TraineeApplicationResponse
                 {
@@ -306,9 +301,7 @@ namespace kroniiapi.Services
                 };
                 applicationReponse.Add(itemToResponse);
             }
-
-            return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            return Tuple.Create(totalRecords,applicationReponse.GetPage(paginationParameter));
         }
 
         /// <summary>
@@ -350,7 +343,6 @@ namespace kroniiapi.Services
             List<Mark> rs = await markList
                 .GetCount(out var totalRecords)
                 .OrderByDescending(e => e.PublishedAt)
-                .GetPage(paginationParameter)
                 .Select(ma => new Mark
                 {
                     ModuleId = ma.ModuleId,
@@ -360,7 +352,6 @@ namespace kroniiapi.Services
                         Description = ma.Module.Description,
                         IconURL = ma.Module.IconURL,
                         Certificates = ma.Module.Certificates.ToList(),
-
                     }
                 })
                 .ToListAsync();
@@ -379,8 +370,7 @@ namespace kroniiapi.Services
                 };
                 markAndSkills.Add(itemToResponse);
             }
-            return Tuple.Create(markAndSkills.Count(), PaginationHelper.GetPage(markAndSkills,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            return Tuple.Create(totalRecords, markAndSkills.GetPage(paginationParameter));
 
         }
 
