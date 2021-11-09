@@ -8,6 +8,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -172,13 +173,18 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            IQueryable<Class> classes = _dataContext.Classes.Where(c => c.IsDeactivated == true);
+            if (paginationParameter.SearchName != "")
+            {
+                classes = classes.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.ClassName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
 
-            int totalRecords = listClass.Count();
-
-            var rs = listClass.OrderBy(c => c.ClassId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
+            IEnumerable<Class> rs = await classes
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
 
             return Tuple.Create(totalRecords, rs);
         }
