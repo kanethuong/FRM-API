@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace kroniiapi.DTO.FeedbackDTO
 {
-    public class FeedbackResponse
+    public class FeedbackInput
     {
+        [Required]
+        public int TraineeId { get; set; }
         public int TopicContent { get; set; }
         public int TopicObjective { get; set; }
         public int ApproriateTopicLevel { get; set; }
@@ -20,5 +23,6 @@ namespace kroniiapi.DTO.FeedbackDTO
         public int InformationToTrainees { get; set; }
         public int AdminSupport { get; set; }
         public string OtherComment { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }
