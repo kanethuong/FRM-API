@@ -65,33 +65,36 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of application </returns>
         public async Task<Tuple<int, IEnumerable<ApplicationResponse>>> GetApplicationList(PaginationParameter paginationParameter)
         {
-            var applicationList = await _dataContext.Applications.Where(app => app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || app.Trainee.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                                    .Select(a => new Application
-                                                    {
-                                                        TraineeId = a.TraineeId,
-                                                        Trainee = new Trainee
-                                                        {
-                                                            TraineeId = a.TraineeId,
-                                                            Fullname = a.Trainee.Fullname
-                                                        },
-                                                        Description = a.Description,
-                                                        ApplicationURL = a.ApplicationURL,
-                                                        ApplicationId = a.ApplicationId,
-                                                        ApplicationCategoryId = a.ApplicationCategoryId,
-                                                        ApplicationCategory = new ApplicationCategory
-                                                        {
-                                                            ApplicationCategoryId = a.ApplicationCategoryId,
-                                                            CategoryName = a.ApplicationCategory.CategoryName,
-                                                        },
-                                                        IsAccepted = a.IsAccepted,
-                                                        CreatedAt = a.CreatedAt,
-                                                        AcceptedAt = a.AcceptedAt
-                                                    })
-                                                    .OrderByDescending(c => c.CreatedAt)
-                                                    .ToListAsync();
+            IQueryable<Application> applicationList = _dataContext.Applications;
+            if (paginationParameter.SearchName != "")
+            {
+                applicationList = applicationList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.ApplicationCategory.CategoryName.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Trainee.Fullname.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+
+            List<Application> rs = await applicationList
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .Select(a => new Application
+                {
+                    TraineeId = a.TraineeId,
+                    Trainee = a.Trainee,
+                    Description = a.Description,
+                    ApplicationURL = a.ApplicationURL,
+                    ApplicationId = a.ApplicationId,
+                    ApplicationCategoryId = a.ApplicationCategoryId,
+                    ApplicationCategory = a.ApplicationCategory,
+                    IsAccepted = a.IsAccepted,
+                    CreatedAt = a.CreatedAt,
+                    AcceptedAt = a.AcceptedAt
+                })
+                .ToListAsync();
+
             List<ApplicationResponse> applicationReponse = new List<ApplicationResponse>();
 
-            foreach (var item in applicationList)
+            foreach (var item in rs)
             {
                 var itemToResponse = new ApplicationResponse
                 {
@@ -106,8 +109,7 @@ namespace kroniiapi.Services
                 applicationReponse.Add(itemToResponse);
             }
 
-            return Tuple.Create(applicationReponse.Count(), PaginationHelper.GetPage(applicationReponse,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            return Tuple.Create(totalRecords, applicationReponse.GetPage(paginationParameter));
         }
 
         public async Task<IEnumerable<ApplicationCategory>> GetApplicationCategoryList()
@@ -168,7 +170,7 @@ namespace kroniiapi.Services
         /// <param name="response">message of admin to response</param>
         /// <param name="isAccepted">true/false/null</param>
         /// <returns>-1,-2:Not found / 0:Fail to confirm / 1:Confirmed</returns>
-        public async Task<int> ConfirmApplication(int id, [FromBody]ConfirmApplicationInput confirmApplicationInput)
+        public async Task<int> ConfirmApplication(int id, [FromBody] ConfirmApplicationInput confirmApplicationInput)
         {
             var existedApplication = await _dataContext.Applications.Where(a => a.ApplicationId == id && a.IsAccepted == null).FirstOrDefaultAsync();
             var checkAdmin = await _dataContext.Admins.Where(a => a.AdminId == confirmApplicationInput.AdminId && a.IsDeactivated == false).FirstOrDefaultAsync();

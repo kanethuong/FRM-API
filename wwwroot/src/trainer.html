@@ -297,4 +297,67 @@
         </div>
     </div>
 </div>
+<!-- View trainer timetable -->
+<div id="viewTrainerTimetable">
+    <!-- Function Title -->
+    <div class="w-75 border-bottom mb-3">
+        <h3>View Trainer Timetable</h3>
+    </div>
+    <p>By DanhLPT</p>
+    <div>
+        <h5>Endpoint</h5>
+        <p>/api/trainer/{trainerId}/timetable</p>
+    </div>
+
+    <!-- Role, Method and Status code -->
+    <div class="row mb-3">
+        <div class="col-4 border-end">
+            <h5>Allow</h5>
+            <p>Trainer</p>
+        </div>
+        <div class="col-4 border-end">
+            <h5>Method</h5>
+            <p>GET</p>
+        </div>
+        <div class="col-4">
+            <h5>Status</h5>
+            <p>200 404</p>
+        </div>
+    </div>
+
+    <!-- Parameter & file -->
+    <div class="row mb-3">
+        <div class="col-6 border-end">
+            <h5>Parameter</h5>
+            <p>trainerId: ID of trainer</p>
+            <p>date: Specify the datetime of timetable want to show</p>
+        </div>
+    </div>
+
+    <!-- Request body and Response body  -->
+    <div class="row mb-3">
+        <div class="col-6 border-end">
+            <h5>Request Body</h5>
+            <p>No</p>
+        </div>
+        <div class="col-6">
+            <h5>Response Body</h5>
+            <p>
+            <pre><code>[
+    {
+        "calendarId": int,
+        "moduleId": int,
+        "moduleName": "string",
+        "date": "datetime",
+        "slotDuration": int,
+        "roomName": "string",
+        "classId": int
+    }
+]
+</code></pre>
+            </p>
+        </div>
+    </div>
+</div>
+</div>
 </div>
