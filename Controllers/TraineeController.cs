@@ -162,22 +162,23 @@ namespace kroniiapi.Controllers
         {
             Trainee trainee = _mapper.Map<Trainee>(traineeProfileDetail);
             Trainee existedTrainee = await _traineeService.GetTraineeById(id);
+            if (existedTrainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
+            }
             if (
                 existedTrainee.Fullname.ToLower().Equals(trainee.Fullname.ToLower()) &&
                 existedTrainee.Phone.ToLower().Equals(trainee.Phone.ToLower()) &&
                 existedTrainee.DOB.ToString().ToLower().Equals(trainee.DOB.ToString().ToLower()) &&
                 existedTrainee.Address.ToLower().Equals(trainee.Address.ToLower()) &&
-                existedTrainee.Gender.ToLower().Equals(trainee.Gender.ToLower())
+                existedTrainee.Gender.ToLower().Equals(trainee.Gender.ToLower()) &&
+                existedTrainee.Facebook.ToLower().Equals(trainee.Facebook.ToLower())
             )
             {
                 return Ok(new ResponseDTO(200, "Update profile success"));
             }
             int rs = await _traineeService.UpdateTrainee(id, trainee);
-            if (rs == -1)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
-            }
-            else if (rs == 0)
+            if (rs == 0)
             {
                 return Conflict(new ResponseDTO(409, "Fail to update trainee profile"));
             }
@@ -234,9 +235,9 @@ namespace kroniiapi.Controllers
             if (await _traineeService.GetTraineeById(id) == null)
             {
                 return NotFound(new ResponseDTO(404, "id not found"));
-            }    
+            }
             TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
-            if(attendanceReport == null)
+            if (attendanceReport == null)
             {
                 return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
             }
