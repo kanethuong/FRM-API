@@ -80,13 +80,12 @@ namespace kroniiapi.Controllers
         [HttpPost("certificate")]
         public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file, [FromForm] CertificateInput certificateInput)
         {
-            string message_img, message_pdf;
-            bool success_img, success_pdf;
+            string message_img;
+            bool success_img;
             (success_img, message_img) = FileHelper.CheckImageExtension(file);
-            (success_pdf, message_pdf) = FileHelper.CheckPDFExtension(file);
-            if (!success_img && !success_pdf)
+            if (!success_img)
             {
-                return BadRequest(new ResponseDTO(400, "Your submission file must be PDF or image"));
+                return BadRequest(new ResponseDTO(400, "Your submission file must be image"));
             }
             Stream stream = file.OpenReadStream();
             string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
