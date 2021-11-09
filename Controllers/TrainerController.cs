@@ -122,11 +122,34 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <param name="id">Trainer id</param>
         /// <param name="date"></param>
-        /// <returns>list module in 1 month</returns>
+        /// <returns>list module in 1 month / 404: Trainer Not found</returns>
         [HttpGet("{id:int}/timetable")]
         public async Task<ActionResult<IEnumerable<TrainerTimeTable>>> ViewTimeTable(int id, DateTime date)
         {
-            return null;
+            TimeSpan oneday = new TimeSpan(23, 59, 59);
+            var startDate = new DateTime(date.Year, date.Month, 1);
+            var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
+            startDate = startDate.AddMonths(-1);
+            endDate = endDate.AddMonths(1);
+            endDate = endDate.Add(oneday);
+
+            var checkTrainer = await _trainerService.GetTrainerById(id);
+            if (checkTrainer == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainer not found!"));
+            }
+            var calendars = await _calendarService.GetCalendarsByTrainerId(id, startDate, endDate);
+
+            IEnumerable<TrainerTimeTable> trainerTimeTables = _mapper.Map<IEnumerable<TrainerTimeTable>>(calendars);
+            if (trainerTimeTables.Count() != 0)
+            {
+                foreach (var item in trainerTimeTables)
+                {
+                    Room r = await _roomService.GetRoom(item.ClassId,item.ModuleId);
+                    item.RoomName = r.RoomName;
+                }
+            }
+            return Ok(trainerTimeTables);
         }
 
         /// <summary>
