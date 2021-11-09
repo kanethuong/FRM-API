@@ -268,23 +268,31 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
         {
 
-            List<Application> application = await _dataContext.Applications
-                                                .Where(app => app.TraineeId == id && app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                                    .Select(a => new Application
-                                                    {
-                                                        TraineeId = a.TraineeId,
-                                                        Description = a.Description,
-                                                        ApplicationURL = a.ApplicationURL,
-                                                        ApplicationId = a.ApplicationId,
-                                                        ApplicationCategoryId = a.ApplicationCategoryId,
-                                                        ApplicationCategory = new ApplicationCategory
-                                                        {
-                                                            ApplicationCategoryId = a.ApplicationCategoryId,
-                                                            CategoryName = a.ApplicationCategory.CategoryName,
-                                                        },
-                                                        IsAccepted = a.IsAccepted,
-                                                    })
-                                                    .ToListAsync();
+            IQueryable<Application> application = _dataContext.Applications.Where(m => m.TraineeId == id);
+            if (paginationParameter.SearchName != "")
+            {
+                application = application.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.ApplicationCategory.CategoryName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            List<Application> rs = await application
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .Select(a => new Application
+                {
+                    TraineeId = a.TraineeId,
+                    Description = a.Description,
+                    ApplicationURL = a.ApplicationURL,
+                    ApplicationId = a.ApplicationId,
+                    ApplicationCategoryId = a.ApplicationCategoryId,
+                    ApplicationCategory = new ApplicationCategory
+                    {
+                        ApplicationCategoryId = a.ApplicationCategoryId,
+                        CategoryName = a.ApplicationCategory.CategoryName,
+                    },
+                    IsAccepted = a.IsAccepted,
+                })
+                .ToListAsync();
             List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
 
             foreach (var item in application)
@@ -333,23 +341,32 @@ namespace kroniiapi.Services
         /// <returns>Tuple Mark and Skill data</returns>
         public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
         {
-            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id && m.Module.ModuleName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                                                 .Select(ma => new Mark
-                                                                 {
-                                                                     ModuleId = ma.ModuleId,
-                                                                     Module = new Module
-                                                                     {
-                                                                         ModuleName = ma.Module.ModuleName,
-                                                                         Description = ma.Module.Description,
-                                                                         IconURL = ma.Module.IconURL,
-                                                                         Certificates = ma.Module.Certificates.ToList(),
+            IQueryable<Mark> markList = _dataContext.Marks.Where(m => m.TraineeId == id);
+            if (paginationParameter.SearchName != "")
+            {
+                markList = markList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Module.ModuleName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            List<Mark> rs = await markList
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.PublishedAt)
+                .GetPage(paginationParameter)
+                .Select(ma => new Mark
+                {
+                    ModuleId = ma.ModuleId,
+                    Module = new Module
+                    {
+                        ModuleName = ma.Module.ModuleName,
+                        Description = ma.Module.Description,
+                        IconURL = ma.Module.IconURL,
+                        Certificates = ma.Module.Certificates.ToList(),
 
-                                                                     }
-                                                                 })
-                                                                        .ToListAsync();
+                    }
+                })
+                .ToListAsync();
 
             List<TraineeMarkAndSkill> markAndSkills = new List<TraineeMarkAndSkill>();
-            foreach (var item in markList)
+            foreach (var item in rs)
             {
                 var itemToResponse = new TraineeMarkAndSkill
                 {
