@@ -56,7 +56,7 @@ namespace kroniiapi.Controllers
             }
             if (rs == 1)
             {
-                return Created("",new ResponseDTO(201, feedbackMessage));
+                return Created("", new ResponseDTO(201, feedbackMessage));
             }
             return BadRequest(new ResponseDTO(400, "Failed to send feedback"));
         }
@@ -65,45 +65,10 @@ namespace kroniiapi.Controllers
         /// Get the trainer feedbacks and admin feedbacks of a class
         /// </summary>
         /// <param name="id">id of a class</param>
-        /// <returns>200: List of trainer feedback and admin feedback</returns>
+        /// <returns>200: List of feedback / 404: Class id not found</returns>
         [HttpGet("{classId:int}")]
-        public async Task<ActionResult<FeedbackResponse>> ViewClassFeedback(int classId)
+        public async Task<ActionResult<ICollection<FeedbackResponse>>> ViewClassFeedback(int classId)
         {
-            // var class1 = await _classService.GetClassByClassID(classId);
-            // if (class1.IsDeactivated == true)
-            // {
-            //     return NotFound(new ResponseDTO(404, "Class not found!"));
-            // }
-            // Admin admin = await _adminService.getAdminByClassId(classId);
-            // Trainer trainer = await _trainerService.getTrainerByClassId(classId);
-
-            // if ((admin == null || trainer == null) || (admin.IsDeactivated == true || trainer.IsDeactivated == true))
-            // {
-            //     return NotFound(new ResponseDTO(404, "Admin or trainer not found!"));
-            // }
-
-            // FeedbackResponse feedbackResponses = new FeedbackResponse();
-
-            // IEnumerable<TrainerFeedback> trainerFeedbacks = await _feedbackService.GetTrainerFeedbacksByClassId(classId);
-            // IEnumerable<AdminFeedback> adminFeedbacks = await _feedbackService.GetAdminFeedbacksByClassId(classId);
-
-
-            // IEnumerable<FeedbackContent> TrainerfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(trainerFeedbacks);
-            // IEnumerable<FeedbackContent> AdminfeedbackContents = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
-
-
-            // TrainerFeedbackResponse trainerFeedbackResponse = new();
-            // trainerFeedbackResponse.Trainer = _mapper.Map<TrainerInFeedbackResponse>(trainer);
-            // trainerFeedbackResponse.Feedbacks = TrainerfeedbackContents;
-
-            // AdminFeedbackResponse adminFeedbackResponse = new();
-            // adminFeedbackResponse.Admin = _mapper.Map<AdminInFeedbackResponse>(admin);
-            // adminFeedbackResponse.Feedbacks = AdminfeedbackContents;
-
-            // feedbackResponses.TrainerFeedback = trainerFeedbackResponse;
-            // feedbackResponses.AdminFeedback = adminFeedbackResponse;
-
-            // return feedbackResponses;
             return null;
         }
     }
