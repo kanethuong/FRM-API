@@ -18,6 +18,7 @@ using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using kroniiapi.Services.Attendance;
 
 namespace kroniiapi.Controllers
 {
@@ -39,6 +40,8 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IApplicationService _applicationService;
         private readonly IMegaHelper _megaHelper;
+
+        private readonly IAttendanceService _attendanceService;
         public TraineeController(IMapper mapper,
                                  IClassService classService,
                                  IFeedbackService feedbackService,
@@ -51,7 +54,8 @@ namespace kroniiapi.Controllers
                                  ICertificateService certificateService,
                                  IApplicationService applicationService,
                                  IMegaHelper megaHelper,
-                                 IImgHelper imgHelper)
+                                 IImgHelper imgHelper,
+                                 IAttendanceService attendanceService)
         {
             _mapper = mapper;
             _classService = classService;
@@ -66,6 +70,7 @@ namespace kroniiapi.Controllers
             _certificateService = certificateService;
             _applicationService = applicationService;
             _megaHelper = megaHelper;
+            _attendanceService = attendanceService;
         }
 
         /// <summary>
@@ -224,21 +229,18 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>trainee attendance report in pagination</returns>
         [HttpGet("{id:int}/attendance")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeAttendanceReport>>>> ViewAttendanceReport(int id, [FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
             if (await _traineeService.GetTraineeById(id) == null)
             {
                 return NotFound(new ResponseDTO(404, "id not found"));
-            }
-            try
+            }    
+            TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
+            if(attendanceReport == null)
             {
-                (int totalRecord, IEnumerable<TraineeAttendanceReport> result) = await _traineeService.GetAttendanceReports(id, paginationParameter);
-                return Ok(new PaginationResponse<IEnumerable<TraineeAttendanceReport>>(totalRecord, result));
+                return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
             }
-            catch
-            {
-                return NotFound(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
-            }
+            return Ok(attendanceReport);
         }
 
         /// <summary>

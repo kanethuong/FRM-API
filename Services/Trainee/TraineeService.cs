@@ -204,61 +204,6 @@ namespace kroniiapi.Services
             return traineeClassId is not null;
         }
 
-        public async Task<Tuple<int, IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter)
-        {
-            Trainee trainee = await GetTraineeById(id);
-            if (trainee.ClassId == null)
-            {
-                return null;
-            }
-
-            List<TraineeAttendanceReport> resultList = new List<TraineeAttendanceReport>();
-
-            Dictionary<int, int> NumberOfAbsentByModule = new Dictionary<int, int>();
-
-            IEnumerable<int> listModule = await _dataContext.ClassModules.
-                Where(t => t.ClassId == trainee.ClassId).Select(t => t.ModuleId).ToListAsync();
-
-            foreach (var module in listModule)         //init absent tracker by module id
-            {
-                NumberOfAbsentByModule.Add(module, 0);
-            }
-
-            // IEnumerable<int> listCalendarIdAbsent = await _dataContext.Attendances.Where(
-            //     t => t.IsAbsent == true && t.TraineeId == id).Select(i => i.CalendarId).ToListAsync();
-            IEnumerable<int> listCalendarIdAbsent = null;
-
-            foreach (var calenderId in listCalendarIdAbsent) //count number of absent slot in each module id
-            {
-                int moduleId = _dataContext.Calendars.Where(t => t.CalendarId == calenderId).FirstOrDefault().ModuleId;
-                try
-                {
-                    NumberOfAbsentByModule[moduleId] += 1;
-                }
-                catch
-                {
-                    NumberOfAbsentByModule.Add(moduleId, 0);
-                }
-            }
-
-
-            foreach (var moduleId in listModule)
-            {
-                Module module = _dataContext.Modules.Where(t => t.ModuleId == moduleId).FirstOrDefault();
-                resultList.Add(new TraineeAttendanceReport
-                {
-                    NoOfSlot = module.NoOfSlot,
-                    ModuleName = module.ModuleName,
-                    NumberSlotAbsent = NumberOfAbsentByModule[moduleId]
-                });
-            }
-
-            IEnumerable<TraineeAttendanceReport> filterResultList = resultList.Where(t =>
-                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower()));
-
-            return Tuple.Create(filterResultList.Count(), PaginationHelper.GetPage(filterResultList, paginationParameter));
-        }
-
         /// <summary>
         /// Get Application List by Trainee id
         /// </summary>
