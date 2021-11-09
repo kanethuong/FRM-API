@@ -20,6 +20,9 @@ namespace kroniiapi.DTO.Profiles
             // CreateMap<AdminFeedback, FeedbackContent>(); //Map rate and content of adminfeedback to feedbackcontent
 
             // CreateMap<AdminFeedbackInput, AdminFeedback>();
+            // CreateMap<TrainerFeedbackInput, TrainerFeedback>();
+
+            CreateMap<Feedback, FeedbackResponse>();
             CreateMap<FeedbackInput, Feedback>();
         }
     }

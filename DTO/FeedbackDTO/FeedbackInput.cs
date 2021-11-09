@@ -26,22 +26,22 @@ namespace kroniiapi.DTO.FeedbackDTO
         [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TrainerKnowledge { get; set; }
-        [Required] 
+        [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int SubjectCoverage { get; set; }
-        [Required] 
+        [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int InstructionAndCommunicate { get; set; }
-        [Required] 
+        [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int TrainerSupport { get; set; }
-        [Required] 
+        [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int Logistics { get; set; }
-        [Required] 
+        [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int InformationToTrainees { get; set; }
-        [Required] 
+        [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int AdminSupport { get; set; }
         [Required]
