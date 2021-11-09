@@ -43,7 +43,7 @@ namespace kroniiapi.Services
         /// <returns> Administrator </returns>
         public async Task<Administrator> GetAdministratorByEmail(string email)
         {
-            return await _dataContext.Administrators.Where(a => a.Email == email).FirstOrDefaultAsync(); 
+            return await _dataContext.Administrators.Where(a => a.Email.ToLower() == email.ToLower()).FirstOrDefaultAsync(); 
         }
     }
 }
