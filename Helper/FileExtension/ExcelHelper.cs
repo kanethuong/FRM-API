@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace kroniiapi.Helper
 {
@@ -19,10 +20,8 @@ namespace kroniiapi.Helper
         /// <returns>A list of the converted data</returns>
         public static List<TData> ExportDataFromExcel<TData>(this Stream dataStream, Func<Dictionary<string, object>, TData> rowConverter, Predicate<List<string>> colNamesVerifier, out bool success, out string message)
         {
-            using (var package = new ExcelPackage(dataStream))
-            {
-                return package.Workbook.Worksheets[0].ExportDataFromExcel(rowConverter, colNamesVerifier, out success, out message);
-            }
+            using var package = new ExcelPackage(dataStream);
+            return package.Workbook.Worksheets[0].ExportDataFromExcel(rowConverter, colNamesVerifier, out success, out message);
         }
 
         /// <summary>
@@ -78,10 +77,10 @@ namespace kroniiapi.Helper
 
             // Get the column names
             List<string> colNames = new();
-            for (int col = 1; col <= colCount; col++)
+            worksheet.Cells[1, 1, 1, colCount].ExportDataFromCells(cells =>
             {
-                colNames.Add(worksheet.Cells[1, col].Value?.ToString().Trim());
-            }
+                colNames.AddRange(cells.Select(cell => cell.Value?.ToString().Trim()));
+            });
 
             // Verify the column names
             if (!colNamesVerifier.Invoke(colNames))
@@ -92,39 +91,85 @@ namespace kroniiapi.Helper
             }
 
             // Loop through each rows from row 2
-            for (int row = 2; row <= rowCount; row++)
+            bool failToConvert = false;
+            int failRow = 0;
+            worksheet.Cells[2, 1, rowCount, colCount].ExportDataFromCells(cells =>
             {
+                // Don't consume if the previous rows was fail to be converted
+                if (failToConvert) return;
+
                 // Create the cells dictionary
                 Dictionary<string, object> cellsDict = new();
 
-                // Keep the state if fail to add
-                bool failToAdd = false;
-
                 // Add the cells from the row to the dictionary
-                for (int col = 1; col <= colCount; col++)
+                for (int i = 0; i < cells.Count; i++)
                 {
-                    if (!cellsDict.TryAdd(colNames[col - 1], worksheet.Cells[row, col].Value))
+                    if (!cellsDict.TryAdd(colNames[i], cells[i].Value))
                     {
-                        failToAdd = true;
+                        failToConvert = true;
+                        failRow = cells[i].Start.Row;
                         break;
                     }
                 }
 
                 // Check if fail to add
-                if (failToAdd)
-                {
-                    message = "Fail to convert value on row " + row;
-                    success = false;
-                    return;
-                }
+                if (failToConvert) return;
 
                 // Consume the dictionary
                 rowConsumer.Invoke(cellsDict);
-            }
+            });
 
-            // All successful
-            message = "Success";
-            success = true;
+            if (failToConvert)
+            {
+                // Output when a row was fail to be converted
+                message = "Fail to convert the values on row " + failRow;
+                success = false;
+            }
+            else
+            {
+                // All successful
+                message = "Success";
+                success = true;
+            }
+        }
+
+        /// <summary>
+        /// Export data from the cell range
+        /// </summary>
+        /// <param name="range">tjhe cell range</param>
+        /// <param name="rowConsumer">the consumer, do action on each rows of the cell range</param>
+        public static void ExportDataFromRange(this ExcelRangeBase range, Action<ExcelRangeBase> rowConsumer)
+        {
+            int startRow = range.Start.Row;
+            int startCol = range.Start.Column;
+            int endRow = range.End.Row;
+            int endCol = range.End.Column;
+            var worksheet = range.Worksheet;
+            for (int row = startRow; row <= endRow; row++)
+            {
+                var rowRange = worksheet.Cells[row, startCol, row, endCol];
+                rowConsumer.Invoke(rowRange);
+            }
+        }
+
+        /// <summary>
+        /// Export data from the cells
+        /// </summary>
+        /// <param name="range">tjhe cell range</param>
+        /// <param name="rowConsumer">the consumer, do action on the cells of each rows of cell range</param>
+        public static void ExportDataFromCells(this ExcelRangeBase range, Action<IList<ExcelRangeBase>> cellsConsumer)
+        {
+            var worksheet = range.Worksheet;
+            range.ExportDataFromRange(rowRange =>
+            {
+                List<ExcelRangeBase> cellsList = new();
+                int row = rowRange.Start.Row;
+                int startCol = rowRange.Start.Column;
+                int endCol = rowRange.End.Column;
+                for (int col = startCol; col <= endCol; col++)
+                    cellsList.Add(worksheet.Cells[row, col]);
+                cellsConsumer.Invoke(cellsList);
+            });
         }
 
         /// <summary>
@@ -140,7 +185,8 @@ namespace kroniiapi.Helper
         /// <returns>the worksheet for continuous methods</returns>
         public static ExcelWorksheet FillDataToCells<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, IList<ExcelRangeBase>> action, int startRow, int startCol, int range)
         {
-            return FillDataToRange(worksheet, list, (entity, range) => {
+            return FillDataToRange(worksheet, list, (entity, range) =>
+            {
                 List<ExcelRangeBase> cellsList = new();
                 int row = range.Start.Row;
                 int startCol = range.Start.Column;

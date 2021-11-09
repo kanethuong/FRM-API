@@ -235,5 +235,66 @@
             </div>
         </div>
     </div>
+<!-- View Trainer Dashboard -->
+<div id="viewTrainerDashboard">
+    <!-- Function Title -->
+    <div class="w-75 border-bottom mb-3">
+        <h3> ViewDashBoard of Trainer </h3>
+    </div>
+    <p>By DatLT</p>
+    <div>
+        <h5>Endpoint</h5>
+        <p>/api/Trainer/{id}/dashboard</p>
+    </div>
 
+    <!-- Role, Method and Status code -->
+    <div class="row mb-3">
+        <div class="col-4 border-end">
+            <h5>Allow</h5>
+            <p>Admin</p>
+        </div>
+        <div class="col-4 border-end">
+            <h5>Method</h5>
+            <p>GET</p>
+        </div>
+        <div class="col-4">
+            <h5>Status</h5>
+            <p>200 404</p>
+        </div>
+    </div>
+
+    <!-- Parameter & file -->
+    <div class="row mb-3">
+        <div class="col-6 border-end">
+            <h5>Parameter</h5>
+            <p>id: ID of trainer</p>
+        </div>
+    </div>
+
+    <!-- Request body and Response body  -->
+    <div class="row mb-3">
+        <div class="col-6 border-end">
+            <h5>Request Body</h5>
+            <p>decimal</p>
+        </div>
+        <div class="col-6">
+            <h5>Response Body</h5>
+            <p>
+<pre><code>
+ [
+  {
+    "moduleId": int,
+    "moduleName": "string",
+    "date": "string",
+    "slotDuration": int,
+    "class": {
+    "roomName": "string"
+    }
+  }
+ ]
+</code></pre>
+                            </p>
+        </div>
+    </div>
+</div>
 </div>

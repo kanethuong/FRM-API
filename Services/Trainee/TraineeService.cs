@@ -204,61 +204,6 @@ namespace kroniiapi.Services
             return traineeClassId is not null;
         }
 
-        public async Task<Tuple<int, IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter)
-        {
-            Trainee trainee = await GetTraineeById(id);
-            if (trainee.ClassId == null)
-            {
-                return null;
-            }
-
-            List<TraineeAttendanceReport> resultList = new List<TraineeAttendanceReport>();
-
-            Dictionary<int, int> NumberOfAbsentByModule = new Dictionary<int, int>();
-
-            IEnumerable<int> listModule = await _dataContext.ClassModules.
-                Where(t => t.ClassId == trainee.ClassId).Select(t => t.ModuleId).ToListAsync();
-
-            foreach (var module in listModule)         //init absent tracker by module id
-            {
-                NumberOfAbsentByModule.Add(module, 0);
-            }
-
-            // IEnumerable<int> listCalendarIdAbsent = await _dataContext.Attendances.Where(
-            //     t => t.IsAbsent == true && t.TraineeId == id).Select(i => i.CalendarId).ToListAsync();
-            IEnumerable<int> listCalendarIdAbsent = null;
-
-            foreach (var calenderId in listCalendarIdAbsent) //count number of absent slot in each module id
-            {
-                int moduleId = _dataContext.Calendars.Where(t => t.CalendarId == calenderId).FirstOrDefault().ModuleId;
-                try
-                {
-                    NumberOfAbsentByModule[moduleId] += 1;
-                }
-                catch
-                {
-                    NumberOfAbsentByModule.Add(moduleId, 0);
-                }
-            }
-
-
-            foreach (var moduleId in listModule)
-            {
-                Module module = _dataContext.Modules.Where(t => t.ModuleId == moduleId).FirstOrDefault();
-                resultList.Add(new TraineeAttendanceReport
-                {
-                    NoOfSlot = module.NoOfSlot,
-                    ModuleName = module.ModuleName,
-                    NumberSlotAbsent = NumberOfAbsentByModule[moduleId]
-                });
-            }
-
-            IEnumerable<TraineeAttendanceReport> filterResultList = resultList.Where(t =>
-                t.ModuleName.ToLower().Contains(paginationParameter.SearchName.ToLower()));
-
-            return Tuple.Create(filterResultList.Count(), PaginationHelper.GetPage(filterResultList, paginationParameter));
-        }
-
         /// <summary>
         /// Get Application List by Trainee id
         /// </summary>
@@ -268,23 +213,31 @@ namespace kroniiapi.Services
         public async Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter)
         {
 
-            List<Application> application = await _dataContext.Applications
-                                                .Where(app => app.TraineeId == id && app.ApplicationCategory.CategoryName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                                    .Select(a => new Application
-                                                    {
-                                                        TraineeId = a.TraineeId,
-                                                        Description = a.Description,
-                                                        ApplicationURL = a.ApplicationURL,
-                                                        ApplicationId = a.ApplicationId,
-                                                        ApplicationCategoryId = a.ApplicationCategoryId,
-                                                        ApplicationCategory = new ApplicationCategory
-                                                        {
-                                                            ApplicationCategoryId = a.ApplicationCategoryId,
-                                                            CategoryName = a.ApplicationCategory.CategoryName,
-                                                        },
-                                                        IsAccepted = a.IsAccepted,
-                                                    })
-                                                    .ToListAsync();
+            IQueryable<Application> application = _dataContext.Applications.Where(m => m.TraineeId == id);
+            if (paginationParameter.SearchName != "")
+            {
+                application = application.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.ApplicationCategory.CategoryName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            List<Application> rs = await application
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .Select(a => new Application
+                {
+                    TraineeId = a.TraineeId,
+                    Description = a.Description,
+                    ApplicationURL = a.ApplicationURL,
+                    ApplicationId = a.ApplicationId,
+                    ApplicationCategoryId = a.ApplicationCategoryId,
+                    ApplicationCategory = new ApplicationCategory
+                    {
+                        ApplicationCategoryId = a.ApplicationCategoryId,
+                        CategoryName = a.ApplicationCategory.CategoryName,
+                    },
+                    IsAccepted = a.IsAccepted,
+                })
+                .ToListAsync();
             List<TraineeApplicationResponse> applicationReponse = new List<TraineeApplicationResponse>();
 
             foreach (var item in application)
@@ -333,23 +286,32 @@ namespace kroniiapi.Services
         /// <returns>Tuple Mark and Skill data</returns>
         public async Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter)
         {
-            List<Mark> markList = await _dataContext.Marks.Where(m => m.TraineeId == id && m.Module.ModuleName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                                                 .Select(ma => new Mark
-                                                                 {
-                                                                     ModuleId = ma.ModuleId,
-                                                                     Module = new Module
-                                                                     {
-                                                                         ModuleName = ma.Module.ModuleName,
-                                                                         Description = ma.Module.Description,
-                                                                         IconURL = ma.Module.IconURL,
-                                                                         Certificates = ma.Module.Certificates.ToList(),
+            IQueryable<Mark> markList = _dataContext.Marks.Where(m => m.TraineeId == id);
+            if (paginationParameter.SearchName != "")
+            {
+                markList = markList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Module.ModuleName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            List<Mark> rs = await markList
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.PublishedAt)
+                .GetPage(paginationParameter)
+                .Select(ma => new Mark
+                {
+                    ModuleId = ma.ModuleId,
+                    Module = new Module
+                    {
+                        ModuleName = ma.Module.ModuleName,
+                        Description = ma.Module.Description,
+                        IconURL = ma.Module.IconURL,
+                        Certificates = ma.Module.Certificates.ToList(),
 
-                                                                     }
-                                                                 })
-                                                                        .ToListAsync();
+                    }
+                })
+                .ToListAsync();
 
             List<TraineeMarkAndSkill> markAndSkills = new List<TraineeMarkAndSkill>();
-            foreach (var item in markList)
+            foreach (var item in rs)
             {
                 var itemToResponse = new TraineeMarkAndSkill
                 {
@@ -400,15 +362,22 @@ namespace kroniiapi.Services
         }
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
         {
-            var traineeList = await _dataContext.Trainees.Where(t
-                 => t.IsDeactivated == false && t.ClassId == null &&
-                                                (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
-                                                .OrderByDescending(t => t.CreatedAt)
-                                                .ToListAsync();
-            return Tuple.Create(traineeList.Count(), PaginationHelper.GetPage(traineeList,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t=> t.IsDeactivated == false && t.ClassId == null);
+            if (paginationParameter.SearchName != "")
+            {
+                trainees = trainees.Where(e =>EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Username.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Trainee> rs = await trainees
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
         }
         public bool CheckTraineeExist(int id)
         {

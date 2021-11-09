@@ -8,6 +8,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -172,13 +173,18 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Deleted Class </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter)
         {
-            var listClass = await _dataContext.Classes.Where(c => c.IsDeactivated == true && c.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper())).ToListAsync();
+            IQueryable<Class> classes = _dataContext.Classes.Where(c => c.IsDeactivated == true);
+            if (paginationParameter.SearchName != "")
+            {
+                classes = classes.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.ClassName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
 
-            int totalRecords = listClass.Count();
-
-            var rs = listClass.OrderBy(c => c.ClassId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
+            IEnumerable<Class> rs = await classes
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
 
             return Tuple.Create(totalRecords, rs);
         }
@@ -464,12 +470,43 @@ namespace kroniiapi.Services
             return returnThing;
         }
 
+        /// <summary>
+        /// Remove class module in calendar table
+        /// </summary>
+        /// <returns>1 if success/ 0 if fail</returns>
+        public async Task<int> RemoveClassModuleFromCalendar(int classId, int moduleId)
+        {
+            IEnumerable<Calendar> listForDelete = _dataContext.Calendars.Where(t => t.ClassId == classId && t.ModuleId == moduleId);
+            int numberOfDeleteRecord = listForDelete.Count();
+            _dataContext.Calendars.RemoveRange(listForDelete);
+            if(await _dataContext.SaveChangesAsync() == numberOfDeleteRecord)
+            {
+                return 1;
+            }
+            else
+            {
+                _dataContext.ChangeTracker.Clear();
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// remove record from table class-module
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="moduleId"></param>
+        /// <returns>-1:not found / 0:fail / 1:success</returns>
         public async Task<int> RemoveModuleFromClass(int classId, int moduleId)
         {
             var classModuleForDelete =  _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefault();
+            int deleteFromCalendarStatus = await RemoveClassModuleFromCalendar(classId, moduleId);
+            if(deleteFromCalendarStatus == 0)
+            {
+                return 0;
+            }
             if(classModuleForDelete != null)
             {
-                _dataContext.ClassModules.Remove(classModuleForDelete);
+                _dataContext.ClassModules.RemoveRange(classModuleForDelete);
             }
             else
             {
