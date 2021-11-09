@@ -207,5 +207,16 @@ namespace kroniiapi.Services
             Trainer t = await _dataContext.Trainers.Where(m => m.TrainerId == tId).FirstOrDefaultAsync();
             return t;
         }
+        public async Task<IEnumerable<Trainer>> GetTrainerListByClassId(int id){
+            var trainerIdList = await _dataContext.ClassModules.Where(t => t.ClassId == id).Select(t => t.TrainerId).ToListAsync();
+            //Delete duplicated trainerId
+            trainerIdList = trainerIdList.Distinct().ToList();
+            List<Trainer> trainers = new List<Trainer>();
+            foreach (var item in trainerIdList)
+            {
+                trainers.Add( await _dataContext.Trainers.Where(t => t.TrainerId == item).FirstOrDefaultAsync());
+            }
+            return trainers;
+        }
     }
 }

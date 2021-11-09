@@ -49,19 +49,27 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p>
-                <pre><code>{
+<p>
+<pre><code>{
     "totalRecords": int,
     "payload": [
         {
         "classId": int,
         "className": "string",
-        "description": "String",
-        "createdAt": "DateTime",
+        "trainer": [
+            {
+            "fullname": "string",
+            "avatarURL": "string"
+            }
+        ],
+        "creator": "string",
+        "createdAt": "string",
+        "description": "string"
         }
     ]
-}</code></pre>
-                </p>
+}
+    </code></pre>
+</p>
             </div>
         </div>
     </div>
@@ -607,18 +615,20 @@
                 <h5>Request Body</h5>
                 <p><pre><code>{
     "className": "string",
-  "description": "string",
-  "trainerId": int,
-  "adminId": int,
-  "roomId": int,
-  "startDay": "DateTime",
-  "endDay": "DateTime",
-  "traineeIdList": [
-    int
-  ],
-  "moduleIdList": [
-    int
-  ]
+    "description": "string",
+    "adminId": int,
+    "startDay": "Datetime",
+    "endDay": "Datetime",
+    "traineeIdList": [
+        int
+    ],
+    "trainerModuleList": [
+        {
+        "trainerId": int,
+        "moduleId": int,
+        "weightNumber": float
+        }
+    ]
 }</code></pre></p>
             </div>
             <div class="col-6">
