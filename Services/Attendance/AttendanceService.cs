@@ -106,8 +106,61 @@ namespace kroniiapi.AttendanceServicesss
                         break;
                 }
             }
-
             return attendanceReport;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns>-2: already have attendance/-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> InitAttendanceWhenCreateClass(int classId)
+        {
+            Class classInfor = await _datacontext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).FirstOrDefaultAsync();
+
+            if(classInfor == null)
+                return -1;
+
+            IEnumerable<Trainee> listTraineeInClass = await  _datacontext.Trainees.Where(
+                t => t.ClassId == classId && t.IsDeactivated == false).ToListAsync();
+
+            if(listTraineeInClass.Count() == 0)
+                return -1;
+            
+    
+            //because time alway 0 o'clock add 1 day to add final day to attendance
+            DateTime EndDay = classInfor.EndDay.AddDays(1.0);
+    
+            foreach (var trainee in listTraineeInClass)
+            {
+                for (DateTime date = classInfor.StartDay; date <= EndDay; date = date.AddDays(1.0))
+                {
+                    var attendanceForCheckDuplicate = await _datacontext.Attendances.Where(
+                        t => t.Date == date.AddHours(8) && t.TraineeId == trainee.TraineeId).FirstOrDefaultAsync();
+                    if(attendanceForCheckDuplicate != null)
+                    {
+                        _datacontext.ChangeTracker.Clear();
+                        return -2;
+                    }
+                    _datacontext.Attendances.AddRange(new Attendance{
+                        Status = nameof(_attendanceStatus.P),
+                        Reason = "",
+                        Date =  new DateTime(date.Year, date.Month, date.Day, 8 ,0 ,0),
+                        TraineeId = trainee.TraineeId
+                    });
+                }
+            }
+             
+            int rowInserted = await _datacontext.SaveChangesAsync();
+            
+            if(rowInserted != 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }
