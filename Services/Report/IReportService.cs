@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.TrainerDTO
+namespace kroniiapi.Services.Report
 {
-    public class ClassRoom
+    public interface IReportService
     {
-        public string RoomName { get; set; }
+        
     }
 }

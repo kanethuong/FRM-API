@@ -614,20 +614,21 @@
                 <p>
                 <pre><code>{
     "className": "string",
-  "description": "string",
-  "trainerId": int,
-  "adminId": int,
-  "roomId": int,
-  "startDay": "DateTime",
-  "endDay": "DateTime",
-  "traineeIdList": [
-    int
-  ],
-  "moduleIdList": [
-    int
-  ]
-}</code></pre>
-                </p>
+    "description": "string",
+    "adminId": int,
+    "startDay": "Datetime",
+    "endDay": "Datetime",
+    "traineeIdList": [
+        int
+    ],
+    "trainerModuleList": [
+        {
+        "trainerId": int,
+        "moduleId": int,
+        "weightNumber": float
+        }
+    ]
+}</code></pre></p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
