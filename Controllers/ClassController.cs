@@ -650,7 +650,6 @@ namespace kroniiapi.Controllers
         [HttpPost("module")]
         public async Task<ActionResult> AssignModuleToClass([FromBody]AssignModuleInput assignModuleInput)
         {
-            
             var moduleToAssign = await _moduleService.GetModuleById(assignModuleInput.ModuleId);
             if (moduleToAssign == null)
             {
