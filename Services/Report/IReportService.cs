@@ -10,5 +10,8 @@ namespace kroniiapi.Services.Report
     {
         ICollection<TraineeGeneralInfo> GetTraineesInfo(int classId);
         ClassStatusReport GetClassStatusReport(int classId);
+        Task<ICollection<TraineeGPA>> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime));
+
+        ICollection<RewardAndPenalty> GetRewardAndPenaltyCore(int classId, DateTime reportAt = default(DateTime));
     }
 }
