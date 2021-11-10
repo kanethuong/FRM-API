@@ -34,7 +34,7 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            IQueryable<Class> classList = _dataContext.Classes.Where(c=> c.IsDeactivated == false);
+            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false);
             if (paginationParameter.SearchName != "")
             {
                 classList = classList.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.ClassName.ToLower()))
@@ -524,25 +524,18 @@ namespace kroniiapi.Services
         /// <returns>tuple list of trainee</returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter)
         {
-            var classIdList = await _dataContext.ClassModules.Where(t => t.TrainerId == trainerId).Select(t => t.ClassId).ToListAsync();
-            classIdList = classIdList.Distinct().ToList();
-            List<Class> classes = new();
-            foreach (var item in classIdList)
-            {
-                classes.Add(await _dataContext.Classes.Where(c => c.ClassId == item && c.IsDeactivated == false).FirstOrDefaultAsync());
-            }
-            var result = classes.AsQueryable();
+            IQueryable<Class> result = _dataContext.Classes.Where(c => c.ClassModules.Any(cm => cm.TrainerId == trainerId) && c.IsDeactivated == false).Distinct();
             if (paginationParameter.SearchName != "")
             {
-                result = result.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.ClassName.ToLower()))                                                                     
+                result = result.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.ClassName.ToLower()))
                     .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
             }
-            IEnumerable<Class> rs = result
+            IEnumerable<Class> rs = await result
             .GetCount(out var totalRecords)
             .OrderBy(c => c.CreatedAt)
             .GetPage(paginationParameter)
-            .ToList();
-            return Tuple.Create(totalRecords,rs);
+            .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
         }
         public bool CheckClassExist(int id)
         {
@@ -557,9 +550,9 @@ namespace kroniiapi.Services
         /// <returns>0: assign fail / 1: assign success</returns>
         public async Task<int> AssignModuleToClass(ClassModule classModule)
         {
-            int rowInserted=0;
+            int rowInserted = 0;
             _dataContext.ClassModules.Add(classModule);
-            rowInserted=await _dataContext.SaveChangesAsync();
+            rowInserted = await _dataContext.SaveChangesAsync();
             return rowInserted;
         }
     }
