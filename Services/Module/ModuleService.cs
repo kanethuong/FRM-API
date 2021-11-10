@@ -1,22 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TimetableDTO;
 using kroniiapi.Helper;
+using kroniiapi.Helper.Upload;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 
 namespace kroniiapi.Services
 {
     public class ModuleService : IModuleService
     {
         private DataContext _dataContext;
+        private IMegaHelper _megaHelper;
 
-        public ModuleService(DataContext dataContext)
+        public ModuleService(DataContext dataContext, IMegaHelper megaHelper)
         {
             _dataContext = dataContext;
+            _megaHelper = megaHelper;
         }
         /// <summary>
         /// Get module by id
@@ -157,6 +163,78 @@ namespace kroniiapi.Services
                 modules.Add(m);
             }
             return modules;
+        }
+        public async Task<IEnumerable<ModuleExcelInput>> GetModuleLessonDetail(int moduleId)
+        {
+            var SyllabusURL = await _dataContext.Modules.Where(m => m.ModuleId == moduleId).Select(m => m.SyllabusURL).FirstOrDefaultAsync();
+            if (SyllabusURL == null)
+            {
+                return null;
+            }
+            var stream = await _megaHelper.Download(new Uri(SyllabusURL));
+
+            List<ModuleExcelInput> moduleExcelInputs = new();
+            using var package = new ExcelPackage(stream);
+
+            ExcelWorkbook workbook = package.Workbook;
+            if (workbook.Worksheets.Count() < 2)
+            {
+                return null;
+            }
+            ExcelWorksheet syllabusSheet = workbook.Worksheets[1];
+
+            if (syllabusSheet == null)
+            {
+                return null;
+            }
+            var range = syllabusSheet.Cells[3, 2, syllabusSheet.Dimension.Rows, 7];
+            var days = new HashSet<int>();
+            string lecture = "";
+
+            range.ExportDataFromCells(cells =>
+            {
+                var content = cells[2].Value;
+                if (content == null)
+                {
+                    return;
+                }
+                var deliveryType = cells[4].Value.ToString();
+                var duration = int.Parse(cells[5].Value.ToString());
+                var lectureCell = cells[1].Value;
+                if (lectureCell != null)
+                {
+                    lecture = lectureCell.ToString();
+                }
+                var dayCell = cells[0].Value;
+
+                if (dayCell != null)
+                {
+                    days = new HashSet<int>();
+
+                    var dayString = dayCell.ToString();
+                    var split = dayString.Split(",");
+                    foreach (var item in split)
+                    {
+                        if (int.TryParse(item.Trim(), out var day))
+                        {
+                            days.Add(day);
+                        }
+                    }
+                }
+
+                foreach (var day in days)
+                {
+                    ModuleExcelInput moduleExcelInput = new();
+                    moduleExcelInput.Day = day;
+                    moduleExcelInput.Lecture = lecture;
+                    moduleExcelInput.DeliveryType = deliveryType;
+                    moduleExcelInput.Duration_mins = duration;
+                    moduleExcelInputs.Add(moduleExcelInput);
+                }
+
+            });
+            var resultAll = moduleExcelInputs.OrderBy(c => c.Day);
+            return resultAll;
         }
     }
 }
