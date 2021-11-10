@@ -238,8 +238,21 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
 
+<<<<<<< HEAD
             
             return Ok(await reportService.GetTraineeGPAs(id));
+=======
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return NotFound(new ResponseDTO(404, "id not found"));
+            }
+            TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
+            if (attendanceReport == null)
+            {
+                return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
+            }
+            return Ok(attendanceReport);
+>>>>>>> 2f4269bac79b7826374cef3991052605dc1a04c5
         }
 
         /// <summary>
