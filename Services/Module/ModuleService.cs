@@ -234,7 +234,62 @@ namespace kroniiapi.Services
 
             });
             var resultAll = moduleExcelInputs.OrderBy(c => c.Day);
-            return resultAll;
+            var groupby = resultAll.GroupBy(c => c.Day);
+            List<ModuleExcelInput> rs = new();
+            foreach (var group in groupby)
+            {
+                int sumGuides = 0;
+                int sumAssignment = 0;
+                int sumConcept = 0;
+                int sumTest = 0;
+                foreach (var item in group)
+                {
+                    switch (item.DeliveryType)
+                    {
+                        case "Concept/Lecture":
+                            sumConcept += item.Duration_mins;
+                            break;
+                        case "Guides/Review":
+                            sumGuides += item.Duration_mins;
+                            break;
+                        case "Assignment/Lab":
+                            sumAssignment += item.Duration_mins;
+                            break;
+                        case "Test/Quiz":
+                            sumTest += item.Duration_mins;
+                            break;
+                    }
+                }
+                ModuleExcelInput concept = new();
+                concept.Day = group.Key;
+                concept.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
+                concept.DeliveryType = "Concept/Lecture";
+                concept.Duration_mins = sumConcept;
+
+                ModuleExcelInput assignment = new();
+                assignment.Day = group.Key;
+                assignment.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
+                assignment.DeliveryType = "Assignment/Lab";
+                assignment.Duration_mins = sumAssignment;
+
+                ModuleExcelInput guides = new();
+                guides.Day = group.Key;
+                guides.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
+                guides.DeliveryType = "Guides/Review";
+                guides.Duration_mins = sumGuides;
+
+                ModuleExcelInput quiz = new();
+                quiz.Day = group.Key;
+                quiz.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
+                quiz.DeliveryType = "Test/Quiz";
+                quiz.Duration_mins = sumTest;
+
+                rs.Add(concept);
+                rs.Add(guides);
+                rs.Add(assignment);
+                rs.Add(quiz);
+            }
+            return rs;
         }
     }
 }
