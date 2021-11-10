@@ -14,7 +14,7 @@ namespace kroniiapi.AttendanceServicesss
 {
     public class AttendanceService : IAttendanceService
     {
-        private enum _attendanceStatus
+        public enum _attendanceStatus
         {
             A,
             P,
