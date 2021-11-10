@@ -232,16 +232,8 @@ namespace kroniiapi.Controllers
         [HttpGet("{id:int}/attendance")]
         public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
-            if (await _traineeService.GetTraineeById(id) == null)
-            {
-                return NotFound(new ResponseDTO(404, "id not found"));
-            }
-            TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
-            if (attendanceReport == null)
-            {
-                return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
-            }
-            return Ok(attendanceReport);
+            await _attendanceService.InitAttendanceWhenCreateClass(id);
+            return null;
         }
 
         /// <summary>
