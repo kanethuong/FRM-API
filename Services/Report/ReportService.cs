@@ -31,7 +31,30 @@ namespace kroniiapi.Services.Report
         {
             // Finish GetClassStatusReport as a part of your task
             // Remember to get Class of trainee when get trainee data from DB
-            return null;
+            List<Trainee> traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId)
+                                .Select(a => new Trainee
+                                {
+                                    TraineeId = a.TraineeId,
+                                    Fullname = a.Fullname,
+                                    Username = a.Username,
+                                    DOB = a.DOB,
+                                    Gender = a.Gender,
+                                    Email = a.Email,
+                                    Phone = a.Phone,
+                                    Facebook = a.Facebook,
+                                    Status = a.Status,
+                                    Class = new Class
+                                    {
+                                        StartDay = a.Class.StartDay,
+                                        EndDay = a.Class.EndDay,
+                                        ClassId = (int)a.ClassId,
+                                        ClassName = a.Class.ClassName
+                                    },
+                                    OnBoard = a.OnBoard
+                                })
+                                .ToList();
+            List<TraineeGeneralInfo> traineeGeneralInfos = _mapper.Map<List<TraineeGeneralInfo>>(traineeList);
+            return traineeGeneralInfos;
         }
 
         /// <summary>
@@ -41,7 +64,43 @@ namespace kroniiapi.Services.Report
         /// <returns>Return number of trainees per status</returns>
         public ClassStatusReport GetClassStatusReport(int classId)
         {
-            return null;
+            var listTraineeStatus = this.GetTraineesInfo(classId).Select(s => s.Status).ToList();
+            ClassStatusReport statusReport = new ClassStatusReport();
+            int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0;
+            foreach (var item in listTraineeStatus)
+            {
+                if (item.ToLower().Contains("passed"))
+                {
+                    passed++;
+                }
+                if (item.ToLower().Contains("failed"))
+                {
+                    failed++;
+                }
+                if (item.ToLower().Contains("deferred"))
+                {
+                    deferred++;
+                }
+                if (item.ToLower().Contains("dropOut"))
+                {
+                    dropout++;
+                }
+                if (item.ToLower().Contains("cancel"))
+                {
+                    cancel++;
+                }
+                var itemToResponse = new ClassStatusReport
+                {
+
+                    Passed = passed,
+                    Failed = failed,
+                    Deferred = deferred,
+                    DropOut = dropout,
+                    Cancel = cancel,
+                };
+                statusReport = itemToResponse;
+            }
+            return statusReport;
         }
 
         /// <summary>
