@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB;
+using kroniiapi.DB.Models;
 using kroniiapi.DTO.ReportDTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services.Report
 {
@@ -82,8 +84,23 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A list of trainee GPA</returns>
-        public ICollection<TraineeGPA> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
+        public async Task<ICollection<TraineeGPA>> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
         {
+            List<TraineeGPA> resultList = new List<TraineeGPA>();
+
+            IEnumerable<Trainee> listTraineeInClass = await _dataContext.Trainees.Where(
+                t => t.ClassId == classId && t.IsDeactivated == false).ToListAsync();
+            
+            if(listTraineeInClass.Count() ==0 )
+                return null;
+
+            foreach (var trainee in listTraineeInClass)
+            {
+                TraineeGPA traineeGPA = new TraineeGPA();
+                traineeGPA.TraineeId = trainee.TraineeId;
+
+            }
+
             return null;
         }
 
