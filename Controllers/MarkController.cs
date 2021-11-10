@@ -172,13 +172,14 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Trainer not found or Class not found"));
             }
-            int trainerCheck = await _classService.GetTrainerIdByClassId(classId);
-            if (!(trainerCheck == trainerId))
+            var moduleList = await _moduleService.GetModulesByClassIdAndTrainerId(classId,trainerId);
+            if (moduleList.Count() == 0)
             {
                 return NotFound(new ResponseDTO(404, "Cannot find that Trainer in this Class"));
             }
+            
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
-            var moduleList = await _moduleService.GetModulesByClassId(classId);
+            
             List<MarkResponse> markResponses = new List<MarkResponse>();
             foreach (Trainee trainee in trainees)
             {
@@ -238,18 +239,18 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Module not found"));
             }
-            if(mark.Score < 0)
-            {
-                return BadRequest(new ResponseDTO(400, "Score cannot be negative"));
-            }
             var checkExist = await _markService.GetMarkByTraineeIdAndModuleId(mark.TraineeId, mark.ModuleId);
             if (checkExist == null)
             {
-                var newMark = await _markService.InsertNewMark(mark);
-                if (newMark == 1)
-                {
-                    return Ok(new ResponseDTO(200, "Update trainee's score success"));
-                }
+                return NotFound(new ResponseDTO(404, "Trainee does not study this module"));
+            }
+            if(checkExist.ModuleId == mark.ModuleId && checkExist.TraineeId == mark.TraineeId && checkExist.Score == mark.Score)
+            {
+                return Ok(new ResponseDTO(200, "Update trainee's score success"));
+            }
+            if(mark.Score < 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Score cannot be negative"));
             }
             if (await _markService.UpdateMark(mark) == 1)
             {
