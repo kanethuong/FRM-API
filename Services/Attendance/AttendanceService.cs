@@ -109,6 +109,43 @@ namespace kroniiapi.AttendanceServicesss
             return attendanceReport;
         }
 
+        List<DateTime> holidayss = new List<DateTime> {
+            // New Year
+            new DateTime(2000, 1, 1),
+            //
+            new DateTime(2000, 4, 30),
+            //
+            new DateTime(2000, 5, 1),
+            //
+            new DateTime(2000,9,1),
+            //
+            new DateTime(2000, 9, 2),
+            //
+            new DateTime(2000,9,3),
+            //
+        };
+
+        /// <summary>
+        /// Check if Date is a Day Off
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>true or false</returns>
+        private bool DayOffCheck(DateTime date)
+        {
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return true;
+            }
+            foreach (var item in holidayss)
+            {
+                if (date.Day == item.Day && date.Month == item.Month)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -135,7 +172,7 @@ namespace kroniiapi.AttendanceServicesss
             {
                 for (DateTime date = classInfor.StartDay; date <= EndDay; date = date.AddDays(1.0))
                 {
-                    if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                    if (!DayOffCheck(date))
                     {
                         var attendanceForCheckDuplicate = await _datacontext.Attendances.Where(
                             t => t.Date == date.AddHours(8) && t.TraineeId == trainee.TraineeId).FirstOrDefaultAsync();
