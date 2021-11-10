@@ -42,7 +42,7 @@ namespace kroniiapi.Services
             }
             if (endDate == null)
             {
-                startDate = DateTime.MinValue;
+                endDate = DateTime.MaxValue;
             }
             return await _dataContext.Marks.Where(m => m.TraineeId == traineeId && m.ModuleId == moduleId && m.PublishedAt >= startDate && m.PublishedAt <= endDate).FirstOrDefaultAsync();
         }
