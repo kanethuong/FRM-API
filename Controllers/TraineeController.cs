@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using kroniiapi.Services.Attendance;
+using kroniiapi.Services.Report;
 
 namespace kroniiapi.Controllers
 {
@@ -42,6 +43,7 @@ namespace kroniiapi.Controllers
         private readonly IMegaHelper _megaHelper;
 
         private readonly IAttendanceService _attendanceService;
+
         public TraineeController(IMapper mapper,
                                  IClassService classService,
                                  IFeedbackService feedbackService,
