@@ -172,13 +172,14 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Trainer not found or Class not found"));
             }
-            int trainerCheck = await _classService.GetTrainerIdByClassId(classId);
-            if (!(trainerCheck == trainerId))
+            var moduleList = await _moduleService.GetModulesByClassIdAndTrainerId(classId,trainerId);
+            if (moduleList.Count() == 0)
             {
                 return NotFound(new ResponseDTO(404, "Cannot find that Trainer in this Class"));
             }
+            
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
-            var moduleList = await _moduleService.GetModulesByClassId(classId);
+            
             List<MarkResponse> markResponses = new List<MarkResponse>();
             foreach (Trainee trainee in trainees)
             {
