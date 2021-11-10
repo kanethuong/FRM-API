@@ -145,22 +145,70 @@ namespace kroniiapi.Services.Report
         /// <returns>A list of trainee GPA</returns>
         public async Task<ICollection<TraineeGPA>> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
         {
-            List<TraineeGPA> resultList = new List<TraineeGPA>();
+            Dictionary<int,TraineeGPA> traineeGPAById = new Dictionary<int,TraineeGPA>();
 
-            IEnumerable<Trainee> listTraineeInClass = await _dataContext.Trainees.Where(
-                t => t.ClassId == classId && t.IsDeactivated == false).ToListAsync();
+            IEnumerable<int> listTraineeIdInClass = await _dataContext.Trainees.Where(
+                t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToListAsync();
             
-            if(listTraineeInClass.Count() ==0 )
-                return null;
+            if(listTraineeIdInClass.Count() ==0 )
+                return new List<TraineeGPA>();
 
-            foreach (var trainee in listTraineeInClass)
+            foreach (var traineeId in listTraineeIdInClass)
             {
-                TraineeGPA traineeGPA = new TraineeGPA();
-                traineeGPA.TraineeId = trainee.TraineeId;
-
+                traineeGPAById.Add(traineeId, new TraineeGPA{TraineeId = traineeId});
             }
 
-            return null;
+            TopicGrades topicGrades = GetTopicGrades(classId);
+        
+            if(topicGrades == null)
+                return null;
+
+            foreach (var traineeMarkInfor in topicGrades.FinalMarks) //add academic mark 
+            {
+                traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
+            }
+
+            foreach (var row in GetRewardAndPenaltyCore(classId, reportAt)) // add bonus and penalty mark
+            {
+                if(row.BonusAndPenaltyPoint > 0)
+                {
+                    traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
+                }
+                else
+                {
+                    traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
+                }
+            }
+            
+            foreach (var traineeId in listTraineeIdInClass)
+            {
+                traineeGPAById[traineeId].GPA = 
+                    traineeGPAById[traineeId].AcademicMark * (float)0.7 +
+                    traineeGPAById[traineeId].DisciplinaryPoint * (float)0.3+
+                    traineeGPAById[traineeId].Bonus * (float)0.1+
+                    traineeGPAById[traineeId].Penalty * (float)0.2;
+                switch(traineeGPAById[traineeId].GPA)
+                {
+                    case >= (float)9.3:
+                        traineeGPAById[traineeId].Level = "A+";
+                        break;
+                    case >= (float)8.6:
+                        traineeGPAById[traineeId].Level = "A";
+                        break;
+                    case >= (float)7.2:
+                        traineeGPAById[traineeId].Level = "B";
+                        break;
+                    case >= (float)6.0:
+                        traineeGPAById[traineeId].Level = "C";
+                        break;
+                    default:
+                        traineeGPAById[traineeId].Level = "D";
+                        break;
+                }
+                    
+            }
+
+            return traineeGPAById.Values;
         }
 
         /// <summary>
