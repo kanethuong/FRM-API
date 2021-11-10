@@ -43,7 +43,6 @@ namespace kroniiapi.Controllers
         private readonly IMegaHelper _megaHelper;
 
         private readonly IAttendanceService _attendanceService;
-        private readonly IReportService reportService;
 
         public TraineeController(IMapper mapper,
                                  IClassService classService,
@@ -58,8 +57,7 @@ namespace kroniiapi.Controllers
                                  IApplicationService applicationService,
                                  IMegaHelper megaHelper,
                                  IImgHelper imgHelper,
-                                 IAttendanceService attendanceService,
-                                 IReportService reportService)
+                                 IAttendanceService attendanceService)
         {
             _mapper = mapper;
             _classService = classService;
@@ -75,7 +73,6 @@ namespace kroniiapi.Controllers
             _applicationService = applicationService;
             _megaHelper = megaHelper;
             _attendanceService = attendanceService;
-            this.reportService = reportService;
         }
 
         /// <summary>
@@ -238,10 +235,6 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
 
-<<<<<<< HEAD
-            
-            return Ok(await reportService.GetTraineeGPAs(id));
-=======
             if (await _traineeService.GetTraineeById(id) == null)
             {
                 return NotFound(new ResponseDTO(404, "id not found"));
@@ -252,7 +245,6 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
             }
             return Ok(attendanceReport);
->>>>>>> 2f4269bac79b7826374cef3991052605dc1a04c5
         }
 
         /// <summary>
