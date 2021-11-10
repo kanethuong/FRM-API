@@ -10,5 +10,6 @@ namespace kroniiapi.Services.Report
     {
         ICollection<TraineeGeneralInfo> GetTraineesInfo(int classId);
         ClassStatusReport GetClassStatusReport(int classId);
+        TopicGrades GetTopicGrades(int classId);
     }
 }

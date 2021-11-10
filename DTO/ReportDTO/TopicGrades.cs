@@ -8,9 +8,9 @@ namespace kroniiapi.DTO.ReportDTO
     public class TopicGrades
     {
         public ICollection<TopicInfo> TopicInfos { get; set; }
-        public Dictionary<int, TraineeGrades> TraineeTopicGrades { get; set; }
+        public Dictionary<int, List<TraineeGrades>> TraineeTopicGrades { get; set; }
         public ICollection<AverageScoreInfo> AverageScoreInfos { get; set; }
-        public Dictionary<int, TraineeGrades> TraineeAverageGrades { get; set; }
+        public Dictionary<int, List<TraineeGrades>> TraineeAverageGrades { get; set; }
         public ICollection<TraineeGrades> FinalMarks { get; set; }
     }
 }
