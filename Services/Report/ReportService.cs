@@ -178,6 +178,7 @@ namespace kroniiapi.Services.Report
         /// <returns>Object with all fields in topic grades</returns>
         public TopicGrades GetTopicGrades(int classId)
         {
+            //Get all modules with class id
             var classModules = _dataContext.ClassModules.Where(f => f.ClassId == classId)
                                                         .Select(c => new ClassModule
                                                         {
@@ -186,6 +187,7 @@ namespace kroniiapi.Services.Report
                                                             WeightNumber = c.WeightNumber
                                                         })
                                                         .ToList();
+            //Add item to Topic Info
             List<TopicInfo> topicInfo = new List<TopicInfo>();
             foreach (var item in classModules)
             {
@@ -201,9 +203,9 @@ namespace kroniiapi.Services.Report
             }
 
             List<AverageScoreInfo> averageScoreInfo = new List<AverageScoreInfo>();
+            //Set startDate and endDate to check and set key for Dictionary
             DateTime startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
             DateTime endDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.EndDay).FirstOrDefault();
-            var duration = endDate.Month - startDate.Month + 1;
             foreach (var item in classModules)
             {
                 var itemToResponse = new AverageScoreInfo
@@ -214,78 +216,124 @@ namespace kroniiapi.Services.Report
                     PassingScore = item.Module.PassingScore * item.WeightNumber,
                     WeightNumber = item.WeightNumber
                 };
+                //Move to the next month
                 startDate = startDate.AddMonths(1);
                 averageScoreInfo.Add(itemToResponse);
             }
-            var key = averageScoreInfo.Where(c => classModules.Select(m => m.ModuleId).Contains(c.TopicId)).Select(m => m.Month.Month).FirstOrDefault();
-
+            //Set startDate again
+            startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
+            //Set Dictionary's key = first month of class duration
+            var key = startDate.Month;
+            //Variable to check if key exceed over the number of months
+            var nextKeyMonth = startDate;
             var topicIds = topicInfo.Select(i => i.TopicId).ToList();
+            //List of traineeId in class
             var trainees = _dataContext.Trainees.Where(f => f.ClassId == classId).Select(t => t.TraineeId).ToList();
+            //Get mark by moduleId and traineeId
             var marks = _dataContext.Marks.Where(f => topicIds.Contains(f.ModuleId) && trainees.Contains(f.TraineeId)).OrderBy(c => c.TraineeId).ToList();
             Dictionary<int, List<TraineeGrades>> traineeGrades = new Dictionary<int, List<TraineeGrades>>();
-            List<TraineeGrades> traineeGrade = new List<TraineeGrades>();
-            foreach (var item in marks)
+            List<TraineeGrades> traineeGradeList = new List<TraineeGrades>();
+
+            foreach (var i in classModules)
             {
-                var itemToResponse = new TraineeGrades
+                foreach (var item in marks)
                 {
-                    TopicId = item.ModuleId,
-                    TraineeId = item.TraineeId,
-                    Score = item.Score
-                };
-                if (itemToResponse == null)
-                {
-                    var newMark = new Mark
+                    var itemToResponse = new TraineeGrades
                     {
-                        ModuleId = itemToResponse.TopicId,
-                        TraineeId = itemToResponse.TraineeId,
-                        Score = 0,
+                        TopicId = item.ModuleId,
+                        TraineeId = item.TraineeId,
+                        Score = item.Score
                     };
-                    _dataContext.Marks.Add(newMark);
+                    //Add by distinct ModuleId
+                    if (itemToResponse.TopicId == i.ModuleId)
+                    {
+                        traineeGradeList.Add(itemToResponse);
+                    }
                 }
-                traineeGrade.Add(itemToResponse);
-                traineeGrades.Add(key, traineeGrade);
-                if (key < 12)
+                //Add to dictionary
+                traineeGrades.Add(key, traineeGradeList);
+                traineeGradeList = new List<TraineeGrades>();
+                if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
                 {
-                    key++;
+                    key = startDate.AddMonths(-1).Month;
+                    nextKeyMonth = startDate.AddMonths(-1);
                 }
-                if (key == 12)
+                if (nextKeyMonth.Year <= endDate.Year && nextKeyMonth.Month < endDate.Month)
                 {
-                    key = key - duration;
+                    nextKeyMonth = nextKeyMonth.AddMonths(1);
+                    key = nextKeyMonth.Month;
                 }
 
             }
-
             Dictionary<int, List<TraineeGrades>> traineeAvarageGrades = new Dictionary<int, List<TraineeGrades>>();
-            List<TraineeGrades> traineeAvarageGrade = new List<TraineeGrades>();
-            foreach (var item in marks)
+            List<TraineeGrades> traineeAvarageGradeList = new List<TraineeGrades>();
+            //Set back variable
+            nextKeyMonth = startDate;
+            key = startDate.Month;
+            foreach (var i in classModules)
             {
-                var itemToResponse = new TraineeGrades
+                foreach (var item in marks)
                 {
-                    TopicId = item.ModuleId,
-                    TraineeId = item.TraineeId,
-                    Score = (item.Score * averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
-                                                            .Select(w => w.WeightNumber)
-                                                            .FirstOrDefault()) / (averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
-                                                                        .Select(m => m.MaxScore)
-                                                                        .FirstOrDefault())
+                    var itemToResponse = new TraineeGrades
+                    {
+                        TopicId = item.ModuleId,
+                        TraineeId = item.TraineeId,
+                        Score = (item.Score * averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
+                                                                .Select(w => w.WeightNumber)
+                                                                .FirstOrDefault()) / (averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
+                                                                            .Select(m => m.MaxScore)
+                                                                            .FirstOrDefault())
 
-                };
-                traineeAvarageGrade.Add(itemToResponse);
-                traineeAvarageGrades.Add(key, traineeAvarageGrade);
+                    };
+                    //Add to list, distinct by ModuleId
+                    if (itemToResponse.TopicId == i.ModuleId)
+                    {
+                        traineeAvarageGradeList.Add(itemToResponse);
+                    }
+
+                }
+                //Add to dictionary
+                traineeAvarageGrades.Add(key, traineeAvarageGradeList);
+                traineeAvarageGradeList = new List<TraineeGrades>();
+                if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
+                {
+                    key = startDate.AddMonths(-1).Month;
+                    nextKeyMonth = startDate.AddMonths(-1);
+                }
+                if (nextKeyMonth.Year <= endDate.Year && nextKeyMonth.Month < endDate.Month)
+                {
+                    nextKeyMonth = nextKeyMonth.AddMonths(1);
+                    key = nextKeyMonth.Month;
+                }
             }
 
 
             List<TraineeGrades> finalMarks = new List<TraineeGrades>();
-            foreach (var item in averageScoreInfo)
+            //Calculate final max score
+            var finalMaxScore = topicInfo.Sum(m => m.MaxScore * m.WeightNumber);
+            foreach (var item in marks)
             {
                 var itemToResponse = new TraineeGrades
                 {
-                    TopicId = item.TopicId,
-                    TraineeId = marks.Where(m => m.ModuleId == item.TopicId).Select(t => t.TraineeId).FirstOrDefault(),
-                    Score = 7
+                    TopicId = 0,
+                    TraineeId = item.TraineeId,
+                    //Score * WeightNumber
+                    Score = item.Score * (topicInfo.Where(m => m.TopicId == item.ModuleId).Select(w => w.WeightNumber).FirstOrDefault())
                 };
-                finalMarks.Add(itemToResponse);
+                //Score = score/final max score
+                itemToResponse.Score = itemToResponse.Score / finalMaxScore;
+                //If that traineeId exist in list
+                if (finalMarks.Select(m => m.TraineeId).Contains(itemToResponse.TraineeId))
+                {
+                    //Sum the existed and adding mark
+                    finalMarks.Where(m => m.TraineeId == itemToResponse.TraineeId).FirstOrDefault().Score = finalMarks.Where(m => m.TraineeId == itemToResponse.TraineeId).FirstOrDefault().Score + itemToResponse.Score;
+                }
+                else
+                {
+                    finalMarks.Add(itemToResponse);
+                }
             }
+
 
             TopicGrades topicGrades = new TopicGrades()
             {

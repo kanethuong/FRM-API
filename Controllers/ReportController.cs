@@ -26,6 +26,6 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTimeOffset? at = null)
         {
             return null;
-        }
+        }        
     }
 }
