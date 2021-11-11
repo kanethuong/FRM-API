@@ -160,23 +160,26 @@ namespace kroniiapi.Services.Report
 
             TopicGrades topicGrades = GetTopicGrades(classId);
 
-            if (topicGrades == null)
-                return null;
-
-            foreach (var traineeMarkInfor in topicGrades.FinalMarks) //add academic mark 
+            if (topicGrades != null)
             {
-                traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
-            }
-
-            foreach (var row in GetRewardAndPenaltyCore(classId, reportAt)) // add bonus and penalty mark
-            {
-                if (row.BonusAndPenaltyPoint > 0)
+                foreach (var traineeMarkInfor in topicGrades.FinalMarks) //add academic mark 
                 {
-                    traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
+                    traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
                 }
-                else
+            }
+            var RewardAndPenalty = GetRewardAndPenaltyCore(classId, reportAt);
+            if (RewardAndPenalty != null)
+            {
+                foreach (var row in RewardAndPenalty) // add bonus and penalty mark
                 {
-                    traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
+                    if (row.BonusAndPenaltyPoint > 0)
+                    {
+                        traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
+                    }
+                    else
+                    {
+                        traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
+                    }
                 }
             }
 
@@ -207,7 +210,6 @@ namespace kroniiapi.Services.Report
                 }
 
             }
-
             return traineeGPAById.Values;
         }
 
