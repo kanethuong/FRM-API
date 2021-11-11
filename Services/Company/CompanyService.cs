@@ -1,3 +1,4 @@
+using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,10 +58,14 @@ namespace kroniiapi.Services
         /// <returns>Total record, report list</returns>
         public async Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter)
         {
-            IEnumerable<CompanyRequest> listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
-              && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
-                  c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
-                  c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
+            IQueryable<CompanyRequest> companyRequests = _dataContext.CompanyRequests;
+            if (paginationParameter.SearchName != "")
+            {
+                companyRequests = companyRequests.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Company.Fullname.ToLower() + " " + c.Company.Username.ToLower() + " " + c.Company.Email.ToLower()))
+                                                      .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+
+            IEnumerable<CompanyRequest> listRequestAccepted = await companyRequests
                 .Select(c => new CompanyRequest
                 {
                     CompanyRequestId = c.CompanyRequestId,
@@ -149,6 +154,7 @@ namespace kroniiapi.Services
             existedCompany.AvatarURL = company.AvatarURL;
             existedCompany.Phone = company.Phone;
             existedCompany.Address = company.Address;
+            existedCompany.Facebook = company.Facebook;
 
             int rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();
@@ -200,44 +206,46 @@ namespace kroniiapi.Services
         }
         public async Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter)
         {
-            var listRequest = await _dataContext.CompanyRequests
-                                    .Where(c => c.IsAccepted == null && c.Company.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) && c.Company.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
-                                    .Select(c => new CompanyRequest
-                                    {
-                                        CompanyRequestId = c.CompanyRequestId,
-                                        Content = c.Content,
-                                        CreatedAt = c.CreatedAt,
-                                        ReportURL = c.ReportURL,
-                                        IsAccepted = c.IsAccepted,
-                                        AcceptedAt = c.AcceptedAt,
-                                        Company = new Company
-                                        {
-                                            CompanyId = c.CompanyId,
-                                            Email = c.Company.Email,
-                                            Fullname = c.Company.Fullname,
-                                            AvatarURL = c.Company.AvatarURL
-                                        },
-                                        CompanyRequestDetails = c.CompanyRequestDetails.ToList()
-                                    }
-                                    )
-                                    .OrderByDescending(c => c.CreatedAt)
-                                    .ToListAsync();
-
-            List<CompanyRequestResponse> companyRequestResponses = new List<CompanyRequestResponse>();
-            foreach (var item in listRequest)
+            IQueryable<CompanyRequest> listRequest = _dataContext.CompanyRequests.Where(c => c.IsAccepted == null);
+            if (paginationParameter.SearchName != "")
             {
-                var itemToResponse = new CompanyRequestResponse
+                listRequest = listRequest.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Company.Fullname.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            List<CompanyRequest> rs = await listRequest
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .Select(c => new CompanyRequest
                 {
-                    CompanyRequestId = item.CompanyRequestId,
-                    CompanyName = item.Company.Fullname,
-                    NumberOfTrainee = item.CompanyRequestDetails.Count(),
-                    Content = item.Content,
-                    CreatedAt = item.CreatedAt
+                    CompanyRequestId = c.CompanyRequestId,
+                    Content = c.Content,
+                    CreatedAt = c.CreatedAt,
+                    ReportURL = c.ReportURL,
+                    IsAccepted = c.IsAccepted,
+                    AcceptedAt = c.AcceptedAt,
+                    Company = c.Company,                    
+                    CompanyRequestDetails = c.CompanyRequestDetails
+                                            .Where(comreq => comreq.CompanyRequestId == c.CompanyRequestId && comreq.Trainee.IsDeactivated == false)        
+                                            .ToList()
+                }
+                                    )
+                    .ToListAsync();
+            List<CompanyRequestResponse> companyRequestResponses = new List<CompanyRequestResponse>();
+
+            foreach (var item in rs)
+            {
+                CompanyRequestResponse itemToResponse = new CompanyRequestResponse()
+                {
+                     CompanyRequestId = item.CompanyRequestId,
+                     CompanyName = item.Company.Fullname,
+                     NumberOfTrainee = item.CompanyRequestDetails.Count(),
+                     Content = item.Content,
+                     CreatedAt = item.CreatedAt
                 };
                 companyRequestResponses.Add(itemToResponse);
+                
             }
-            return Tuple.Create(companyRequestResponses.Count(), PaginationHelper.GetPage(companyRequestResponses,
-                paginationParameter.PageSize, paginationParameter.PageNumber));
+            return Tuple.Create(totalRecords, companyRequestResponses.GetPage(paginationParameter));
         }
         /// <summary>
         /// Get Company Request Detail
@@ -281,5 +289,6 @@ namespace kroniiapi.Services
                      .Take(paginationParameter.PageSize);
             return Tuple.Create(totalRecords, rs);
         }
+
     }
 }

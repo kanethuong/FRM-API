@@ -960,6 +960,9 @@ namespace kroniiapi.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<string>("Facebook")
+                        .HasColumnType("text");
+
                     b.Property<string>("Fullname")
                         .HasColumnType("text");
 

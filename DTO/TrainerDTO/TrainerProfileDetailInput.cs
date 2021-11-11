@@ -18,5 +18,7 @@ namespace kroniiapi.DTO.TrainerDTO
         public string Address { get; set; }
         [Required]
         public string Gender { get; set; }
+        [Required]
+        public string Facebook { get; set; }
     }
 }

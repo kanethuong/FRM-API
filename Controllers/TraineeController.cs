@@ -18,6 +18,8 @@ using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using kroniiapi.Services.Attendance;
+using kroniiapi.Services.Report;
 
 namespace kroniiapi.Controllers
 {
@@ -39,6 +41,9 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IApplicationService _applicationService;
         private readonly IMegaHelper _megaHelper;
+
+        private readonly IAttendanceService _attendanceService;
+
         public TraineeController(IMapper mapper,
                                  IClassService classService,
                                  IFeedbackService feedbackService,
@@ -51,7 +56,8 @@ namespace kroniiapi.Controllers
                                  ICertificateService certificateService,
                                  IApplicationService applicationService,
                                  IMegaHelper megaHelper,
-                                 IImgHelper imgHelper)
+                                 IImgHelper imgHelper,
+                                 IAttendanceService attendanceService)
         {
             _mapper = mapper;
             _classService = classService;
@@ -66,6 +72,7 @@ namespace kroniiapi.Controllers
             _certificateService = certificateService;
             _applicationService = applicationService;
             _megaHelper = megaHelper;
+            _attendanceService = attendanceService;
         }
 
         /// <summary>
@@ -157,22 +164,23 @@ namespace kroniiapi.Controllers
         {
             Trainee trainee = _mapper.Map<Trainee>(traineeProfileDetail);
             Trainee existedTrainee = await _traineeService.GetTraineeById(id);
+            if (existedTrainee == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
+            }
             if (
                 existedTrainee.Fullname.ToLower().Equals(trainee.Fullname.ToLower()) &&
                 existedTrainee.Phone.ToLower().Equals(trainee.Phone.ToLower()) &&
                 existedTrainee.DOB.ToString().ToLower().Equals(trainee.DOB.ToString().ToLower()) &&
                 existedTrainee.Address.ToLower().Equals(trainee.Address.ToLower()) &&
-                existedTrainee.Gender.ToLower().Equals(trainee.Gender.ToLower())
+                existedTrainee.Gender.ToLower().Equals(trainee.Gender.ToLower()) &&
+                existedTrainee.Facebook.ToLower().Equals(trainee.Facebook.ToLower())
             )
             {
                 return Ok(new ResponseDTO(200, "Update profile success"));
             }
             int rs = await _traineeService.UpdateTrainee(id, trainee);
-            if (rs == -1)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
-            }
-            else if (rs == 0)
+            if (rs == 0)
             {
                 return Conflict(new ResponseDTO(409, "Fail to update trainee profile"));
             }
@@ -224,21 +232,19 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>trainee attendance report in pagination</returns>
         [HttpGet("{id:int}/attendance")]
-        public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeAttendanceReport>>>> ViewAttendanceReport(int id, [FromQuery] PaginationParameter paginationParameter)
+        public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
+
             if (await _traineeService.GetTraineeById(id) == null)
             {
                 return NotFound(new ResponseDTO(404, "id not found"));
             }
-            try
+            TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
+            if (attendanceReport == null)
             {
-                (int totalRecord, IEnumerable<TraineeAttendanceReport> result) = await _traineeService.GetAttendanceReports(id, paginationParameter);
-                return Ok(new PaginationResponse<IEnumerable<TraineeAttendanceReport>>(totalRecord, result));
+                return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
             }
-            catch
-            {
-                return NotFound(new ResponseDTO(404, "Undefined error, trainee may not in any class"));
-            }
+            return Ok(attendanceReport);
         }
 
         /// <summary>

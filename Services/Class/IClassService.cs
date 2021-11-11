@@ -13,14 +13,14 @@ namespace kroniiapi.Services
     {
         Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter);
         Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter);
-        Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput,int deleteClassRequestId);
+        Task<int> UpdateDeletedClass(ConfirmDeleteClassInput confirmDeleteClassInput, int deleteClassRequestId);
         Task<Tuple<int, IEnumerable<Class>>> GetDeletedClassList(PaginationParameter paginationParameter);
         Task<Class> GetClassByClassName(string className);
         Task<Class> GetClassDetail(int id);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter);
         Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest);
         Task AddClassIdToTrainee(int classId, ICollection<int> traineeIdList);
-        Task AddDataToClassModule(int classId, ICollection<int> moduleIdList);
+        Task AddDataToClassModule(int classId, ICollection<TrainerModule> moduleIdList);
         Task<int> InsertNewClass(NewClassInput newClass);
         Task<int> InsertNewClassNoSave(NewClassInput newClass);
         Task<int> RejectAllOtherDeleteRequest(int deleteRequestId);
@@ -32,7 +32,7 @@ namespace kroniiapi.Services
         Task<int> RemoveModuleFromClass(int classId, int moduleId);
         Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter);
         bool CheckClassExist(int id);
-        Task<int> GetTrainerIdByClassId(int classId);
         Task<ClassModule> GetClassModule(int classId, int moduleId);
+        Task<int> AssignModuleToClass(ClassModule classModule);
     }
 }

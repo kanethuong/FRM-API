@@ -22,7 +22,6 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineeListByClassId(int id, PaginationParameter paginationParameter);
         Task<ICollection<Trainee>> GetTraineeByClassId(int id);
         Task<bool> IsTraineeHasClass(int traineeId);
-        Task<Tuple<int, IEnumerable<TraineeAttendanceReport>>> GetAttendanceReports(int id, PaginationParameter paginationParameter);
         Task<Tuple<int, IEnumerable<TraineeApplicationResponse>>> GetApplicationListByTraineeId(int id, PaginationParameter paginationParameter);
         Task<(int, string)> GetClassIdByTraineeId(int id);
         Task<Tuple<int, IEnumerable<TraineeMarkAndSkill>>> GetMarkAndSkillByTraineeId(int id, PaginationParameter paginationParameter);
