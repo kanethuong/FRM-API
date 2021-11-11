@@ -10,8 +10,6 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using Microsoft.Win32;
-
 namespace System.Globalization
 {
     /// <summary>
@@ -187,14 +185,6 @@ namespace System.Globalization
         {
             get
             {
-                if (base.TwoDigitYearMax < 0)
-                {
-                    //// Call Win32 ::GetCalendarInfo() to retrieve CAL_ITWODIGITYEARMAX value
-                    base.TwoDigitYearMax = GetSystemTwoDigitYearSetting(
-                        1,      // CAL_GREGORIAN - Gregorian (localized)
-                        this.GetYear(maxDate));
-                }
-
                 return base.TwoDigitYearMax;
             }
             set
@@ -222,137 +212,7 @@ namespace System.Globalization
 
         #endregion
 
-        #region Native methods
-
-        /// <summary>
-        /// Retrieves information about a calendar for a locale specified by identifier.
-        /// </summary>
-        /// <param name="localeId">Locale identifier that specifies the locale for which to retrieve
-        /// calendar information.</param>
-        /// <param name="calendarId">Calendar identifier.</param>
-        /// <param name="calendarType">Type of information to retrieve.</param>
-        /// <param name="data">Pointer to a buffer in which this function retrieves the requested data
-        /// as a string. If <c>CAL_RETURN_NUMBER</c> is specified in <paramref name="calendarType"/>,
-        /// this parameter must be set to a <c>null</c> pointer.</param>
-        /// <param name="dataSize">Size, in characters, of the <paramref name="data"/> buffer.
-        /// The application can set this parameter to 0 to return the required size for the calendar data
-        /// buffer. In this case, the <paramref name="data"/> parameter is not used.
-        /// If <c>CAL_RETURN_NUMBER</c> is specified for <paramref name="calendarType"/>,
-        /// the value of <paramref name="dataSize"/> must be <c>0</c>.</param>
-        /// <param name="value">Pointer to a variable that receives the requested data as a number.
-        /// If <c>CAL_RETURN_NUMBER</c> is not specified in <paramref name="calendarType"/>,
-        /// then <paramref name="value"/> must be <c>null</c>.</param>
-        /// <returns>
-        /// <p>The number of characters retrieved in the <paramref name="data"/> buffer,
-        /// with <paramref name="dataSize"/> set to a nonzero value, if successful.<br/>
-        /// If the function succeeds, <paramref name="dataSize"/> is set to 0, and <c>CAL_RETURN_NUMBER</c>
-        /// is not specified, the return value is the size of the buffer required to hold the
-        /// calendar information.<br/>
-        /// If the function succeeds, <paramref name="dataSize"/> is set 0, and <c>CAL_RETURN_NUMBER</c>
-        /// is specified, the return value is the size of the value retrieved in <paramref name="value"/>,
-        /// that is, 2 for the Unicode version of the function or 4 for the ANSI version.</p>
-        /// <p>This function returns 0 if it does not succeed.</p>
-        /// </returns>
-        [DllImport("Kernel32.dll", EntryPoint = "GetCalendarInfo", CharSet = CharSet.Auto, BestFitMapping = false, ThrowOnUnmappableChar = true)]
-        internal static extern int GetCalendarInfo(
-            int/*LCID*/ localeId,
-            int/*CALID*/ calendarId,
-            int/*CALTYPE*/ calendarType,
-            StringBuilder/*LPSTR*/ data,
-            int dataSize,
-            ref int/*LPDWORD*/ value);
-
-        internal static int GetTwoDigitYearMax(int calendarId)
-        {
-            try
-            {
-                int num = 0, ret = GetCalendarInfo(
-                    0x042a,     // vi-VN
-                    calendarId,
-                    0x20000030, // CAL_RETURN_NUMBER | CAL_ITWODIGITYEARMAX
-                    null,
-                    0,
-                    ref num);
-
-                if (ret < 1)
-                {
-                    Console.WriteLine("Native function Kernel32.GetCalendarInfo() returns 0." + Environment.NewLine
-                        + "Call GetLastError() to get extended error information." + Environment.NewLine
-                        + "GetLastError() can return one of the following error codes:" + Environment.NewLine
-                        + " * ERROR_INSUFFICIENT_BUFFER" + Environment.NewLine
-                        + " * ERROR_INVALID_FLAGS" + Environment.NewLine
-                        + " * ERROR_INVALID_PARAMETER");
-
-                    return -1;
-                }
-
-                return num;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Native function Kernel32.GetCalendarInfo() calling exception: {0}", e);
-            }
-
-            return int.MinValue;
-        }
-
-        #endregion
-
         #region Internal methods
-
-        internal static int GetSystemTwoDigitYearSetting(int calendarId, int defaultYearValue)
-        {
-            int num = GetTwoDigitYearMax(calendarId);
-            if (num < 0)
-            {
-                RegistryKey key = null;
-                try
-                {
-                    key = Registry.CurrentUser.OpenSubKey(@"Control Panel\International\Calendars\TwoDigitYearMax", false);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
-                catch (ArgumentException)
-                {
-                }
-
-                if (key != null)
-                {
-                    try
-                    {
-                        object obj = key.GetValue(calendarId.ToString(CultureInfo.InvariantCulture));
-                        if (obj != null)
-                        {
-                            try
-                            {
-                                num = int.Parse(obj.ToString(), CultureInfo.InvariantCulture);
-                            }
-                            catch (ArgumentException)
-                            {
-                            }
-                            catch (FormatException)
-                            {
-                            }
-                            catch (OverflowException)
-                            {
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        key.Close();
-                    }
-                }
-
-                if (num < 0)
-                {
-                    num = defaultYearValue;
-                }
-            }
-
-            return num;
-        }
 
         internal void VerifyWritable()
         {
