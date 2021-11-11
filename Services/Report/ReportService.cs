@@ -7,6 +7,7 @@ using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ReportDTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services.Report
 {
@@ -142,9 +143,72 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A list of trainee GPA</returns>
-        public ICollection<TraineeGPA> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
+        public async Task<ICollection<TraineeGPA>> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
         {
-            return null;
+            Dictionary<int, TraineeGPA> traineeGPAById = new Dictionary<int, TraineeGPA>();
+
+            IEnumerable<int> listTraineeIdInClass = await _dataContext.Trainees.Where(
+                t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToListAsync();
+
+            if (listTraineeIdInClass.Count() == 0)
+                return new List<TraineeGPA>();
+
+            foreach (var traineeId in listTraineeIdInClass)
+            {
+                traineeGPAById.Add(traineeId, new TraineeGPA { TraineeId = traineeId });
+            }
+
+            TopicGrades topicGrades = GetTopicGrades(classId);
+
+            if (topicGrades == null)
+                return null;
+
+            foreach (var traineeMarkInfor in topicGrades.FinalMarks) //add academic mark 
+            {
+                traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
+            }
+
+            foreach (var row in GetRewardAndPenaltyCore(classId, reportAt)) // add bonus and penalty mark
+            {
+                if (row.BonusAndPenaltyPoint > 0)
+                {
+                    traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
+                }
+                else
+                {
+                    traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
+                }
+            }
+
+            foreach (var traineeId in listTraineeIdInClass)
+            {
+                traineeGPAById[traineeId].GPA =
+                    traineeGPAById[traineeId].AcademicMark * (float)0.7 +
+                    traineeGPAById[traineeId].DisciplinaryPoint * (float)0.3 +
+                    traineeGPAById[traineeId].Bonus * (float)0.1 +
+                    traineeGPAById[traineeId].Penalty * (float)0.2;
+                switch (traineeGPAById[traineeId].GPA)
+                {
+                    case >= (float)9.3:
+                        traineeGPAById[traineeId].Level = "A+";
+                        break;
+                    case >= (float)8.6:
+                        traineeGPAById[traineeId].Level = "A";
+                        break;
+                    case >= (float)7.2:
+                        traineeGPAById[traineeId].Level = "B";
+                        break;
+                    case >= (float)6.0:
+                        traineeGPAById[traineeId].Level = "C";
+                        break;
+                    default:
+                        traineeGPAById[traineeId].Level = "D";
+                        break;
+                }
+
+            }
+
+            return traineeGPAById.Values;
         }
 
         /// <summary>
@@ -155,9 +219,18 @@ namespace kroniiapi.Services.Report
         /// <returns>List of feedbacks</returns>
         public ICollection<TraineeFeedback> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime))
         {
-            // Finish GetFeedbackReport as a part of your task
-            // Remeber to get traineeId when getting feedback from DB
-            return null;
+            var traineeIds = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToList();
+            List<Feedback> traineeFeedbacks = new();
+            TimeSpan oneday = new TimeSpan(23, 59, 59);
+            var startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
+            var endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
+            endDate = endDate.Add(oneday);
+            foreach (var item in traineeIds)
+            {
+                traineeFeedbacks.Add(_dataContext.Feedbacks.Where(t => t.TraineeId == item && t.CreatedAt <= endDate && t.CreatedAt >= startDate).FirstOrDefault());
+            }
+            ICollection<TraineeFeedback> traineeFeedbacksMapped = _mapper.Map<ICollection<TraineeFeedback>>(traineeFeedbacks);
+            return traineeFeedbacksMapped;
         }
 
         /// <summary>
