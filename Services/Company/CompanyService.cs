@@ -58,10 +58,14 @@ namespace kroniiapi.Services
         /// <returns>Total record, report list</returns>
         public async Task<Tuple<int, IEnumerable<CompanyReport>>> GetCompanyReportList(PaginationParameter paginationParameter)
         {
-            IEnumerable<CompanyRequest> listRequestAccepted = await _dataContext.CompanyRequests.Where(c => c.IsAccepted == true
-              && (c.Company.Fullname.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
-                  c.Company.Username.ToLower().Contains(paginationParameter.SearchName.ToLower()) ||
-                  c.Company.Email.ToLower().Contains(paginationParameter.SearchName.ToLower())))
+            IQueryable<CompanyRequest> companyRequests = _dataContext.CompanyRequests;
+            if (paginationParameter.SearchName != "")
+            {
+                companyRequests = companyRequests.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Company.Fullname.ToLower() + " " + c.Company.Username.ToLower() + " " + c.Company.Email.ToLower()))
+                                                      .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+
+            IEnumerable<CompanyRequest> listRequestAccepted = await companyRequests
                 .Select(c => new CompanyRequest
                 {
                     CompanyRequestId = c.CompanyRequestId,
@@ -150,6 +154,7 @@ namespace kroniiapi.Services
             existedCompany.AvatarURL = company.AvatarURL;
             existedCompany.Phone = company.Phone;
             existedCompany.Address = company.Address;
+            existedCompany.Facebook = company.Facebook;
 
             int rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();

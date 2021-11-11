@@ -36,7 +36,15 @@ namespace kroniiapi.Services
 
         public async Task<Tuple<int, IEnumerable<Cost>>> GetCostList(PaginationParameter paginationParameter)
         {
-            var costList = await _dataContext.Costs.Where(c => c.CostType.CostTypeName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
+            IQueryable<Cost> costs=_dataContext.Costs;
+            if(paginationParameter.SearchName!=""){
+                costs=costs.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.CostType.CostTypeName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+
+            IEnumerable<Cost> costList = await costs
+                                .GetCount(out var totalRecord)
+                                .GetPage(paginationParameter)
                                 .Select(c => new Cost
                                 {
                                     CostId = c.CostId,
@@ -54,7 +62,7 @@ namespace kroniiapi.Services
                                 })
                                 .OrderByDescending(c => c.CreatedAt)
                                 .ToListAsync();
-            return Tuple.Create(costList.Count(), PaginationHelper.GetPage(costList, paginationParameter));
+            return Tuple.Create(totalRecord, costList);
         }
     }
 }

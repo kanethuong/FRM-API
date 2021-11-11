@@ -31,6 +31,7 @@ namespace kroniiapi.DTO.Profiles
             //  CreateMap<Class,ClassRoom>()
             //     .ForMember(ti => ti.RoomName,c => c.MapFrom(s => s.Room.RoomName));
             CreateMap<Trainer, TrainerProfileDetailInput>();
+            CreateMap<TrainerProfileDetailInput, Trainer>();
         }
     }
 }

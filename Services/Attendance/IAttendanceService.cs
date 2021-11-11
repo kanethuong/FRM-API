@@ -12,6 +12,9 @@ namespace kroniiapi.Services.Attendance
         Task<int> AddNewAttendance(int calendarId, IEnumerable<Trainee> traineesList);
         Task<IEnumerable<DB.Models.Attendance>> GetAttendanceListByTraineeId(int traineeId);
         Task<TraineeAttendanceReport> GetTraineeAttendanceReport(int traineeId);
-        
+        Task<int> InitAttendanceWhenCreateClass(int classId);
+        Task<IEnumerable<Class>> GetClassList(int adminId);
+        Task<IEnumerable<kroniiapi.DB.Models.Attendance>> GetAttendanceList(int adminId, int classId);
+        Task<(bool status, string message)> TakeAttendance(IEnumerable<kroniiapi.DB.Models.Attendance> attendances);
     }
 }
