@@ -14,7 +14,7 @@ namespace kroniiapi.Services
         Task<Tuple<AccountResponse, string>> GetAccountByEmail(string email);
         Task<int> DeactivateAccount(int id, string role);
         Task<int> InsertNewAccount(AccountInput accountInput);
-        Task<Tuple<bool, int>> InsertNewAccount(IList<AccountInput> accountInputs);
+        Task<IDictionary<int, int>> InsertNewAccount(IList<AccountInput> accountInputs);
         Task<Tuple<int, IEnumerable<DeletedAccountResponse>>> GetDeactivatedAccountList(PaginationParameter paginationParameter);
         Task<int> UpdateAccountPassword(string email, string password);
         Task<int> SaveChange();
