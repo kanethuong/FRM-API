@@ -160,5 +160,10 @@ namespace kroniiapi.Controllers
                     Errors = errors
                 });
         }
+        [HttpGet("test")]
+        public async Task<ActionResult> Test(int moduleId) {
+            var listTest = await _moduleService.GetModuleLessonDetail(moduleId);
+            return Ok(listTest);
+        }
     }
 }
