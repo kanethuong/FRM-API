@@ -143,6 +143,21 @@ namespace kroniiapi.AttendanceServicesss
                     return true;
                 }
             }
+
+            DateTime lunarDate = VietnameseLunarDateConverter.LunarDate(date.Day,date.Month,date.Year);
+
+            if(lunarDate.Month == 5 && lunarDate.Day == 10)
+            {
+                return true;
+            }
+            if(lunarDate.Month == 12 && lunarDate.Day == 30)
+            {
+                return true;
+            }
+            if(lunarDate.Month == 1 && (lunarDate.Day == 1 || lunarDate.Day == 2 || lunarDate.Day == 2))
+            {
+                return true;
+            }
             return false;
         }
 
