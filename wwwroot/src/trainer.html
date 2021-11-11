@@ -121,7 +121,7 @@
     "dob": DateTime,
     "address": "string",
     "gender": "string",
-    "wage": decimal
+    "facebook": "string"
 }
                         </code></pre>
                 </p>
@@ -129,23 +129,83 @@
         </div>
     </div>
 
-    <!-- View trainer feedback -->
-    <div id="viewTrainerFeedback">
+    <!-- Edit trainer profile -->
+    <div id="editTrainerProfile">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>View Trainer Feedback</h3>
+            <h3>Edit Trainer Profile</h3>
         </div>
         <p>By KhangTD</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/Trainer/{id}/feedback</p>
+            <p>/api/Trainer/{id}/profile</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Trainer, Admin</p>
+                <p>Trainer</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of trainer</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>
+{
+    "fullname": "string",
+    "phone": "string",
+    "dob": DateTime,
+    "address": "string",
+    "gender": "string",
+    "facebook": "string"
+}
+                </code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error response</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Trainer Dashboard -->
+    <div id="viewTrainerDashboard">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3> ViewDashBoard of Trainer </h3>
+        </div>
+        <p>By DatLT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Trainer/{id}/dashboard</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
@@ -169,68 +229,11 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>No</p>
-            </div>
-            <div class="col-6">
-                <h5>Response Body</h5>
-                <p>
-                <pre><code>
-[
-    {
-        "rate": int,
-        "content": "string"
-    }
-]
-                            </code></pre>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Update trainer wage -->
-    <div id="updateTrainerWage">
-        <!-- Function Title -->
-        <div class="w-75 border-bottom mb-3">
-            <h3>Update Trainer Wage</h3>
-        </div>
-        <p>By KhangTD</p>
-        <div>
-            <h5>Endpoint</h5>
-            <p>/api/Trainer/{id}/wage</p>
-        </div>
-
-        <!-- Role, Method and Status code -->
-        <div class="row mb-3">
-            <div class="col-4 border-end">
-                <h5>Allow</h5>
-                <p>Admin</p>
-            </div>
-            <div class="col-4 border-end">
-                <h5>Method</h5>
-                <p>PUT</p>
-            </div>
-            <div class="col-4">
-                <h5>Status</h5>
-                <p>200 400 404 409</p>
-            </div>
-        </div>
-
-        <!-- Parameter & file -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Parameter</h5>
-                <p>id: ID of trainer</p>
-            </div>
-        </div>
-
-        <!-- Request body and Response body  -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Request Body</h5>
                 <p>decimal</p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
+<<<<<<< HEAD
                 <p>Error Response</p>
             </div>
         </div>
@@ -301,6 +304,10 @@
             <h5>Response Body</h5>
             <p>
 <pre><code>
+=======
+                <p>
+                <pre><code>
+>>>>>>> 5b74f5fa626cc710abc93954e244550572640b3f
  [
   {
     "moduleId": int,
@@ -313,7 +320,8 @@
   }
  ]
 </code></pre>
-                            </p>
+                </p>
+            </div>
         </div>
     </div>
 </div>

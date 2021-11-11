@@ -172,7 +172,7 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-    deleteClassRequestId : int
+                deleteClassRequestId : int
                 <p>
                 <pre><code>{
     "classId": int,
@@ -213,15 +213,16 @@
                 <p>200 404 </p>
             </div>
         </div>
-         <!-- Parameter & file -->
-         <div class="row mb-3">
+        <!-- Parameter & file -->
+        <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
                 <p>id: ID of class</p>
             </div>
             <div class="col-6">
                 <h5>Note</h5>
-                <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId" class="link-dark rounded">ViewTraineeListByClassId</a></p>
+                <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId"
+                        class="link-dark rounded">ViewTraineeListByClassId</a></p>
             </div>
         </div>
         <div class="row mb-3">
@@ -294,15 +295,16 @@
                 <p>200 404 </p>
             </div>
         </div>
-         <!-- Parameter & file -->
-         <div class="row mb-3">
+        <!-- Parameter & file -->
+        <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
                 <p>traineeId: Id of trainee</p>
             </div>
             <div class="col-6">
                 <h5>Note</h5>
-                <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId" class="link-dark rounded">ViewTraineeListByClassId</a></p>
+                <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId"
+                        class="link-dark rounded">ViewTraineeListByClassId</a></p>
             </div>
         </div>
         <div class="row mb-3">
@@ -312,7 +314,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "classId": int,
     "className": "string",
     "description": "string",
@@ -333,7 +336,8 @@
         "avatarURL": "string",
         "email": "string"
     }
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
@@ -386,7 +390,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "totalRecords": int,
     "payload": [
         {
@@ -397,7 +402,8 @@
         "dob": "DateTime"
         }
     ]
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
@@ -509,7 +515,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="ViewClassDetail">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
@@ -536,8 +542,8 @@
                 <p>200 404 </p>
             </div>
         </div>
-         <!-- Parameter & file -->
-         <div class="row mb-3">
+        <!-- Parameter & file -->
+        <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
                 <p>id: ID of class</p>
@@ -613,7 +619,8 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p><pre><code>{
+                <p>
+                <pre><code>{
     "className": "string",
     "description": "string",
     "adminId": int,
@@ -749,6 +756,56 @@
     ]
 }</code></pre>
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign module to class -->
+    <div id="assignModuleToClass">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Assign Module To Class</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class/module</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Trainer</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>
+{
+    "classId": int,
+    "moduleId": int,
+    "weightNumber": double,
+    "trainerId": int
+}
+                    </code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error response</p>
             </div>
         </div>
     </div>
