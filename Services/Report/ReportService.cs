@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DTO.ReportDTO;
 using Microsoft.AspNetCore.Mvc;
+using kroniiapi.DB.Models;
 
 namespace kroniiapi.Services.Report
 {
@@ -71,9 +72,16 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">If of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>List of reward and penalty of a class</returns>
-        public ICollection<RewardAndPenalty> GetRewardAndPenaltyCore(int classId, DateTime reportAt = default(DateTime))
+        public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
-            return null;
+            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            List<BonusAndPunish> rp = new List<BonusAndPunish>();
+            foreach (var item in trainees)
+            {
+                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
+            }
+            List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
+            return rpDto;
         }
 
         /// <summary>
