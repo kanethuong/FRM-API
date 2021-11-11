@@ -12,7 +12,6 @@ namespace kroniiapi.DTO.TimetableDTO
     }
     public class DayContent
     {
-        public string Lecture { set; get; }
         public string DeliveryType { set; get; }
         public int Duration_mins { set; get; }
     }
