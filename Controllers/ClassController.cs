@@ -72,13 +72,17 @@ namespace kroniiapi.Controllers
 
             foreach (Class c in classList)
             {
-                //c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
                 c.Admin = await _adminService.GetAdminById(c.AdminId);
             }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "Classes not found"));
+            }
+            foreach (var item in classListDto)
+            {
+                var trainers = await _trainerService.GetTrainerListByClassId(item.ClassId);
+                item.Trainer = _mapper.Map<List<TrainerInClassResponse>>(trainers);
             }
             return Ok(new PaginationResponse<IEnumerable<ClassResponse>>(totalRecord, classListDto));
         }
