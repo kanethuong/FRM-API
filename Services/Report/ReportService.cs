@@ -8,6 +8,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.ReportDTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static kroniiapi.Services.Attendance.AttendanceStatus;
 
 namespace kroniiapi.Services.Report
 {
@@ -110,9 +111,39 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A dictionary store attendance date and list of trainee status in that day</returns>
-        public Dictionary<DateTime, List<TraineeAttendance>> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime))
+        public async Task<Dictionary<DateTime, List<TraineeAttendance>>> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime))
         {
-            return null;
+            IEnumerable<int> traineeIdList = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToListAsync();
+            if (traineeIdList.Count() == 0)
+            {
+                return new Dictionary<DateTime, List<TraineeAttendance>>();
+            }
+            DateTime startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
+            DateTime endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
+            Dictionary<DateTime, List<TraineeAttendance>> attendanceInfo = new Dictionary<DateTime, List<TraineeAttendance>>();
+            if (reportAt == default(DateTime))
+            {
+                startDate = DateTime.MinValue;
+                endDate = DateTime.MaxValue;
+            }
+
+            List<TraineeAttendance> traineeAttendances;
+            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+            {
+                traineeAttendances = new List<TraineeAttendance>();
+                foreach (int traineeId in traineeIdList)
+                {
+                traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
+                                                       .Select(a => new TraineeAttendance
+                                                       {
+                                                           TraineeId = a.TraineeId,
+                                                           Status = a.Status
+                                                       })
+                                                       .FirstOrDefaultAsync());
+                }
+                attendanceInfo.Add(date, traineeAttendances);
+            }
+            return attendanceInfo;
         }
 
         /// <summary>
@@ -121,9 +152,140 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A dictionary of store report month and list of tranee report</returns>
-        public Dictionary<DateTime, List<AttendanceReport>> GetAttendanceReport(int classId, DateTime reportAt = default(DateTime))
+        public Dictionary<int, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, int monthReport)
         {
-            return null;
+            List<AttendanceReport> attendanceReports = new();
+            var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            foreach (var trainee in traineeList)
+            {
+                AttendanceReport ap = this.GetAttendanceReportByTraineeAndMonth(trainee, monthReport);
+                attendanceReports.Add(ap);
+            }
+            return new Dictionary<int, List<AttendanceReport>> {
+                    { monthReport, attendanceReports }
+                };
+        }
+        private AttendanceReport GetAttendanceReportByTraineeAndMonth(Trainee trainee, int monthReport)
+        {
+            AttendanceReport ap = new AttendanceReport()
+            {
+                TraineeId = trainee.TraineeId,
+                NumberOfAbsent = 0,
+                NumberOfLateInAndEarlyOut = 0,
+                NoPermissionRate = 0,
+                DisciplinaryPoint = 1
+            };
+            //get Number of trainee absent with A or An Status with month in report
+            ap.NumberOfAbsent = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
+                                                                      && t.Date.Month == monthReport
+                                                                      && (t.Status == nameof(_attendanceStatus.An)
+                                                                         || t.Status == nameof(_attendanceStatus.A))).Count();
+            //get Number of trainee Late in and early out with Ln/L/En/E Status with month in report
+            ap.NumberOfLateInAndEarlyOut = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
+                                                                      && t.Date.Month == monthReport
+                                                                      && (t.Status == nameof(_attendanceStatus.Ln)
+                                                                         || t.Status == nameof(_attendanceStatus.L)
+                                                                         || t.Status == nameof(_attendanceStatus.En)
+                                                                         || t.Status == nameof(_attendanceStatus.E))).Count();
+            //Calculate No permission rate = Total of (Ln,An,En) / Total of (L,Ln,A,An,E,En)
+            if (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut != 0)  //Total of (L,Ln,A,An,E,En) != 0
+            {
+                var numberOfNoPermission = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
+                                                                     && t.Date.Month == monthReport
+                                                                     && (t.Status == nameof(_attendanceStatus.Ln)
+                                                                        || t.Status == nameof(_attendanceStatus.An)
+                                                                        || t.Status == nameof(_attendanceStatus.En))).Count();
+                ap.NoPermissionRate = numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
+            }
+            var attCount = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
+                                                                        && t.Date.Month == monthReport).Count();
+            float violationRate = (float)(ap.NumberOfLateInAndEarlyOut / 2 + ap.NumberOfAbsent) / attCount;
+            //Calculate disciplinary point by using formula from excel
+            ap.DisciplinaryPoint = CalculateDisciplinaryPoint(violationRate, ap.NoPermissionRate);
+            return ap;
+        }
+
+        /// <summary>
+        /// Apply formula from excel to calculate disciplinary point
+        /// </summary>
+        /// <param name="violationRate"></param>
+        /// <param name="NoPermissionRate"></param>
+        /// <returns>return disciplinary point</returns>
+        private float CalculateDisciplinaryPoint(float violationRate, float NoPermissionRate)
+        {
+            float DisciplinaryPoint = 0;
+            if (violationRate <= 0.05f)
+            {
+                DisciplinaryPoint = 1;
+            }
+            else if (violationRate <= 0.2f)
+            {
+                DisciplinaryPoint = 0.8f;
+            }
+            else if (violationRate <= 0.3f)
+            {
+                DisciplinaryPoint = 0.6f;
+            }
+            else if (violationRate < 0.5f)
+            {
+                DisciplinaryPoint = 0.5f;
+            }
+            else if (violationRate >= 0.5f && NoPermissionRate >= 0.2f)
+            {
+                DisciplinaryPoint = 0;
+            }
+            else
+            {
+                DisciplinaryPoint = 0.2f;
+            }
+            return DisciplinaryPoint;
+        }
+        /// <summary>
+        /// Get total attendance report in all month
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public List<AttendanceReport> GetTotalAttendanceReports(int classId)
+        {
+            var attendanceReports = new List<AttendanceReport>();
+            var classGet = _dataContext.Classes.FirstOrDefault(c => c.ClassId == classId);
+            var start = classGet.StartDay;
+            var end = classGet.EndDay;
+            // set end-date to end of month
+            end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));
+            // get the list of month of class duration
+            var listMonth = Enumerable.Range(0, Int32.MaxValue)
+                                .Select(e => start.AddMonths(e))
+                                .TakeWhile(e => e <= end)
+                                .Select(e => e.Month);
+
+            var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            foreach (var trainee in traineeList)
+            {
+                var traineeAttRpAll = new AttendanceReport()
+                {
+                    TraineeId = trainee.TraineeId,
+                    NumberOfAbsent = 0,
+                    NumberOfLateInAndEarlyOut = 0,
+                    NoPermissionRate = 0,
+                    DisciplinaryPoint = 1
+                };
+                // calculate the sum of absent, late in and early out 
+                // sum of no permission rate and disciplinary point to calculate average later
+                foreach (var month in listMonth)
+                {
+                    var att = this.GetAttendanceReportByTraineeAndMonth(trainee, month);
+                    traineeAttRpAll.NumberOfAbsent += att.NumberOfAbsent;
+                    traineeAttRpAll.NumberOfLateInAndEarlyOut += att.NumberOfLateInAndEarlyOut;
+                    traineeAttRpAll.NoPermissionRate += att.NoPermissionRate;
+                    traineeAttRpAll.DisciplinaryPoint += att.DisciplinaryPoint;
+                }
+                // divide no permission rate and disciplinary point by number of months to calculate average 
+                traineeAttRpAll.NoPermissionRate = traineeAttRpAll.NoPermissionRate / listMonth.Count();
+                traineeAttRpAll.DisciplinaryPoint = traineeAttRpAll.DisciplinaryPoint / listMonth.Count();
+                attendanceReports.Add(traineeAttRpAll);
+            }
+            return attendanceReports;
         }
 
         /// <summary>
