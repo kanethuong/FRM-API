@@ -63,8 +63,8 @@ namespace kroniiapi.Services
         /// <returns>Tuple List of  Class Delete Request</returns>
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
-            var listRequest = await _dataContext.DeleteClassRequests
-                                    .Where(c => c.IsAccepted == null && c.Class.ClassName.ToUpper().Contains(paginationParameter.SearchName.ToUpper()))
+            IQueryable<DeleteClassRequest> listRequest =  _dataContext.DeleteClassRequests
+                                    .Where(c => c.IsAccepted == null)
                                     .Select(c => new DeleteClassRequest
                                     {
                                         DeleteClassRequestId = c.DeleteClassRequestId,
@@ -88,15 +88,18 @@ namespace kroniiapi.Services
                                             AvatarURL = c.Admin.AvatarURL,
                                             Email = c.Admin.Email,
                                         }
-                                    }
-                                    ).ToListAsync();
+                                    });
+            if (paginationParameter.SearchName != "")
+            {
+                listRequest = listRequest.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Class.ClassName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }                        
 
-            int totalRecords = listRequest.Count();
-
-            var rs = listRequest.OrderBy(c => c.ClassId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
-
+            IEnumerable<DeleteClassRequest> rs = await listRequest
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
         /// <summary>
@@ -555,5 +558,6 @@ namespace kroniiapi.Services
             rowInserted = await _dataContext.SaveChangesAsync();
             return rowInserted;
         }
+
     }
 }

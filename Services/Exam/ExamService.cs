@@ -93,23 +93,6 @@ namespace kroniiapi.Services
                 })
                 .ToListAsync();
 
-            // IEnumerable<Exam> rs = await _dataContext.Exams.Where(e => e.ExamName.ToLower().Contains(paginationParameter.SearchName.ToLower()))
-            //     .GetCount(out var totalRecords)
-            //     .OrderByDescending(e => e.ExamDay)
-            //     .GetPage(paginationParameter)
-            //     .Select(e => new Exam
-            //     {
-            //         ExamId = e.ExamId,
-            //         ExamName = e.ExamName,
-            //         Description = e.Description,
-            //         Module = e.Module,
-            //         ExamDay = e.ExamDay,
-            //         DurationInMinute = e.DurationInMinute,
-            //         Admin = e.Admin,
-            //         IsCancelled = e.IsCancelled
-            //     })
-            //     .ToListAsync();
-
             return Tuple.Create(totalRecords, rs);
         }
 
