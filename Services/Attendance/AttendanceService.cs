@@ -109,22 +109,6 @@ namespace kroniiapi.AttendanceServicesss
             return attendanceReport;
         }
 
-        List<DateTime> holidayss = new List<DateTime> {
-            // New Year
-            new DateTime(2000, 1, 1),
-            //
-            new DateTime(2000, 4, 30),
-            //
-            new DateTime(2000, 5, 1),
-            //
-            new DateTime(2000,9,1),
-            //
-            new DateTime(2000, 9, 2),
-            //
-            new DateTime(2000,9,3),
-            //
-        };
-
         /// <summary>
         /// Check if Date is a Day Off
         /// </summary>
@@ -132,6 +116,35 @@ namespace kroniiapi.AttendanceServicesss
         /// <returns>true or false</returns>
         private bool DayOffCheck(DateTime date)
         {
+            List<DateTime> holidayss = new List<DateTime> {
+                // New Year
+                new DateTime(2000, 1, 1),
+                //
+                new DateTime(2000, 4, 30),
+                //
+                new DateTime(2000, 5, 1),
+                //
+                new DateTime(2000,9,1),
+                //
+                new DateTime(2000, 9, 2),
+                //
+                new DateTime(2000,9,3),
+                //
+            };
+
+            holidayss.Add(VietnameseLunarDateConverter.LunarDate(10, 3, date.Year));
+            try
+            {
+                holidayss.Add(VietnameseLunarDateConverter.LunarDate(30, 12, date.Year));
+            }
+            catch
+            {
+                holidayss.Add(VietnameseLunarDateConverter.LunarDate(29, 12, date.Year));
+            }
+            holidayss.Add(VietnameseLunarDateConverter.LunarDate(1, 1, date.Year));
+            holidayss.Add(VietnameseLunarDateConverter.LunarDate(2, 1, date.Year));
+            holidayss.Add(VietnameseLunarDateConverter.LunarDate(3, 1, date.Year));
+
             if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
             {
                 return true;
@@ -144,20 +157,6 @@ namespace kroniiapi.AttendanceServicesss
                 }
             }
 
-            DateTime lunarDate = VietnameseLunarDateConverter.LunarDate(date.Day,date.Month,date.Year);
-
-            if(lunarDate.Month == 5 && lunarDate.Day == 10)
-            {
-                return true;
-            }
-            if(lunarDate.Month == 12 && lunarDate.Day == 30)
-            {
-                return true;
-            }
-            if(lunarDate.Month == 1 && (lunarDate.Day == 1 || lunarDate.Day == 2 || lunarDate.Day == 2))
-            {
-                return true;
-            }
             return false;
         }
 
