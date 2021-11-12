@@ -58,13 +58,6 @@ namespace kroniiapi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("att/{classId:int}")]
-        public async Task<ActionResult> MakeAttendance(int classId)
-        {
-            await _attendanceService.InitAttendanceWhenCreateClass(classId);
-            return Ok();
-        }
-
         /// <summary>
         /// Update trainee attendance status
         /// </summary>
