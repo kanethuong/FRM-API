@@ -210,6 +210,11 @@ namespace kroniiapi.Services.Report
             }
             return DisciplinaryPoint;
         }
+        /// <summary>
+        /// Get total attendance report in all month
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
         public List<AttendanceReport> GetTotalAttendanceReports(int classId)
         {
             var attendanceReports = new List<AttendanceReport>();
@@ -235,6 +240,8 @@ namespace kroniiapi.Services.Report
                     NoPermissionRate = 0,
                     DisciplinaryPoint = 1
                 };
+                // calculate the sum of absent, late in and early out 
+                // sum of no permission rate and disciplinary point to calculate average later
                 foreach (var month in listMonth)
                 {
                     var att = this.GetAttendanceReportByTraineeAndMonth(trainee, month);
@@ -243,6 +250,7 @@ namespace kroniiapi.Services.Report
                     traineeAttRpAll.NoPermissionRate += att.NoPermissionRate;
                     traineeAttRpAll.DisciplinaryPoint += att.DisciplinaryPoint;
                 }
+                // divide no permission rate and disciplinary point by number of months to calculate average 
                 traineeAttRpAll.NoPermissionRate = traineeAttRpAll.NoPermissionRate / listMonth.Count();
                 traineeAttRpAll.DisciplinaryPoint = traineeAttRpAll.DisciplinaryPoint / listMonth.Count();
                 attendanceReports.Add(traineeAttRpAll);
