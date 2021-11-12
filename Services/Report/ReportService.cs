@@ -132,9 +132,16 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">If of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>List of reward and penalty of a class</returns>
-        public ICollection<RewardAndPenalty> GetRewardAndPenaltyCore(int classId, DateTime reportAt = default(DateTime))
+        public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
-            return null;
+            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            List<BonusAndPunish> rp = new List<BonusAndPunish>();
+            foreach (var item in trainees)
+            {
+                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
+            }
+            List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
+            return rpDto;
         }
 
         /// <summary>
@@ -160,23 +167,26 @@ namespace kroniiapi.Services.Report
 
             TopicGrades topicGrades = GetTopicGrades(classId);
 
-            if (topicGrades == null)
-                return null;
-
-            foreach (var traineeMarkInfor in topicGrades.FinalMarks) //add academic mark 
+            if (topicGrades != null)
             {
-                traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
-            }
-
-            foreach (var row in GetRewardAndPenaltyCore(classId, reportAt)) // add bonus and penalty mark
-            {
-                if (row.BonusAndPenaltyPoint > 0)
+                foreach (var traineeMarkInfor in topicGrades.FinalMarks) //add academic mark 
                 {
-                    traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
+                    traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
                 }
-                else
+            }
+            var RewardAndPenalty = GetRewardAndPenaltyScore(classId, reportAt);
+            if (RewardAndPenalty != null)
+            {
+                foreach (var row in RewardAndPenalty) // add bonus and penalty mark
                 {
-                    traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
+                    if (row.BonusAndPenaltyPoint > 0)
+                    {
+                        traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
+                    }
+                    else
+                    {
+                        traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
+                    }
                 }
             }
 
@@ -207,7 +217,6 @@ namespace kroniiapi.Services.Report
                 }
 
             }
-
             return traineeGPAById.Values;
         }
 
@@ -251,7 +260,172 @@ namespace kroniiapi.Services.Report
         /// <returns>Object with all fields in topic grades</returns>
         public TopicGrades GetTopicGrades(int classId)
         {
-            return null;
+            //Get all modules with class id
+            var classModules = _dataContext.ClassModules.Where(f => f.ClassId == classId)
+                                                        .Select(c => new ClassModule
+                                                        {
+                                                            ModuleId = c.ModuleId,
+                                                            Module = c.Module,
+                                                            WeightNumber = c.WeightNumber
+                                                        })
+                                                        .ToList();
+            //Add item to Topic Info
+            List<TopicInfo> topicInfo = new List<TopicInfo>();
+            foreach (var item in classModules)
+            {
+                var itemToResponse = new TopicInfo
+                {
+                    TopicId = item.ModuleId,
+                    Name = item.Module.ModuleName,
+                    MaxScore = item.Module.MaxScore,
+                    PassingScore = item.Module.PassingScore,
+                    WeightNumber = item.WeightNumber
+                };
+                topicInfo.Add(itemToResponse);
+            }
+
+            List<AverageScoreInfo> averageScoreInfo = new List<AverageScoreInfo>();
+            //Set startDate and endDate to check and set key for Dictionary
+            DateTime startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
+            DateTime endDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.EndDay).FirstOrDefault();
+            foreach (var item in classModules)
+            {
+                var itemToResponse = new AverageScoreInfo
+                {
+                    TopicId = item.ModuleId,
+                    Month = startDate,
+                    MaxScore = item.Module.MaxScore * item.WeightNumber,
+                    PassingScore = item.Module.PassingScore * item.WeightNumber,
+                    WeightNumber = item.WeightNumber
+                };
+                //Move to the next month
+                startDate = startDate.AddMonths(1);
+                averageScoreInfo.Add(itemToResponse);
+            }
+            //Set startDate again
+            startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
+            //Set Dictionary's key = first month of class duration
+            var key = startDate.Month;
+            //Variable to check if key exceed over the number of months
+            var nextKeyMonth = startDate;
+            var topicIds = topicInfo.Select(i => i.TopicId).ToList();
+            //List of traineeId in class
+            var trainees = _dataContext.Trainees.Where(f => f.ClassId == classId).Select(t => t.TraineeId).ToList();
+            //Get mark by moduleId and traineeId
+            var marks = _dataContext.Marks.Where(f => topicIds.Contains(f.ModuleId) && trainees.Contains(f.TraineeId)).OrderBy(c => c.TraineeId).ToList();
+            Dictionary<int, List<TraineeGrades>> traineeGrades = new Dictionary<int, List<TraineeGrades>>();
+            List<TraineeGrades> traineeGradeList = new List<TraineeGrades>();
+
+            foreach (var i in classModules)
+            {
+                foreach (var item in marks)
+                {
+                    var itemToResponse = new TraineeGrades
+                    {
+                        TopicId = item.ModuleId,
+                        TraineeId = item.TraineeId,
+                        Score = item.Score
+                    };
+                    //Add by distinct ModuleId
+                    if (itemToResponse.TopicId == i.ModuleId)
+                    {
+                        traineeGradeList.Add(itemToResponse);
+                    }
+                }
+                //Add to dictionary
+                traineeGrades.Add(key, traineeGradeList);
+                traineeGradeList = new List<TraineeGrades>();
+                if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
+                {
+                    key = startDate.AddMonths(-1).Month;
+                    nextKeyMonth = startDate.AddMonths(-1);
+                }
+                if (nextKeyMonth.Year <= endDate.Year && nextKeyMonth.Month < endDate.Month)
+                {
+                    nextKeyMonth = nextKeyMonth.AddMonths(1);
+                    key = nextKeyMonth.Month;
+                }
+
+            }
+            Dictionary<int, List<TraineeGrades>> traineeAvarageGrades = new Dictionary<int, List<TraineeGrades>>();
+            List<TraineeGrades> traineeAvarageGradeList = new List<TraineeGrades>();
+            //Set back variable
+            nextKeyMonth = startDate;
+            key = startDate.Month;
+            foreach (var i in classModules)
+            {
+                foreach (var item in marks)
+                {
+                    var itemToResponse = new TraineeGrades
+                    {
+                        TopicId = item.ModuleId,
+                        TraineeId = item.TraineeId,
+                        Score = (item.Score * averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
+                                                                .Select(w => w.WeightNumber)
+                                                                .FirstOrDefault()) / (averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
+                                                                            .Select(m => m.MaxScore)
+                                                                            .FirstOrDefault())
+
+                    };
+                    //Add to list, distinct by ModuleId
+                    if (itemToResponse.TopicId == i.ModuleId)
+                    {
+                        traineeAvarageGradeList.Add(itemToResponse);
+                    }
+
+                }
+                //Add to dictionary
+                traineeAvarageGrades.Add(key, traineeAvarageGradeList);
+                traineeAvarageGradeList = new List<TraineeGrades>();
+                if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
+                {
+                    key = startDate.AddMonths(-1).Month;
+                    nextKeyMonth = startDate.AddMonths(-1);
+                }
+                if (nextKeyMonth.Year <= endDate.Year && nextKeyMonth.Month < endDate.Month)
+                {
+                    nextKeyMonth = nextKeyMonth.AddMonths(1);
+                    key = nextKeyMonth.Month;
+                }
+            }
+
+
+            List<TraineeGrades> finalMarks = new List<TraineeGrades>();
+            //Calculate final max score
+            var finalMaxScore = topicInfo.Sum(m => m.MaxScore * m.WeightNumber);
+            foreach (var item in marks)
+            {
+                var itemToResponse = new TraineeGrades
+                {
+                    TopicId = 0,
+                    TraineeId = item.TraineeId,
+                    //Score * WeightNumber
+                    Score = item.Score * (topicInfo.Where(m => m.TopicId == item.ModuleId).Select(w => w.WeightNumber).FirstOrDefault())
+                };
+                //Score = score/final max score
+                itemToResponse.Score = itemToResponse.Score / finalMaxScore;
+                //If that traineeId exist in list
+                if (finalMarks.Select(m => m.TraineeId).Contains(itemToResponse.TraineeId))
+                {
+                    //Sum the existed and adding mark
+                    finalMarks.Where(m => m.TraineeId == itemToResponse.TraineeId).FirstOrDefault().Score = finalMarks.Where(m => m.TraineeId == itemToResponse.TraineeId).FirstOrDefault().Score + itemToResponse.Score;
+                }
+                else
+                {
+                    finalMarks.Add(itemToResponse);
+                }
+            }
+
+
+            TopicGrades topicGrades = new TopicGrades()
+            {
+                TopicInfos = topicInfo,
+                TraineeTopicGrades = traineeGrades,
+                AverageScoreInfos = averageScoreInfo,
+                TraineeAverageGrades = traineeAvarageGrades,
+                FinalMarks = finalMarks
+            };
+            return topicGrades;
         }
 
         /// <summary>
