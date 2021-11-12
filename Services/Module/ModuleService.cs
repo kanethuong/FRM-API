@@ -198,7 +198,7 @@ namespace kroniiapi.Services
                 {
                     return;
                 }
-                
+
                 var duration = int.Parse(cells[5].Value.ToString());
                 var dayCell = cells[0].Value;
 
@@ -219,10 +219,20 @@ namespace kroniiapi.Services
 
                 foreach (var day in days)
                 {
-                    ModuleExcelInput moduleExcelInput = new();
-                    moduleExcelInput.Day = day;
-                    moduleExcelInput.Duration_mins = duration;
-                    moduleExcelInputs.Add(moduleExcelInput);
+                    if (days.Count() > 1)
+                    {
+                        ModuleExcelInput moduleExcelInput = new();
+                        moduleExcelInput.Day = day;
+                        moduleExcelInput.Duration_mins = duration/days.Count();
+                        moduleExcelInputs.Add(moduleExcelInput);
+                    }
+                    else
+                    {
+                        ModuleExcelInput moduleExcelInput = new();
+                        moduleExcelInput.Day = day;
+                        moduleExcelInput.Duration_mins = duration;
+                        moduleExcelInputs.Add(moduleExcelInput);
+                    }
                 }
 
             });
@@ -231,44 +241,16 @@ namespace kroniiapi.Services
             List<ModuleExcelInput> result = new();
             foreach (var group in groupby)
             {
-                int  sum = 0;
+                int sum = 0;
                 foreach (var item in group)
                 {
-                   sum += item.Duration_mins;
+                    sum += item.Duration_mins;
                 }
                 ModuleExcelInput moduleExcel = new();
                 moduleExcel.Day = group.Key;
                 moduleExcel.ModuleName = moduleName;
                 moduleExcel.Duration_mins = sum;
                 result.Add(moduleExcel);
-                // ModuleExcelInput concept = new();
-                // concept.Day = group.Key;
-                // concept.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
-                // concept.DeliveryType = "Concept/Lecture";
-                // concept.Duration_mins = sumConcept;
-
-                // ModuleExcelInput assignment = new();
-                // assignment.Day = group.Key;
-                // assignment.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
-                // assignment.DeliveryType = "Assignment/Lab";
-                // assignment.Duration_mins = sumAssignment;
-
-                // ModuleExcelInput guides = new();
-                // guides.Day = group.Key;
-                // guides.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
-                // guides.DeliveryType = "Guides/Review";
-                // guides.Duration_mins = sumGuides;
-
-                // ModuleExcelInput quiz = new();
-                // quiz.Day = group.Key;
-                // quiz.Lecture = group.Where(c => c.Day == group.Key).Select(c => c.Lecture).FirstOrDefault();
-                // quiz.DeliveryType = "Test/Quiz";
-                // quiz.Duration_mins = sumTest;
-
-                // rs.Add(concept);
-                // rs.Add(guides);
-                // rs.Add(assignment);
-                // rs.Add(quiz);
             }
             return result;
         }

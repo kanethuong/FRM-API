@@ -296,11 +296,11 @@ namespace kroniiapi.Services.Report
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
-            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            var trainees = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             List<BonusAndPunish> rp = new List<BonusAndPunish>();
             foreach (var item in trainees)
             {
-                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
+                rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
             }
             List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
             return rpDto;
@@ -402,13 +402,19 @@ namespace kroniiapi.Services.Report
         {
             var traineeIds = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToList();
             List<Feedback> traineeFeedbacks = new();
-            TimeSpan oneday = new TimeSpan(23, 59, 59);
-            var startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
-            var endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
-            endDate = endDate.Add(oneday);
-            foreach (var item in traineeIds)
+            if (reportAt == new DateTime(1,1,1))
             {
-                traineeFeedbacks.Add(_dataContext.Feedbacks.Where(t => t.TraineeId == item && t.CreatedAt <= endDate && t.CreatedAt >= startDate).FirstOrDefault());
+                foreach (var item in traineeIds)
+                {
+                    traineeFeedbacks.AddRange(_dataContext.Feedbacks.Where(t => t.TraineeId == item).ToList());
+                }
+            }
+            else
+            {
+                foreach (var item in traineeIds)
+                {
+                    traineeFeedbacks.Add(_dataContext.Feedbacks.Where(t => t.TraineeId == item && t.CreatedAt.Year == reportAt.Year && t.CreatedAt.Month == reportAt.Month).FirstOrDefault());
+                }
             }
             ICollection<TraineeFeedback> traineeFeedbacksMapped = _mapper.Map<ICollection<TraineeFeedback>>(traineeFeedbacks);
             return traineeFeedbacksMapped;
