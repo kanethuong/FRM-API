@@ -124,11 +124,11 @@ namespace kroniiapi.AttendanceServicesss
             holidayss.Add(VietnameseLunarDateConverter.LunarDate(10, 3, date.Year));
             try
             {
-                holidayss.Add(VietnameseLunarDateConverter.LunarDate(30, 12, date.Year));
+                holidayss.Add(VietnameseLunarDateConverter.LunarDate(30, 12, date.Year-1));
             }
             catch
             {
-                holidayss.Add(VietnameseLunarDateConverter.LunarDate(29, 12, date.Year));
+                holidayss.Add(VietnameseLunarDateConverter.LunarDate(29, 12, date.Year-1));
             }
             holidayss.Add(VietnameseLunarDateConverter.LunarDate(1, 1, date.Year));
             holidayss.Add(VietnameseLunarDateConverter.LunarDate(2, 1, date.Year));
