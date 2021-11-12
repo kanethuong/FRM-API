@@ -13,7 +13,7 @@ namespace kroniiapi.Services.Report
         TopicGrades GetTopicGrades(int classId);
         Task<ICollection<TraineeGPA>> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime));
 
-        ICollection<RewardAndPenalty> GetRewardAndPenaltyCore(int classId, DateTime reportAt = default(DateTime));
+        ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime));
         ICollection<TraineeFeedback> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime));
         Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime));
     }

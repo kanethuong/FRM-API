@@ -381,14 +381,17 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="accountInputs">the list of accounts</param>
         /// <returns>
-        /// A tuple contains a boolean value indicating whether the insertion was successful, 
-        /// and a integer given the index of the account if the insertion was failed, or -1 if the insertion was successful
+        /// A dictionary contains failed accounts with error code
+        /// - Invalid Email : 0
+        /// - Account Existed : -1
+        /// - Invalid Role : 1
         /// </returns>
         /// <exception cref="System.Data.DataException">If there is an error when saving data</exception>
-        public async Task<Tuple<bool, int>> InsertNewAccount(IList<AccountInput> accountInputs)
+        public async Task<IDictionary<int, int>> InsertNewAccount(IList<AccountInput> accountInputs)
         {
+            Dictionary<int, int> failAccounts = new();
 
-            Dictionary<string, string> passwordByEmail = new Dictionary<string, string>(); // email key, password value\
+            Dictionary<string, string> passwordByEmail = new(); // email key, password value
             string passwordBeforeHash;
 
             for (int processingIndex = 0; processingIndex < accountInputs.Count; processingIndex++)
@@ -408,7 +411,8 @@ namespace kroniiapi.Services
                         }
                         catch (ArgumentException)
                         {
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, 0);
+                            break;
                         }
 
                         adminstratorToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
@@ -418,8 +422,8 @@ namespace kroniiapi.Services
                             a.Email.Equals(adminstratorToAdd.Email)
                         ))
                         {
-                            DiscardChanges();
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, -1);
+                            break;
                         }
                         adminstratorToAdd.AvatarURL = defaultAvatar;
                         _dataContext.Administrators.Add(adminstratorToAdd);
@@ -435,14 +439,15 @@ namespace kroniiapi.Services
                         }
                         catch (ArgumentException)
                         {
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, 0);
+                            break;
                         }
 
                         adminToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
                         if (!_adminService.InsertNewAdminNoSaveChange(adminToAdd))
                         {
-                            DiscardChanges();
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, -1);
+                            break;
                         }
                         break;
                     case "trainer":
@@ -456,15 +461,16 @@ namespace kroniiapi.Services
                         }
                         catch (ArgumentException)
                         {
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, 0);
+                            break;
                         }
 
                         trainerToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
 
                         if (!_trainerService.InsertNewTrainerNoSaveChange(trainerToAdd))
                         {
-                            DiscardChanges();
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, -1);
+                            break;
                         }
                         break;
                     case "trainee":
@@ -478,15 +484,16 @@ namespace kroniiapi.Services
                         }
                         catch (ArgumentException)
                         {
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, 0);
+                            break;
                         }
 
                         traineeToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
 
                         if (!_traineeService.InsertNewTraineeNoSaveChange(traineeToAdd))
                         {
-                            DiscardChanges();
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, -1);
+                            break;
                         }
                         break;
                     case "company":
@@ -500,20 +507,21 @@ namespace kroniiapi.Services
                         }
                         catch (ArgumentException)
                         {
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, 0);
+                            break;
                         }
 
                         companyToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
 
                         if (!_companyService.InsertNewCompanyNoSaveChange(companyToAdd))
                         {
-                            DiscardChanges();
-                            return Tuple.Create(false, processingIndex);
+                            failAccounts.Add(processingIndex, -1);
+                            break;
                         }
                         break;
                     default:
-                        DiscardChanges();
-                        return Tuple.Create(false, processingIndex);
+                        failAccounts.Add(processingIndex, 1);
+                        break;
                 }
             }
 
@@ -525,7 +533,7 @@ namespace kroniiapi.Services
                 sendEmail(account.Key, account.Value);
             }
 
-            return Tuple.Create(true, -1);
+            return failAccounts;
         }
 
         /// <summary>
