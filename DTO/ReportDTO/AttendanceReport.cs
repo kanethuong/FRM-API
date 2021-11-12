@@ -7,7 +7,7 @@ namespace kroniiapi.DTO.ReportDTO
 {
     public class AttendanceReport
     {
-        public int TrainerId { get; set; }
+        public int TraineeId { get; set; }
         public int NumberOfAbsent { get; set; }
         public int NumberOfLateInAndEarlyOut { get; set; }
         public float NoPermissionRate { get; set; }

@@ -191,4 +191,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Remove Module -->
+    <div id="removeModule">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Remove Module(from class)</h3>
+        </div>
+        <p>ThoTA</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Module/{moduleId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>admin, trainer</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>Delete</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><code><pre>
+                    {
+                        "ClassId": int,
+                        "ModuleId": int,
+                        "TrainerId": int
+                    }
+                </pre></code></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
+            </div>
+        </div>
+    </div>
 </div>    

@@ -6,11 +6,8 @@
  * this copyright notice appears in all copies.
  * </p>
  */
-using System;
 using System.Runtime.InteropServices;
 using System.Text;
-
-using Microsoft.Win32;
 
 namespace System.Globalization
 {
@@ -22,10 +19,6 @@ namespace System.Globalization
     public class VietnameseCalendar : Calendar
     {
         #region Constants
-
-        //// TODO: Must use Environment.GetResourceString()
-        private static readonly Resources.ResourceManager resource =
-            new Resources.ResourceManager("mscorlib", Reflection.Assembly.GetAssembly(typeof(int)));
 
         /**
          * Each gregorian years will be ecrypted with 3 bytes (24 bits).
@@ -187,14 +180,6 @@ namespace System.Globalization
         {
             get
             {
-                if (base.TwoDigitYearMax < 0)
-                {
-                    //// Call Win32 ::GetCalendarInfo() to retrieve CAL_ITWODIGITYEARMAX value
-                    base.TwoDigitYearMax = GetSystemTwoDigitYearSetting(
-                        1,      // CAL_GREGORIAN - Gregorian (localized)
-                        this.GetYear(maxDate));
-                }
-
                 return base.TwoDigitYearMax;
             }
             set
@@ -207,7 +192,7 @@ namespace System.Globalization
                         "value",
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            resource.GetString("ArgumentOutOfRange_Range"),
+                            "Calendar Year out of range {0} to {1}",
                             MinCalendarYear,
                             MaxCalendarYear));
                 }
@@ -222,143 +207,13 @@ namespace System.Globalization
 
         #endregion
 
-        #region Native methods
-
-        /// <summary>
-        /// Retrieves information about a calendar for a locale specified by identifier.
-        /// </summary>
-        /// <param name="localeId">Locale identifier that specifies the locale for which to retrieve
-        /// calendar information.</param>
-        /// <param name="calendarId">Calendar identifier.</param>
-        /// <param name="calendarType">Type of information to retrieve.</param>
-        /// <param name="data">Pointer to a buffer in which this function retrieves the requested data
-        /// as a string. If <c>CAL_RETURN_NUMBER</c> is specified in <paramref name="calendarType"/>,
-        /// this parameter must be set to a <c>null</c> pointer.</param>
-        /// <param name="dataSize">Size, in characters, of the <paramref name="data"/> buffer.
-        /// The application can set this parameter to 0 to return the required size for the calendar data
-        /// buffer. In this case, the <paramref name="data"/> parameter is not used.
-        /// If <c>CAL_RETURN_NUMBER</c> is specified for <paramref name="calendarType"/>,
-        /// the value of <paramref name="dataSize"/> must be <c>0</c>.</param>
-        /// <param name="value">Pointer to a variable that receives the requested data as a number.
-        /// If <c>CAL_RETURN_NUMBER</c> is not specified in <paramref name="calendarType"/>,
-        /// then <paramref name="value"/> must be <c>null</c>.</param>
-        /// <returns>
-        /// <p>The number of characters retrieved in the <paramref name="data"/> buffer,
-        /// with <paramref name="dataSize"/> set to a nonzero value, if successful.<br/>
-        /// If the function succeeds, <paramref name="dataSize"/> is set to 0, and <c>CAL_RETURN_NUMBER</c>
-        /// is not specified, the return value is the size of the buffer required to hold the
-        /// calendar information.<br/>
-        /// If the function succeeds, <paramref name="dataSize"/> is set 0, and <c>CAL_RETURN_NUMBER</c>
-        /// is specified, the return value is the size of the value retrieved in <paramref name="value"/>,
-        /// that is, 2 for the Unicode version of the function or 4 for the ANSI version.</p>
-        /// <p>This function returns 0 if it does not succeed.</p>
-        /// </returns>
-        [DllImport("Kernel32.dll", EntryPoint = "GetCalendarInfo", CharSet = CharSet.Auto, BestFitMapping = false, ThrowOnUnmappableChar = true)]
-        internal static extern int GetCalendarInfo(
-            int/*LCID*/ localeId,
-            int/*CALID*/ calendarId,
-            int/*CALTYPE*/ calendarType,
-            StringBuilder/*LPSTR*/ data,
-            int dataSize,
-            ref int/*LPDWORD*/ value);
-
-        internal static int GetTwoDigitYearMax(int calendarId)
-        {
-            try
-            {
-                int num = 0, ret = GetCalendarInfo(
-                    0x042a,     // vi-VN
-                    calendarId,
-                    0x20000030, // CAL_RETURN_NUMBER | CAL_ITWODIGITYEARMAX
-                    null,
-                    0,
-                    ref num);
-
-                if (ret < 1)
-                {
-                    Console.WriteLine("Native function Kernel32.GetCalendarInfo() returns 0." + Environment.NewLine
-                        + "Call GetLastError() to get extended error information." + Environment.NewLine
-                        + "GetLastError() can return one of the following error codes:" + Environment.NewLine
-                        + " * ERROR_INSUFFICIENT_BUFFER" + Environment.NewLine
-                        + " * ERROR_INVALID_FLAGS" + Environment.NewLine
-                        + " * ERROR_INVALID_PARAMETER");
-
-                    return -1;
-                }
-
-                return num;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Native function Kernel32.GetCalendarInfo() calling exception: {0}", e);
-            }
-
-            return int.MinValue;
-        }
-
-        #endregion
-
         #region Internal methods
-
-        internal static int GetSystemTwoDigitYearSetting(int calendarId, int defaultYearValue)
-        {
-            int num = GetTwoDigitYearMax(calendarId);
-            if (num < 0)
-            {
-                RegistryKey key = null;
-                try
-                {
-                    key = Registry.CurrentUser.OpenSubKey(@"Control Panel\International\Calendars\TwoDigitYearMax", false);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
-                catch (ArgumentException)
-                {
-                }
-
-                if (key != null)
-                {
-                    try
-                    {
-                        object obj = key.GetValue(calendarId.ToString(CultureInfo.InvariantCulture));
-                        if (obj != null)
-                        {
-                            try
-                            {
-                                num = int.Parse(obj.ToString(), CultureInfo.InvariantCulture);
-                            }
-                            catch (ArgumentException)
-                            {
-                            }
-                            catch (FormatException)
-                            {
-                            }
-                            catch (OverflowException)
-                            {
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        key.Close();
-                    }
-                }
-
-                if (num < 0)
-                {
-                    num = defaultYearValue;
-                }
-            }
-
-            return num;
-        }
 
         internal void VerifyWritable()
         {
             if (this.IsReadOnly)
             {
-                throw new InvalidOperationException(resource.GetString("InvalidOperation_ReadOnly"));
+                throw new InvalidOperationException("Read-Only Operation");
             }
         }
 
@@ -370,7 +225,7 @@ namespace System.Globalization
                     "time",
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        resource.GetString("ArgumentOutOfRange_CalendarRange"),
+                        "Date out of range {0} to {1}",
                         minDate,
                         maxDate));
             }
@@ -381,8 +236,7 @@ namespace System.Globalization
             if (era != 0 && era != VietnameseEra)
             {
                 throw new ArgumentOutOfRangeException(
-                    "era",
-                    resource.GetString("ArgumentOutOfRange_InvalidEraValue"));
+                    "era", "Invalid Era");
             }
         }
 
@@ -394,7 +248,7 @@ namespace System.Globalization
                     "year",
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        resource.GetString("ArgumentOutOfRange_Range"),
+                           "Calendar Year out of range {0} to {1}",
                         MinCalendarYear,
                         MaxCalendarYear));
             }
@@ -405,8 +259,7 @@ namespace System.Globalization
             if (month < 1 || month > 13 || (month == 13 && leapMonth == 0))
             {
                 throw new ArgumentOutOfRangeException(
-                    "month",
-                    resource.GetString("ArgumentOutOfRange_Month"));
+                    "month", "Month out of range");
             }
         }
 
@@ -630,7 +483,7 @@ namespace System.Globalization
             {
                 throw new ArgumentOutOfRangeException(
                     "day",
-                    string.Format(CultureInfo.CurrentCulture, resource.GetString("ArgumentOutOfRange_Day"), daysInMonth, month));
+                    string.Format(CultureInfo.CurrentCulture, "Day out of range {0} in month {1}", daysInMonth, month));
             }
 
             return (leapMonth > 0 && month == leapMonth);
@@ -809,7 +662,7 @@ namespace System.Globalization
             {
                 throw new ArgumentOutOfRangeException(
                     "day",
-                    string.Format(CultureInfo.CurrentCulture, resource.GetString("ArgumentOutOfRange_Day"), days, month));
+                    string.Format(CultureInfo.CurrentCulture, "Day out of range {0} in month {1}", days, month));
             }
 
             //// Lunar New Year's Day
@@ -843,8 +696,7 @@ namespace System.Globalization
         /// <exception cref="ArgumentOutOfRangeException">Time is outside the range supported by this calendar.</exception>
         public static void FromDateTime(DateTime time, out int year, out int month, out int day)
         {
-            int leapMonth;
-            FromDateTime(time, out year, out month, out day, out leapMonth);
+            FromDateTime(time, out year, out month, out day, out int leapMonth);
         }
 
         /// <summary>
@@ -877,7 +729,7 @@ namespace System.Globalization
             {
                 lastLen = GetMonthLength(year, month++, leapMonth);
 
-                count  += lastLen;
+                count += lastLen;
             }
 
             //// Calculates the lunar-day
@@ -971,13 +823,13 @@ namespace System.Globalization
                 + (double)ts.Minute / 1440 + (double)ts.Second / 86400 + (double)ts.Millisecond / 86400000;
 
             //// Time in Julian centuries from 2000-01-01 12:00:00 GMT
-            double t  = (jd - 2451545.0) / 36525;
+            double t = (jd - 2451545.0) / 36525;
 
             double t2 = t * t;
             double dr = Math.PI / 180;  // Degree to radian
 
             //// Mean anomaly, degree
-            double m  = 357.52911D + 35999.05029 * t - 0.0001537 * t2
+            double m = 357.52911D + 35999.05029 * t - 0.0001537 * t2
                 - 0.00000048 * t * t2;  // TODO: not in http://www.srrb.noaa.gov/highlights/sunrise/calcdetails.html
 
             //// Mean longitude, degree
