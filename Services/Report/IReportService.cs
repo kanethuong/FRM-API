@@ -15,5 +15,6 @@ namespace kroniiapi.Services.Report
 
         ICollection<RewardAndPenalty> GetRewardAndPenaltyCore(int classId, DateTime reportAt = default(DateTime));
         ICollection<TraineeFeedback> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime));
+        Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime));
     }
 }
