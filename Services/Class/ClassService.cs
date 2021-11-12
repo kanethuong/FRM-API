@@ -558,5 +558,6 @@ namespace kroniiapi.Services
             rowInserted = await _dataContext.SaveChangesAsync();
             return rowInserted;
         }
+
     }
 }
