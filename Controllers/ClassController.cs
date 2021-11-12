@@ -72,13 +72,17 @@ namespace kroniiapi.Controllers
 
             foreach (Class c in classList)
             {
-                //c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
                 c.Admin = await _adminService.GetAdminById(c.AdminId);
             }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "Classes not found"));
+            }
+            foreach (var item in classListDto)
+            {
+                var trainers = await _trainerService.GetTrainerListByClassId(item.ClassId);
+                item.Trainer = _mapper.Map<List<TrainerInClassResponse>>(trainers);
             }
             return Ok(new PaginationResponse<IEnumerable<ClassResponse>>(totalRecord, classListDto));
         }
@@ -244,7 +248,7 @@ namespace kroniiapi.Controllers
         /// <param name="newClassInput">Detail of new class</param>
         /// <returns>201: Class is created / 409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost]
-        [Authorize(Policy = "ClassPost")]
+        // [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
             if (_adminService.CheckAdminExist(newClassInput.AdminId) is false)
@@ -599,7 +603,7 @@ namespace kroniiapi.Controllers
                         await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
                     }
                 }
-                
+
                 // Save Changes
                 try
                 {

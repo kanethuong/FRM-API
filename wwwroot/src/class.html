@@ -49,19 +49,27 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p>
-                <pre><code>{
+<p>
+<pre><code>{
     "totalRecords": int,
     "payload": [
         {
         "classId": int,
         "className": "string",
-        "description": "String",
-        "createdAt": "DateTime",
+        "trainer": [
+            {
+            "fullname": "string",
+            "avatarURL": "string"
+            }
+        ],
+        "creator": "string",
+        "createdAt": "string",
+        "description": "string"
         }
     ]
-}</code></pre>
-                </p>
+}
+    </code></pre>
+</p>
             </div>
         </div>
     </div>

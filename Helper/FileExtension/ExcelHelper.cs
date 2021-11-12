@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using OfficeOpenXml.Drawing.Chart;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -182,19 +183,36 @@ namespace kroniiapi.Helper
         /// <param name="startRow">the row to start the action</param>
         /// <param name="startCol">the column to start the action</param>
         /// <param name="range">how many cells per row to be selected to be filled</param>
-        /// <returns>the worksheet for continuous methods</returns>
-        public static ExcelWorksheet FillDataToCells<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, IList<ExcelRangeBase>> action, int startRow, int startCol, int range)
+        /// <returns>the inserted range</returns>
+        public static ExcelRangeBase FillDataToCells<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, IList<ExcelRangeBase>> action, int startRow, int startCol, int range)
         {
-            return FillDataToRange(worksheet, list, (entity, range) =>
+            int endRow = startRow + (list.Count() - 1);
+            int endCol = startCol + (range - 1);
+            var excelRange = worksheet.Cells[startRow, startCol, endRow, endCol];
+            return FillDataToCells(excelRange, list, action);
+        }
+
+        /// <summary>
+        /// Fill the entity to the cells in the cell range
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="range">the cell range</param>
+        /// <param name="list">the entities</param>
+        /// <param name="action">the action to fill the entity to the cells</param>
+        /// <returns>the range for continuous methods</returns>
+        public static ExcelRangeBase FillDataToCells<TEntity>(this ExcelRangeBase range, IEnumerable<TEntity> list, Action<TEntity, IList<ExcelRangeBase>> action)
+        {
+            var worksheet = range.Worksheet;
+            return FillDataToRange(range, list, (entity, rowRange) =>
             {
                 List<ExcelRangeBase> cellsList = new();
-                int row = range.Start.Row;
-                int startCol = range.Start.Column;
-                int endCol = range.End.Column;
+                int row = rowRange.Start.Row;
+                int startCol = rowRange.Start.Column;
+                int endCol = rowRange.End.Column;
                 for (int col = startCol; col <= endCol; col++)
                     cellsList.Add(worksheet.Cells[row, col]);
                 action.Invoke(entity, cellsList);
-            }, startRow, startCol, range);
+            });
         }
 
         /// <summary>
@@ -207,16 +225,76 @@ namespace kroniiapi.Helper
         /// <param name="startRow">the row to start the action</param>
         /// <param name="startCol">the column to start the action</param>
         /// <param name="range">how many cells per row to be selected to be filled</param>
-        /// <returns>the worksheet for continuous methods</returns>
-        public static ExcelWorksheet FillDataToRange<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, ExcelRangeBase> action, int startRow, int startCol, int range)
+        /// <returns>the inserted range</returns>
+        public static ExcelRangeBase FillDataToRange<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, ExcelRangeBase> action, int startRow, int startCol, int range)
         {
-            int row = startRow;
-            foreach (var entity in list)
+            int endRow = startRow + (list.Count() - 1);
+            int endCol = startCol + (range - 1);
+            var excelRange = worksheet.Cells[startRow, startCol, endRow, endCol];
+            return FillDataToRange(excelRange, list, action);
+        }
+
+        /// <summary>
+        /// Fill the entity to the cell range
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="range">the cell range</param>
+        /// <param name="list">the entities</param>
+        /// <param name="action">the action to fill the entity to the cell range</param>
+        /// <returns>the range for continuous methods</returns>
+        public static ExcelRangeBase FillDataToRange<TEntity>(this ExcelRangeBase range, IEnumerable<TEntity> list, Action<TEntity, ExcelRangeBase> action)
+        {
+            var worksheet = range.Worksheet;
+            int startRow = range.Start.Row;
+            int startCol = range.Start.Column;
+            int endRow = range.End.Row;
+            int endCol = range.End.Column;
+            var enumerator = list.GetEnumerator();
+            for (int row = startRow; row <= endRow; row++)
             {
-                action.Invoke(entity, worksheet.Cells[row, startCol, row, startCol + (range - 1)]);
-                row++;
+                if (!enumerator.MoveNext()) break;
+                var item = enumerator.Current;
+                var rowRange = worksheet.Cells[row, startCol, row, endCol];
+                action.Invoke(item, rowRange);
             }
-            return worksheet;
+            return range;
+        }
+
+        /// <summary>
+        /// Create new rows and select the created cell range
+        /// </summary>
+        /// <param name="rowRange">the initial row range</param>
+        /// <param name="newRowCount">the new amount of rows</param>
+        /// <returns>the created cell range</returns>
+        public static ExcelRangeBase CreateNewRows(this ExcelRangeBase rowRange, int newRowCount)
+        {
+            var worksheet = rowRange.Worksheet;
+            int startRow = rowRange.Start.Row;
+            int startCol = rowRange.Start.Column;
+            int endRow = startRow + (newRowCount - 1);
+            int endCol = rowRange.End.Column;
+            worksheet.InsertRow(startRow, newRowCount - 1);
+            return worksheet.Cells[startRow, startCol, endRow, endCol];
+        }
+
+        /// <summary>
+        /// Generate the pie chart for the sheet
+        /// </summary>
+        /// <param name="worksheet">the worksheet</param>
+        /// <param name="chartName">the chartName</param>
+        /// <param name="rangeLabel">the range labels</param>
+        /// <param name="rangeValue">the range values</param>
+        /// <returns>the pie chart</returns>
+        public static ExcelChart GeneratePieChart(this ExcelWorksheet worksheet, string chartName, ExcelRangeBase rangeLabel, ExcelRangeBase rangeValue)
+        {
+            var sheetCheck = worksheet.Drawings[chartName];
+            if (sheetCheck != null) worksheet.Drawings.Remove(sheetCheck);
+            var pieChart = worksheet.Drawings.AddChart(chartName, eChartType.Pie);
+            var series = pieChart.Series.Add(rangeValue, rangeLabel);
+            var pieSeries = series as ExcelPieChartSerie;
+            pieSeries.DataLabel.ShowValue = true;
+            pieSeries.DataLabel.ShowSeriesName = true;
+            return pieChart;
         }
     }
 }
