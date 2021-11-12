@@ -336,6 +336,16 @@ namespace kroniiapi.Services.Report
                     traineeGPAById[traineeMarkInfor.TraineeId].AcademicMark = traineeMarkInfor.Score;
                 }
             }
+
+            var totalAttendanceReports = GetTotalAttendanceReports(classId);
+            if(totalAttendanceReports != null)
+            {
+                foreach (var attendanceInfor in totalAttendanceReports)
+                {
+                    traineeGPAById[attendanceInfor.TraineeId].DisciplinaryPoint = attendanceInfor.DisciplinaryPoint;
+                }
+            }
+
             var RewardAndPenalty = GetRewardAndPenaltyScore(classId, reportAt);
             if (RewardAndPenalty != null)
             {
@@ -643,9 +653,37 @@ namespace kroniiapi.Services.Report
         /// </summary>
         /// <param name="classId">Id of class</param>
         /// <returns>Report object with number of trainees per classifications</returns>
-        public CheckpointReport GetCheckpointReport(int classId)
+        public async Task<CheckpointReport> GetCheckpointReport(int classId)
         {
-            return null;
+            IEnumerable<TraineeGPA> traineeGPAList = await GetTraineeGPAs(classId);
+
+            if(traineeGPAList.Count() == 0)
+                return null;
+
+            CheckpointReport result = new CheckpointReport();
+            foreach (var trainee in traineeGPAList)
+            {
+                switch (trainee.Level)
+                {
+                    case "A+":
+                            result.Aplus++;
+                        break;
+                    case "A":
+                            result.A++;
+                        break;
+                    case "B":
+                            result.B++;
+                        break;
+                    case "C":
+                            result.C++;
+                        break;
+                    case "D":
+                            result.D++;
+                        break;
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
