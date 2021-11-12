@@ -247,7 +247,7 @@ namespace kroniiapi.Services
                 };
                 applicationReponse.Add(itemToResponse);
             }
-            return Tuple.Create(totalRecords,applicationReponse.GetPage(paginationParameter));
+            return Tuple.Create(totalRecords, applicationReponse.GetPage(paginationParameter));
         }
 
         /// <summary>
@@ -353,10 +353,10 @@ namespace kroniiapi.Services
         }
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTraineeWithoutClass(PaginationParameter paginationParameter)
         {
-            IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t=> t.IsDeactivated == false && t.ClassId == null);
+            IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false && t.ClassId == null);
             if (paginationParameter.SearchName != "")
             {
-                trainees = trainees.Where(e =>EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                trainees = trainees.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
                                                                     + " "
                                                                     + EF.Functions.Unaccent(e.Username.ToLower())
                                                                     + " "
@@ -377,16 +377,21 @@ namespace kroniiapi.Services
         }
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationParameter paginationParameter)
         {
-            var traineeList = await _dataContext.Trainees.Where(t
-                 => t.IsDeactivated == false &&
-                                                (t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) ||
-                                                t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
-                                                .ToListAsync();
-            int totalRecords = traineeList.Count();
-            var rs = traineeList.OrderBy(c => c.CreatedAt)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
+            IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
+            {
+                trainees = trainees.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Username.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Trainee> rs = await trainees
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
     }

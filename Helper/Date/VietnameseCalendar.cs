@@ -6,7 +6,6 @@
  * this copyright notice appears in all copies.
  * </p>
  */
-using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -20,10 +19,6 @@ namespace System.Globalization
     public class VietnameseCalendar : Calendar
     {
         #region Constants
-
-        //// TODO: Must use Environment.GetResourceString()
-        private static readonly Resources.ResourceManager resource =
-            new Resources.ResourceManager("mscorlib", Reflection.Assembly.GetAssembly(typeof(int)));
 
         /**
          * Each gregorian years will be ecrypted with 3 bytes (24 bits).
@@ -197,7 +192,7 @@ namespace System.Globalization
                         "value",
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            resource.GetString("ArgumentOutOfRange_Range"),
+                            "Calendar Year out of range {0} to {1}",
                             MinCalendarYear,
                             MaxCalendarYear));
                 }
@@ -218,7 +213,7 @@ namespace System.Globalization
         {
             if (this.IsReadOnly)
             {
-                throw new InvalidOperationException(resource.GetString("InvalidOperation_ReadOnly"));
+                throw new InvalidOperationException("Read-Only Operation");
             }
         }
 
@@ -230,7 +225,7 @@ namespace System.Globalization
                     "time",
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        resource.GetString("ArgumentOutOfRange_CalendarRange"),
+                        "Date out of range {0} to {1}",
                         minDate,
                         maxDate));
             }
@@ -241,8 +236,7 @@ namespace System.Globalization
             if (era != 0 && era != VietnameseEra)
             {
                 throw new ArgumentOutOfRangeException(
-                    "era",
-                    resource.GetString("ArgumentOutOfRange_InvalidEraValue"));
+                    "era", "Invalid Era");
             }
         }
 
@@ -254,7 +248,7 @@ namespace System.Globalization
                     "year",
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        resource.GetString("ArgumentOutOfRange_Range"),
+                           "Calendar Year out of range {0} to {1}",
                         MinCalendarYear,
                         MaxCalendarYear));
             }
@@ -265,8 +259,7 @@ namespace System.Globalization
             if (month < 1 || month > 13 || (month == 13 && leapMonth == 0))
             {
                 throw new ArgumentOutOfRangeException(
-                    "month",
-                    resource.GetString("ArgumentOutOfRange_Month"));
+                    "month", "Month out of range");
             }
         }
 
@@ -490,7 +483,7 @@ namespace System.Globalization
             {
                 throw new ArgumentOutOfRangeException(
                     "day",
-                    string.Format(CultureInfo.CurrentCulture, resource.GetString("ArgumentOutOfRange_Day"), daysInMonth, month));
+                    string.Format(CultureInfo.CurrentCulture, "Day out of range {0} in month {1}", daysInMonth, month));
             }
 
             return (leapMonth > 0 && month == leapMonth);
@@ -669,7 +662,7 @@ namespace System.Globalization
             {
                 throw new ArgumentOutOfRangeException(
                     "day",
-                    string.Format(CultureInfo.CurrentCulture, resource.GetString("ArgumentOutOfRange_Day"), days, month));
+                    string.Format(CultureInfo.CurrentCulture, "Day out of range {0} in month {1}", days, month));
             }
 
             //// Lunar New Year's Day
@@ -703,8 +696,7 @@ namespace System.Globalization
         /// <exception cref="ArgumentOutOfRangeException">Time is outside the range supported by this calendar.</exception>
         public static void FromDateTime(DateTime time, out int year, out int month, out int day)
         {
-            int leapMonth;
-            FromDateTime(time, out year, out month, out day, out leapMonth);
+            FromDateTime(time, out year, out month, out day, out int leapMonth);
         }
 
         /// <summary>
@@ -737,7 +729,7 @@ namespace System.Globalization
             {
                 lastLen = GetMonthLength(year, month++, leapMonth);
 
-                count  += lastLen;
+                count += lastLen;
             }
 
             //// Calculates the lunar-day
@@ -831,13 +823,13 @@ namespace System.Globalization
                 + (double)ts.Minute / 1440 + (double)ts.Second / 86400 + (double)ts.Millisecond / 86400000;
 
             //// Time in Julian centuries from 2000-01-01 12:00:00 GMT
-            double t  = (jd - 2451545.0) / 36525;
+            double t = (jd - 2451545.0) / 36525;
 
             double t2 = t * t;
             double dr = Math.PI / 180;  // Degree to radian
 
             //// Mean anomaly, degree
-            double m  = 357.52911D + 35999.05029 * t - 0.0001537 * t2
+            double m = 357.52911D + 35999.05029 * t - 0.0001537 * t2
                 - 0.00000048 * t * t2;  // TODO: not in http://www.srrb.noaa.gov/highlights/sunrise/calcdetails.html
 
             //// Mean longitude, degree

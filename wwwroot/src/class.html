@@ -250,11 +250,15 @@
                             "syllabusURL": "string"
                           }
                         ],
-                        "trainer": {
-                          "fullname": "string",
-                          "avatarURL": "string",
-                          "email": "string"
-                        },
+                        "trainer": [
+                        {
+                            "trainerId": int,
+                            "fullname": "string",
+                            "avatarURL": "string",
+                            "email": "string",
+                            "facebook": "string"
+                        }
+                        ],
                         "admin": {
                           "fullname": "string",
                           "avatarURL": "string",
@@ -565,23 +569,36 @@
     "description": "string",
     "modules": [
         {
+        "moduleId": int,
         "moduleName": "string",
         "iconURL": "string",
-        "syllabusURL": "string"
+        "syllabusURL": "string",
+        "noOfSlot": 0,
+        "slotDuration": "00:00:00",
+        "description": "string"
         }
     ],
-    "trainer": {
+    "trainer": [
+        {
+        "trainerId": int,
         "fullname": "string",
         "avatarURL": "string",
-        "email": "string"
-    },
+        "email": "string",
+        "facebook": "string"
+        }
+    ],
     "admin": {
+        "adminId": int,
         "fullname": "string",
         "avatarURL": "string",
-        "email": "string"
+        "email": "string",
+        "wage": int
+    },
+    "roomName": [
+        "string"
+    ]
     }
-}
-                
+
             </code></pre>
                 </p>
             </div>
