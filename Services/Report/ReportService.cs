@@ -244,13 +244,61 @@ namespace kroniiapi.Services.Report
 
         /// <summary>
         /// Calculate and return the feedback report
+        /// Rate is int not %
         /// </summary>
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>Feedback report data</returns>
-        public FeedbackReport GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
+        public async Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
         {
-            return null;
+            var listTrainee = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToListAsync();
+            List<AttendanceReport> listAReport = new List<AttendanceReport>();
+            foreach (var item in listTrainee)
+            {
+                int absent = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "A").Count();
+                int present = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "P").Count();
+                int absentNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "An").Count();
+                int late = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "L").Count();
+                int lateNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "Ln").Count();
+                int erly = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "E").Count();
+                int erlyNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "En").Count();
+                int onBoard = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "Ob").Count();
+                int total = absent + present + absentNo + late + lateNo + erly + erlyNo + onBoard;
+                int absentNum = absent + absentNo;
+                int erlylateNum = late + lateNo + erly + erlyNo;
+                float noPerRate = (absentNo + lateNo + erlyNo) / (absentNum + erlylateNum);
+                float calculated = (erlylateNum / 2 + absentNum) / total;
+                float DisciplinaryPoint;
+                if (calculated <= 5)
+                {
+                    DisciplinaryPoint = 100;
+                } else if (calculated <= 20)
+                {
+                    DisciplinaryPoint = 80;
+                } else if (calculated <= 30)
+                {
+                    DisciplinaryPoint = 60;
+                } else if (calculated < 50)
+                {
+                    DisciplinaryPoint = 50;
+                } else if (calculated >= 50 && noPerRate == 20)
+                {
+                    DisciplinaryPoint = 0;
+                } else
+                {
+                    DisciplinaryPoint = 20;
+                }
+                var newAReport = new AttendanceReport
+                {
+                    TraineeId = item.TraineeId,
+                    NumberOfAbsent = absentNum,
+                    NumberOfLateInAndEarlyOut = erlylateNum,
+                    NoPermissionRate = noPerRate,
+                    DisciplinaryPoint = DisciplinaryPoint,
+                };
+                listAReport.Add(newAReport);
+            }
+            return listAReport;
         }
 
         /// <summary>
