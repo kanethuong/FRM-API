@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace kroniiapi.Services.Attendance
 {
     public static class AttendanceStatus
     {
+        /// <summary>
+        /// Attendances status enum list
+        /// </summary>
         public enum _attendanceStatus
         {
             A,

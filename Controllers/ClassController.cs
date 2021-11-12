@@ -248,7 +248,7 @@ namespace kroniiapi.Controllers
         /// <param name="newClassInput">Detail of new class</param>
         /// <returns>201: Class is created / 409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost]
-        [Authorize(Policy = "ClassPost")]
+        // [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
             if (_adminService.CheckAdminExist(newClassInput.AdminId) is false)
@@ -603,7 +603,7 @@ namespace kroniiapi.Controllers
                         await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
                     }
                 }
-                
+
                 // Save Changes
                 try
                 {
