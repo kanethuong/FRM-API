@@ -111,9 +111,39 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A dictionary store attendance date and list of trainee status in that day</returns>
-        public Dictionary<DateTime, List<TraineeAttendance>> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime))
+        public async Task<Dictionary<DateTime, List<TraineeAttendance>>> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime))
         {
-            return null;
+            IEnumerable<int> traineeIdList = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToListAsync();
+            if (traineeIdList.Count() == 0)
+            {
+                return new Dictionary<DateTime, List<TraineeAttendance>>();
+            }
+            DateTime startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
+            DateTime endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
+            Dictionary<DateTime, List<TraineeAttendance>> attendanceInfo = new Dictionary<DateTime, List<TraineeAttendance>>();
+            if (reportAt == default(DateTime))
+            {
+                startDate = DateTime.MinValue;
+                endDate = DateTime.MaxValue;
+            }
+
+            List<TraineeAttendance> traineeAttendances;
+            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+            {
+                traineeAttendances = new List<TraineeAttendance>();
+                foreach (int traineeId in traineeIdList)
+                {
+                traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
+                                                       .Select(a => new TraineeAttendance
+                                                       {
+                                                           TraineeId = a.TraineeId,
+                                                           Status = a.Status
+                                                       })
+                                                       .FirstOrDefaultAsync());
+                }
+                attendanceInfo.Add(date, traineeAttendances);
+            }
+            return attendanceInfo;
         }
 
         /// <summary>

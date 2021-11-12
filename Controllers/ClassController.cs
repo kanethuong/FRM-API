@@ -656,7 +656,7 @@ namespace kroniiapi.Controllers
         /// <param name="assignModuleInput">AssignModuleInput</param>
         /// <returns>200: Assigned / 404: Class/Trainer is not exist / 409: Fail to assign</returns>
         [HttpPost("module")]
-        public async Task<ActionResult> AssignModuleToClass(AssignModuleInput assignModuleInput)
+        public async Task<ActionResult> AssignModuleToClass([FromBody]AssignModuleInput assignModuleInput)
         {
             var moduleToAssign = await _moduleService.GetModuleById(assignModuleInput.ModuleId);
             if (moduleToAssign == null)
