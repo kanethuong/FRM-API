@@ -153,8 +153,6 @@ namespace kroniiapi
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
                 options.AddPolicy("Trainee", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
-                options.AddPolicy("Company", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "company" })));
             });
 
             // Increase input file size limit
