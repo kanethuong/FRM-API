@@ -7,11 +7,13 @@ using kroniiapi.DTO;
 using kroniiapi.DTO.AttendanceDTO;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.Services.Attendance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Attendance")]
     [Route("api/[controller]")]
     public class AttendanceController : ControllerBase
     {

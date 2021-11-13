@@ -8,11 +8,13 @@ using kroniiapi.DTO;
 using kroniiapi.DTO.ExamDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Exam")]
     [Route("api/[controller]")]
     public class ExamController : ControllerBase
     {
