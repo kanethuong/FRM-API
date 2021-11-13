@@ -2,11 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using kroniiapi.DTO;
+using kroniiapi.DTO.ReportDTO;
 using kroniiapi.Services.Report;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -23,9 +28,10 @@ namespace kroniiapi.Controllers
         /// <param name="at">Choose time to export report</param>
         /// <returns></returns>
         [HttpGet("{classId:int}")]
+        [Authorize(Policy = "ReportGet")]
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTimeOffset? at = null)
         {
             return null;
-        }        
+        }
     }
 }

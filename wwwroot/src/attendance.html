@@ -1,0 +1,187 @@
+<div class="mb-5">
+    <h2 class="fw-bold">Attendance</h2>
+    <p>
+        Help admin to take attendance for a class
+    </p>
+
+    <div id="viewClassListAttendance">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View admin's class list</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/attendance/{adminId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>AdminId: If of admin</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>None</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>[
+    {
+        "classId": int,
+        "className": "string",
+        "trainer": [
+            {
+                "fullname": "string",
+                "avatarURL": "string"
+            }
+        ],
+        "creator": "string",
+        "createdAt": "DateTime",
+        "description": "string"
+    }
+]</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewAttendanceList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View class attendance list</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/attendance/{adminId}/{classId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>AdminId: If of admin</p>
+                <p>ClassId: If of class</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>None</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>[
+    {
+        "id": 0,
+        "name": "string",
+        "status": "string",
+        "reason": "string",
+        "date": "DateTime"
+    }
+]</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="takeAttendance">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View class attendance list</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/attendance/{adminId}/{classId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>AdminId: If of admin</p>
+                <p>ClassId: If of class</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>{
+    "arrayData": [
+        {
+        "id": int,
+        "status": "string",
+        "reason": "string",
+        "date": "DateTime"
+        }
+    ]
+}</code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>{
+    "status": 0,
+    "message": "string",
+    "errors": []
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -10,6 +10,7 @@ using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,6 +43,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: application list/ 400: Not found</returns>
         [HttpGet("trainee/{traineeId:int}")]
+        [Authorize(Policy = "ApplicationGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeApplicationResponse>>>> ViewApplicationList(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
             if (_traineeService.CheckTraineeExist(traineeId) is false)
@@ -62,6 +64,7 @@ namespace kroniiapi.Controllers
         /// <param name="applicationInput">detail of applcation input </param>
         /// <returns>201: created</returns>
         [HttpPost]
+        [Authorize(Policy = "ApplicationPost")]
         public async Task<ActionResult> SubmitApplicationForm([FromForm] ApplicationInput applicationInput, [FromForm] IFormFile form)
         {
             (bool isDoc, string errorMsg) = FileHelper.CheckDocExtension(form);
@@ -87,6 +90,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <returns>all applcation type</returns>
         [HttpGet("category")]
+        [Authorize(Policy = "ApplicationGet")]
         public async Task<ActionResult<IEnumerable<ApplicationCategoryResponse>>> ViewApplicationCategory()
         {
             var applicationTypeList = await _applicationService.GetApplicationCategoryList();
@@ -100,6 +104,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns>Pagination of all ApplicationResponse, not TraineeApplicationResponse</returns>
         [HttpGet("page")]
+        [Authorize(Policy = "ApplicationGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ApplicationResponse>>>> ViewAllApplication([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<ApplicationResponse> appList) = await _applicationService.GetApplicationList(paginationParameter);
@@ -117,6 +122,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">applcation id</param>
         /// <returns>200: An applcation detail with corresponding id / 404: not found</returns>
         [HttpGet("{id:int}")]
+        [Authorize(Policy = "ApplicationGet")]
         public async Task<ActionResult<ApplicationDetail>> ViewApplicationDetail(int id)
         {
             Application app = await _applicationService.GetApplicationDetail(id);
@@ -135,6 +141,7 @@ namespace kroniiapi.Controllers
         /// <param name="confirmApplicationInput">Confirm Application Input DTO</param>
         /// <returns></returns>
         [HttpPut("{id:int}")]
+        [Authorize(Policy = "ApplicationPut")]
         public async Task<ActionResult> ConfirmApplication(int id, [FromBody] ConfirmApplicationInput confirmApplicationInput)
         {
             int rs = await _applicationService.ConfirmApplication(id, confirmApplicationInput);
