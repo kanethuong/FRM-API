@@ -296,5 +296,30 @@ namespace kroniiapi.Helper
             pieSeries.DataLabel.ShowSeriesName = true;
             return pieChart;
         }
+        /// <summary>
+        /// Fill the entity to the cell range in the worksheet
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="sheet">the worksheet</param>
+        /// <param name="chartName">the chartName</param>
+        /// <param name="rangeLabel">the range label </param>
+        /// <param name="rangeValue">the rangeValue</param>
+        /// <returns>the pie chart for continuous methods</returns>
+        public static ExcelChart PieChartGenerator(ExcelChartsheet sheet, string chartName, string rangeLabel, string rangeValue){
+            var worksheet = sheet;
+            var sheetCheck = worksheet.Drawings[chartName];
+            if(sheetCheck !=null){
+                worksheet.Drawings.Remove(sheetCheck);
+            }
+            var pieChart = worksheet.Drawings.AddChart(chartName,eChartType.Pie);
+            pieChart.Title.Text = chartName;
+            var rangeLabel1 = worksheet.Cells[rangeLabel];
+            var rangeValue1 = worksheet.Cells[rangeValue];
+            var series = pieChart.Series.Add(rangeValue1, rangeLabel1);
+            var pieSeries = (ExcelPieChartSerie)series;
+            pieSeries.DataLabel.ShowValue = true;
+            pieSeries.DataLabel.ShowSeriesName = true;
+            return pieChart;
+        }
     }
 }

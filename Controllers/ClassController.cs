@@ -12,6 +12,7 @@ using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
 using kroniiapi.Services.Attendance;
@@ -38,6 +39,7 @@ namespace kroniiapi.Controllers
 
         private readonly ICertificateService _certificateService;
         private readonly IAttendanceService _attendanceServices;
+        private readonly IRoomService _roomService;
         public ClassController(IClassService classService,
                                ITraineeService traineeService,
                                IAdminService adminService,
@@ -47,7 +49,8 @@ namespace kroniiapi.Controllers
                                ITimetableService timetableService,
                                IMarkService markService,
                                ICertificateService certificateService,
-                               IAttendanceService attendanceServices)
+                               IAttendanceService attendanceServices,
+                               IRoomService roomService)
         {
             _classService = classService;
             _adminService = adminService;
@@ -60,6 +63,7 @@ namespace kroniiapi.Controllers
             _markService = markService;
             _certificateService = certificateService;
             _attendanceServices = attendanceServices;
+            _roomService = roomService;
         }
 
         /// <summary>
@@ -159,7 +163,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> id of class</param>
         /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("{id:int}")]
-        [Authorize(Policy = "ClassGet")]
+        //[Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
             Class s = await _classService.GetClassDetail(id);
@@ -169,6 +173,12 @@ namespace kroniiapi.Controllers
             }
 
             var cdr = _mapper.Map<ClassDetailResponse>(s);
+            cdr.Trainer = _mapper.Map<List<TrainerResponse>>(await _trainerService.GetTrainerListByClassId(id));
+            var rooms = await _roomService.GetRoomByClassId(id);
+            foreach (var item in rooms)
+            {
+                cdr.RoomName.Add(item.RoomName);
+            }
             return Ok(cdr);
         }
 
