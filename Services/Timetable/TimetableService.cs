@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.TimetableDTO;
 using kroniiapi.Helper.Timetable;
 using kroniiapi.Services.Attendance;
 using Microsoft.EntityFrameworkCore;
@@ -273,86 +274,17 @@ namespace kroniiapi.Services
         /// <param name="classId"></param>
         /// <param name="numSlotWeek"></param>
         /// <returns>status</returns>
-        public async Task<int> InsertModuleToClass(int moduleId, int classId, int numSlotWeek)
+        public async Task<int> InsertModuleToClass(IEnumerable<ModuleExcelInput> moduleDetail, int classId)
         {
-            var module = await _moduleService.GetModuleById(moduleId);
             var classGet = await _classService.GetClassByClassID(classId);
-            int moduleSlot = module.NoOfSlot;
-            int slotCount = 1;
-            int slotInWeek = 0;
             DateTime dateCount = classGet.StartDay;
-            while (slotCount <= moduleSlot)
+            while (DayOffCheck(dateCount))
             {
-                var ts = new TimeSpan(7, 0, 0);
-                var slotTime = new TimeSpan(1, 30, 0);
-                var breaktime = new TimeSpan(0, 15, 0);
-                while (DayOffCheck(dateCount))
-                {
-                    if (WeekendCheck(dateCount))
-                    {
-                        slotInWeek = 0;
-                    }
-                    dateCount = dateCount.AddDays(1);
-                }
-                int slotModuleInDay = 0;
-                int slotInDay = GetDaySlot(dateCount, classId);
-                for (var i = 1; i <= 6; i++)
-                {
-                    if (i == 4)
-                    {
-                        breaktime = new TimeSpan(0, 45, 0);
-                    }
-                    else
-                    {
-                        breaktime = new TimeSpan(0, 15, 0);
-                    }
-                    Calendar calendarToAdd = new Calendar
-                    {
-                        SyllabusSlot = slotCount,
-                        Date = dateCount + ts + (i - 1) * slotTime + (i - 1) * breaktime,
-                        // SlotInDay = i,
-                        ModuleId = module.ModuleId,
-                        Module = module,
-                        ClassId = classGet.ClassId,
-                        Class = classGet,
-                    };
-                    if (slotCount > moduleSlot)
-                    {
-                        break;
-                    }
-                    if (slotInDay == 3)
-                    {
-                        break;
-                    }
-                    if (slotModuleInDay == 2)
-                    {
-                        if (slotInWeek == numSlotWeek)
-                        {
-                            slotInWeek = 0;
-                            dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
-                        }
-                        break;
-                    }
-                    if (slotInWeek == numSlotWeek)
-                    {
-                        slotInWeek = 0;
-                        dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
-                        break;
-                    }
-                    // if (DayCheck(calendarToAdd, classGet.RoomId) && TrainerCheck(calendarToAdd, classGet.TrainerId))
-                    // {
-                    //     slotCount += 1;
-                    //     slotModuleInDay += 1;
-                    //     slotInDay += 1;
-                    //     slotInWeek += 1;
-                    //     _datacontext.Calendars.Add(calendarToAdd);
-                    // };
-                }
-                dateCount = dateCount.AddDays(1);
+                dateCount =  dateCount.AddDays(1);
             }
-            if (dateCount.Day > classGet.EndDay.Day && dateCount.Month > classGet.EndDay.Month && dateCount.Year > classGet.EndDay.Year)
+            foreach (var item in moduleDetail)
             {
-                return -1;
+                
             }
             await _datacontext.SaveChangesAsync();
             return 1;
