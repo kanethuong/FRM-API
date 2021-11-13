@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
-using kroniiapi.DTO.FeedbackDTO;
-using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Trainer")]
     [Route("api/[controller]")]
     public class TrainerController : ControllerBase
     {
@@ -96,7 +96,7 @@ namespace kroniiapi.Controllers
             {
                 foreach (var item in trainerTimeTables)
                 {
-                    Room r = await _roomService.GetRoom(item.ClassId,item.ModuleId);
+                    Room r = await _roomService.GetRoom(item.ClassId, item.ModuleId);
                     item.RoomName = r.RoomName;
                 }
             }
@@ -141,14 +141,15 @@ namespace kroniiapi.Controllers
             if (existedTrainer == null)
             {
                 return NotFound(new ResponseDTO(404, "Trainer profile cannot be found"));
-            }else if (
-                existedTrainer.Fullname.ToLower().Equals(trainer.Fullname.ToLower()) &&
-                existedTrainer.Phone.ToLower().Equals(trainer.Phone.ToLower()) &&
-                existedTrainer.DOB.ToString().ToLower().Equals(trainer.DOB.ToString().ToLower()) &&
-                existedTrainer.Address.ToLower().Equals(trainer.Address.ToLower()) &&
-                existedTrainer.Gender.ToLower().Equals(trainer.Gender.ToLower()) &&
-                existedTrainer.Facebook.ToLower().Equals(trainer.Facebook.ToLower())
-            )
+            }
+            else if (
+               existedTrainer.Fullname.ToLower().Equals(trainer.Fullname.ToLower()) &&
+               existedTrainer.Phone.ToLower().Equals(trainer.Phone.ToLower()) &&
+               existedTrainer.DOB.ToString().ToLower().Equals(trainer.DOB.ToString().ToLower()) &&
+               existedTrainer.Address.ToLower().Equals(trainer.Address.ToLower()) &&
+               existedTrainer.Gender.ToLower().Equals(trainer.Gender.ToLower()) &&
+               existedTrainer.Facebook.ToLower().Equals(trainer.Facebook.ToLower())
+           )
             {
                 return Ok(new ResponseDTO(200, "Update profile success"));
             }
