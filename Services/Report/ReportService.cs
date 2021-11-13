@@ -133,13 +133,13 @@ namespace kroniiapi.Services.Report
                 traineeAttendances = new List<TraineeAttendance>();
                 foreach (int traineeId in traineeIdList)
                 {
-                traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
-                                                       .Select(a => new TraineeAttendance
-                                                       {
-                                                           TraineeId = a.TraineeId,
-                                                           Status = a.Status
-                                                       })
-                                                       .FirstOrDefaultAsync());
+                    traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
+                                                           .Select(a => new TraineeAttendance
+                                                           {
+                                                               TraineeId = a.TraineeId,
+                                                               Status = a.Status
+                                                           })
+                                                           .FirstOrDefaultAsync());
                 }
                 attendanceInfo.Add(date, traineeAttendances);
             }
@@ -195,7 +195,7 @@ namespace kroniiapi.Services.Report
                                                                      && (t.Status == nameof(_attendanceStatus.Ln)
                                                                         || t.Status == nameof(_attendanceStatus.An)
                                                                         || t.Status == nameof(_attendanceStatus.En))).Count();
-                ap.NoPermissionRate = numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
+                ap.NoPermissionRate = (float)numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
             }
             var attCount = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
                                                                         && t.Date.Month == monthReport).Count();
@@ -268,7 +268,7 @@ namespace kroniiapi.Services.Report
                     NumberOfAbsent = 0,
                     NumberOfLateInAndEarlyOut = 0,
                     NoPermissionRate = 0,
-                    DisciplinaryPoint = 1
+                    DisciplinaryPoint = 0
                 };
                 // calculate the sum of absent, late in and early out 
                 // sum of no permission rate and disciplinary point to calculate average later
@@ -450,19 +450,24 @@ namespace kroniiapi.Services.Report
                 if (calculated <= 5)
                 {
                     DisciplinaryPoint = 100;
-                } else if (calculated <= 20)
+                }
+                else if (calculated <= 20)
                 {
                     DisciplinaryPoint = 80;
-                } else if (calculated <= 30)
+                }
+                else if (calculated <= 30)
                 {
                     DisciplinaryPoint = 60;
-                } else if (calculated < 50)
+                }
+                else if (calculated < 50)
                 {
                     DisciplinaryPoint = 50;
-                } else if (calculated >= 50 && noPerRate == 20)
+                }
+                else if (calculated >= 50 && noPerRate == 20)
                 {
                     DisciplinaryPoint = 0;
-                } else
+                }
+                else
                 {
                     DisciplinaryPoint = 20;
                 }
