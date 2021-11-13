@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
@@ -41,6 +42,7 @@ namespace kroniiapi.Controllers
         /// <param name="feedbackInput">detail of feedback</param>
         /// <returns>201: created / </returns>
         [HttpPost]
+        [Authorize(Policy = "FeedbackPost")]
         public async Task<ActionResult> SendFeedback([FromBody] FeedbackInput feedbackInput)
         {
             var (classId, message) = await _traineeService.GetClassIdByTraineeId(feedbackInput.TraineeId);

@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
-using kroniiapi.DTO.ApplicationDTO;
-using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
@@ -17,13 +15,14 @@ using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using kroniiapi.Services.Attendance;
 using kroniiapi.Services.Report;
+using Microsoft.AspNetCore.Authorization;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Trainee")]
     [Route("api/[controller]")]
     public class TraineeController : ControllerBase
     {

@@ -7,6 +7,7 @@ using kroniiapi.DTO;
 using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -35,6 +36,7 @@ namespace kroniiapi.Controllers
         /// <param name="file">the file</param>
         /// <returns>201: Uploaded / 400: File content inapproriate</returns>
         [HttpPost]
+        [Authorize(Policy = "RulePost")]
         public async Task<ActionResult> Upload([FromForm] IFormFile file)
         {
             (bool success, string message) = FileHelper.CheckPDFExtension(file);
@@ -64,6 +66,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <returns>200: Ok with the file stream / 404: The link is not found (Not Uploaded)</returns>
         [HttpGet]
+        [Authorize(Policy = "RuleGet")]
         public async Task<ActionResult> Get()
         {
             FileDTO fileDTO = await _cacheProvider.GetFromCache<FileDTO>("RulesURL");

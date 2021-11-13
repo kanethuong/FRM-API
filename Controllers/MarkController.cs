@@ -16,6 +16,7 @@ using kroniiapi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using kroniiapi.Helper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace kroniiapi.Controllers
 {
@@ -57,6 +58,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>Trainee mark and skill</returns>
         [HttpGet("trainee/{traineeId:int}")]
+        [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeMarkAndSkill>>>> ViewMarkAndSkill(int traineeId, [FromQuery] PaginationParameter paginationParameter)
         {
             var existedTrainee = await _traineeService.GetTraineeById(traineeId);
@@ -78,6 +80,7 @@ namespace kroniiapi.Controllers
         /// <param name="certificateInput">detail of certificate input</param>
         /// <returns>201: Created / 400: Bad request / 404: Module or Trainee not found</returns>
         [HttpPost("certificate")]
+        [Authorize(Policy = "MarkPost")]
         public async Task<ActionResult> SubmitCertificate([FromForm] IFormFile file, [FromForm] CertificateInput certificateInput)
         {
             string message_img;
@@ -110,6 +113,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of student mark in a class with pagination / 404: search student name not found</returns>
         [HttpGet("class/{classId:int}")]
+        [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int classId, [FromQuery] PaginationParameter paginationParameter)
         {
             var class1 = await _classService.GetClassByClassID(classId);
@@ -166,20 +170,21 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">pagination</param>
         /// <returns>200: List of student mark in a class with pagination / 404:not found</returns>
         [HttpGet("trainer/class/{classId:int}")]
+        [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScoreByTrainerId(int classId, int trainerId, [FromQuery] PaginationParameter paginationParameter)
         {
             if (!_trainerService.CheckTrainerExist(trainerId) || !_classService.CheckClassExist(classId))
             {
                 return NotFound(new ResponseDTO(404, "Trainer not found or Class not found"));
             }
-            var moduleList = await _moduleService.GetModulesByClassIdAndTrainerId(classId,trainerId);
+            var moduleList = await _moduleService.GetModulesByClassIdAndTrainerId(classId, trainerId);
             if (moduleList.Count() == 0)
             {
                 return NotFound(new ResponseDTO(404, "Cannot find that Trainer in this Class"));
             }
-            
+
             (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
-            
+
             List<MarkResponse> markResponses = new List<MarkResponse>();
             foreach (Trainee trainee in trainees)
             {
@@ -226,6 +231,7 @@ namespace kroniiapi.Controllers
         /// <param name="traineeMarkInput">Trainee Module and Mark</param>
         /// <returns>200: Updated / 409: Conflict / 404: trainee not found</returns>
         [HttpPut("trainee")]
+        [Authorize(Policy = "MarkPut")]
         public async Task<ActionResult> ChangeClassScore([FromBody] TraineeMarkInput traineeMarkInput)
         {
             Mark mark = _mapper.Map<Mark>(traineeMarkInput);
@@ -244,11 +250,11 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Trainee does not study this module"));
             }
-            if(checkExist.ModuleId == mark.ModuleId && checkExist.TraineeId == mark.TraineeId && checkExist.Score == mark.Score)
+            if (checkExist.ModuleId == mark.ModuleId && checkExist.TraineeId == mark.TraineeId && checkExist.Score == mark.Score)
             {
                 return Ok(new ResponseDTO(200, "Update trainee's score success"));
             }
-            if(mark.Score < 0)
+            if (mark.Score < 0)
             {
                 return BadRequest(new ResponseDTO(400, "Score cannot be negative"));
             }
@@ -269,6 +275,7 @@ namespace kroniiapi.Controllers
         /// <param name="traineeId">trainee id</param>
         /// <returns>200: Trainee mark response/ 404: Trainee not found</returns>
         [HttpGet("{traineeId:int}/Score")]
+        [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<MarkResponse>> ViewTraineeMark(int traineeId)
         {
             Trainee trainee = await _traineeService.GetTraineeById(traineeId);
