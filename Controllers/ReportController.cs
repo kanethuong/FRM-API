@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -28,6 +30,6 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTimeOffset? at = null)
         {
             return null;
-        }    
+        }
     }
 }
