@@ -123,8 +123,8 @@ namespace kroniiapi.Services.Report
             Dictionary<DateTime, List<TraineeAttendance>> attendanceInfo = new Dictionary<DateTime, List<TraineeAttendance>>();
             if (reportAt == default(DateTime))
             {
-                startDate = DateTime.MinValue;
-                endDate = DateTime.MaxValue;
+                startDate = _dataContext.Classes.Where(c => c.ClassId==classId).Select(c => c.StartDay).FirstOrDefault();
+                endDate = _dataContext.Classes.Where(c => c.ClassId==classId).Select(c => c.EndDay).FirstOrDefault();
             }
 
             List<TraineeAttendance> traineeAttendances;
