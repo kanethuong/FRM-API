@@ -8,11 +8,13 @@ using kroniiapi.DTO;
 using kroniiapi.DTO.CostDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Cost")]
     [Route("api/[controller]")]
     public class CostController : ControllerBase
     {

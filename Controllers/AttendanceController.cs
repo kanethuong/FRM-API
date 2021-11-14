@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,11 +7,13 @@ using kroniiapi.DTO;
 using kroniiapi.DTO.AttendanceDTO;
 using kroniiapi.DTO.ClassDTO;
 using kroniiapi.Services.Attendance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Attendance")]
     [Route("api/[controller]")]
     public class AttendanceController : ControllerBase
     {
@@ -66,9 +67,9 @@ namespace kroniiapi.Controllers
         /// <param name="attendanceInputs"></param>
         /// <returns>200: Updated / 400: Error message</returns>
         [HttpPut("{adminId:int}/{classId:int}")]
-        public async Task<ActionResult<ResponseDTO>> TakeAttendance(int adminId, int classId, [FromBody] ICollection<AttendanceInput> attendanceInputs)
+        public async Task<ActionResult<ResponseDTO>> TakeAttendance(int adminId, int classId, [FromBody] ArrayBodyInput<AttendanceInput> listAttendanceInputs)
         {
-            var attendances = _mapper.Map<IEnumerable<Attendance>>(attendanceInputs);
+            var attendances = _mapper.Map<IEnumerable<Attendance>>(listAttendanceInputs.arrayData);
             (bool status, string message) = await _attendanceService.TakeAttendance(attendances);
             if (status == false)
             {

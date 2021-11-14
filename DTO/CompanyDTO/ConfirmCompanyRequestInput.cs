@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace kroniiapi.DTO.CompanyDTO
 {
     public class ConfirmCompanyRequestInput
     {
+        [Required]
         public bool isAccepted { get; set; }
     }
 }
