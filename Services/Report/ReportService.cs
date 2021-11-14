@@ -296,11 +296,25 @@ namespace kroniiapi.Services.Report
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
+<<<<<<< HEAD
+            TimeSpan oneday = new TimeSpan(23, 59, 59);
+            var startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
+            var endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
+            startDate = startDate.AddMonths(-1);
+            endDate = endDate.AddMonths(1);
+            endDate = endDate.Add(oneday);
+            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            List<BonusAndPunish> rp = new List<BonusAndPunish>();
+            foreach (var item in trainees)
+            {
+                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
+=======
             var trainees = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             List<BonusAndPunish> rp = new List<BonusAndPunish>();
             foreach (var item in trainees)
             {
                 rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
+>>>>>>> a7ca3ad9511de3282a533f04ea61542c1c0c6059
             }
             List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
             return rpDto;
