@@ -19,7 +19,7 @@ namespace kroniiapi.Services
         Task<int> UpdateCompany(int id, Company company);
         Task<int> DeleteCompany(int id);
         Task<CompanyRequest> GetCompanyRequestById(int id);
-        Task<int> ConfirmCompanyRequest(int id, bool isAccepted);
+        Task<(int, List<string>)> ConfirmCompanyRequest(int id, bool isAccepted);
         Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter);
         Task<CompanyRequest> GetCompanyRequestDetail(int requestId);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter);

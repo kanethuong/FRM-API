@@ -89,6 +89,19 @@ namespace kroniiapi
                 options.AddPolicy("Account", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
 
+                options.AddPolicy("Admin", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+
+                options.AddPolicy("ApplicationGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainee" })));
+                options.AddPolicy("ApplicationPost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
+                options.AddPolicy("ApplicationPut", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+
+                options.AddPolicy("Attendance", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+
                 options.AddPolicy("ClassGet", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "administrator", "admin", "trainer", "trainee" })));
                 options.AddPolicy("ClassGetDeleted", policy =>
@@ -97,15 +110,49 @@ namespace kroniiapi
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
                 options.AddPolicy("ClassPut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
+                options.AddPolicy("ClassModule", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
 
-                options.AddPolicy("Admin", policy =>
+                options.AddPolicy("Company", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "company" })));
+
+                options.AddPolicy("Cost", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+
+                options.AddPolicy("Exam", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+
+                options.AddPolicy("FeedbackGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer", "trainee" })));
+                options.AddPolicy("FeedbackPost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
+
+                options.AddPolicy("MarkGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer", "trainee" })));
+                options.AddPolicy("MarkPost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
+                options.AddPolicy("MarkPut", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+
+                options.AddPolicy("ModuleGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
+                options.AddPolicy("ModulePost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+                options.AddPolicy("ModulePut", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+
+                options.AddPolicy("ReportGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
+
+                options.AddPolicy("RuleGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer", "trainee" })));
+                options.AddPolicy("RulePost", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
+
                 options.AddPolicy("Trainer", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
                 options.AddPolicy("Trainee", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
-                options.AddPolicy("Company", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "company" })));
             });
 
             // Increase input file size limit
@@ -183,8 +230,8 @@ namespace kroniiapi
                     new BadRequestObjectResult(new ResponseDTO
                     {
                         Status = 400,
-                        Message = "Model State is invalid",
-                        Errors = actionContext.ModelState
+                        Message = "Input value is(are) invalid",
+                        Errors = actionContext.ModelState.Where(x => x.Value.Errors.Count() != 0)
                                 .ToDictionary(
                                     kvp => kvp.Key,
                                     kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()

@@ -188,6 +188,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> id of class</param>
         /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("trainee/{traineeId:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetailByTraineeId(int traineeId)
         {
             var (classId, message) = await _traineeService.GetClassIdByTraineeId(traineeId);
@@ -261,7 +262,7 @@ namespace kroniiapi.Controllers
         /// <param name="newClassInput">Detail of new class</param>
         /// <returns>201: Class is created / 409: Classname exist || Trainees or trainers already have class</returns>
         [HttpPost]
-        // [Authorize(Policy = "ClassPost")]
+        [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
             if (_adminService.CheckAdminExist(newClassInput.AdminId) is false)
@@ -644,6 +645,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns>List with pagination/ 404: Not found</returns>
         [HttpGet("trainer/{id:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerClassListResponse>>>> GetClassListByTrainerId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             if (!_trainerService.CheckTrainerExist(id))
@@ -666,7 +668,8 @@ namespace kroniiapi.Controllers
         /// <param name="assignModuleInput">AssignModuleInput</param>
         /// <returns>200: Assigned / 404: Class/Trainer is not exist / 409: Fail to assign</returns>
         [HttpPost("module")]
-        public async Task<ActionResult> AssignModuleToClass([FromBody]AssignModuleInput assignModuleInput)
+        [Authorize(Policy = "ClassModule")]
+        public async Task<ActionResult> AssignModuleToClass([FromBody] AssignModuleInput assignModuleInput)
         {
             var moduleToAssign = await _moduleService.GetModuleById(assignModuleInput.ModuleId);
             if (moduleToAssign == null)
@@ -712,6 +715,7 @@ namespace kroniiapi.Controllers
         /// <param name="moduleId">module id</param>
         /// <returns>200: Deleted / 404: Class/Trainer/Module is not exist / 409: Fail to delete</returns>
         [HttpDelete("module/{moduleId:int}")]
+        [Authorize(Policy = "ClassModule")]
         public async Task<ActionResult> RemoveModule(RemoveModuleInput assignModuleInput)
         {
             var classInfor = await _classService.GetClassByClassID(assignModuleInput.ClassId);
