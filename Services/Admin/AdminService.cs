@@ -6,6 +6,7 @@ using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
 using Microsoft.EntityFrameworkCore;
+using kroniiapi.Helper;
 
 namespace kroniiapi.Services
 {
@@ -53,17 +54,21 @@ namespace kroniiapi.Services
         /// <returns> Tuple list of all admin</returns>
         public async Task<Tuple<int, IEnumerable<Admin>>> GetAdminList(PaginationParameter paginationParameter)
         {
-            var listAdmin = await _dataContext.Admins.Where(a => a.IsDeactivated == false &&
-                                                    (a.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || a.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())))
-                                                     .OrderByDescending(c => c.CreatedAt)
-                                                     .ToListAsync();
-
-            int totalRecords = listAdmin.Count();
-
-            var rs = listAdmin.OrderBy(a => a.CreatedAt)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
-
+            IQueryable<Admin> admins = _dataContext.Admins.Where(t => t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
+            {
+                admins = admins.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Username.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Admin> rs = await admins
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
 
