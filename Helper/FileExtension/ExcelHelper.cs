@@ -278,6 +278,35 @@ namespace kroniiapi.Helper
         }
 
         /// <summary>
+        /// Create new columns and select the created cell range
+        /// </summary>
+        /// <param name="colRange">the initial column range</param>
+        /// <param name="newColCount">the new amount of columns</param>
+        /// <returns>the created cell range</returns>
+        public static ExcelRangeBase CreateNewColumns(this ExcelRangeBase colRange, int newColCount)
+        {
+            var worksheet = colRange.Worksheet;
+            int startRow = colRange.Start.Row;
+            int startCol = colRange.Start.Column;
+            int endRow = colRange.End.Row;
+            int endCol = startCol + (newColCount - 1);
+            worksheet.InsertColumn(startCol, newColCount - 1);
+            return worksheet.Cells[startRow, startCol, endRow, endCol];
+        }
+
+        /// <summary>
+        /// Expand the cell to the range
+        /// </summary>
+        /// <param name="cell">the cell</param>
+        /// <param name="newRowCount">the new amount of rows</param>
+        /// <param name="newColCount">the new amount of columns</param>
+        /// <returns>the expanded cell range</returns>
+        public static ExcelRangeBase Expand(this ExcelRangeBase cell, int newRowCount, int newColCount)
+        {
+            return cell.CreateNewColumns(newColCount).CreateNewRows(newRowCount);
+        }
+
+        /// <summary>
         /// Select cell range from worksheet
         /// </summary>
         /// <param name="worksheet">the worksheet</param>
@@ -304,7 +333,9 @@ namespace kroniiapi.Helper
         {
             int startRow = excelRange.Start.Row + fromRow - 1;
             int startCol = excelRange.Start.Column + fromCol - 1;
-            return excelRange.Worksheet.SelectRange(startRow, startCol, toRow, toCol);
+            int endRow = excelRange.Start.Row + toRow - 1;
+            int endCol = excelRange.Start.Column + toCol - 1;
+            return excelRange.Worksheet.Cells[startRow, startCol, endRow, endCol];
         }
 
         /// <summary>

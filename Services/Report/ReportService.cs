@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.ReportDTO;
+using kroniiapi.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static kroniiapi.Services.Attendance.AttendanceStatus;
@@ -16,13 +18,11 @@ namespace kroniiapi.Services.Report
     {
         private DataContext _dataContext;
         private readonly IMapper _mapper;
-        private ITimetableService _timetableService;
 
-        public ReportService(DataContext dataContext, IMapper mapper, ITimetableService timetableService)
+        public ReportService(DataContext dataContext, IMapper mapper)
         {
             _dataContext = dataContext;
             _mapper = mapper;
-            _timetableService = timetableService;
         }
 
         /// <summary>
@@ -68,41 +68,44 @@ namespace kroniiapi.Services.Report
         public ClassStatusReport GetClassStatusReport(int classId)
         {
             var listTraineeStatus = this.GetTraineesInfo(classId).Select(s => s.Status).ToList();
-            ClassStatusReport statusReport = new ClassStatusReport();
-            int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0;
+            int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0, learning = 0;
             foreach (var item in listTraineeStatus)
             {
-                if (item.ToLower().Contains("passed"))
+                if (item == null || item.ToLower().Contains("learning"))
+                {
+                    learning++;
+                }
+                else if (item.ToLower().Contains("passed"))
                 {
                     passed++;
                 }
-                if (item.ToLower().Contains("failed"))
+                else if (item.ToLower().Contains("failed"))
                 {
                     failed++;
                 }
-                if (item.ToLower().Contains("deferred"))
+                else if (item.ToLower().Contains("deferred"))
                 {
                     deferred++;
                 }
-                if (item.ToLower().Contains("dropOut"))
+                else if (item.ToLower().Contains("dropout"))
                 {
                     dropout++;
                 }
-                if (item.ToLower().Contains("cancel"))
+                else if (item.ToLower().Contains("cancel"))
                 {
                     cancel++;
                 }
-                var itemToResponse = new ClassStatusReport
-                {
-
-                    Passed = passed,
-                    Failed = failed,
-                    Deferred = deferred,
-                    DropOut = dropout,
-                    Cancel = cancel,
-                };
-                statusReport = itemToResponse;
             }
+            ClassStatusReport statusReport = new ClassStatusReport()
+            {
+                Learning = learning,
+                Passed = passed,
+                Failed = failed,
+                Deferred = deferred,
+                DropOut = dropout,
+                Cancel = cancel,
+            };
+
             return statusReport;
         }
 
@@ -132,9 +135,6 @@ namespace kroniiapi.Services.Report
             List<TraineeAttendance> traineeAttendances;
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                if(_timetableService.DayOffCheck(date)){
-                    continue;
-                }
                 traineeAttendances = new List<TraineeAttendance>();
                 foreach (int traineeId in traineeIdList)
                 {
@@ -145,6 +145,10 @@ namespace kroniiapi.Services.Report
                                                                Status = a.Status
                                                            })
                                                            .FirstOrDefaultAsync());
+                }
+                if (traineeAttendances == null || traineeAttendances.Any(t => t == null))
+                {
+                    continue;
                 }
                 attendanceInfo.Add(date, traineeAttendances);
             }
@@ -297,21 +301,31 @@ namespace kroniiapi.Services.Report
         /// Get all reward and penalty of class then return it as a collection
         /// </summary>
         /// <param name="classId">If of class</param>
-        /// <param name="reportAt">Choose the time to report</param>
+        /// /// <param name="reportAt">Choose the time to report</param>
         /// <returns>List of reward and penalty of a class</returns>
-        public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
+        public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt)
         {
-            TimeSpan oneday = new TimeSpan(23, 59, 59);
-            var startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
-            var endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
-            startDate = startDate.AddMonths(-1);
-            endDate = endDate.AddMonths(1);
-            endDate = endDate.Add(oneday);
-            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            
+            var startDate = new DateTime();
+            var endDate = new DateTime();
+            if (reportAt != default(DateTime))
+            {
+                TimeSpan oneday = new TimeSpan(23, 59, 59);
+                startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
+                endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
+                endDate = endDate.Add(oneday);
+
+            }
+            else
+            {
+                startDate = DateTime.MinValue;
+                endDate = DateTime.MaxValue;
+            }
+            var trainees = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             List<BonusAndPunish> rp = new List<BonusAndPunish>();
             foreach (var item in trainees)
             {
-                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
+                rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && b.CreatedAt >= startDate && b.CreatedAt <= endDate).ToList());
             }
             List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
             return rpDto;
@@ -438,61 +452,121 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>Feedback report data</returns>
-        public async Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
+        public List<FeedbackReport> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
         {
-            var listTrainee = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToListAsync();
-            List<AttendanceReport> listAReport = new List<AttendanceReport>();
-            foreach (var item in listTrainee)
+            List<FeedbackReport> feedbackReports = new List<FeedbackReport>();
+            if (reportAt == new DateTime(1, 1, 1))
             {
-                int absent = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "A").Count();
-                int present = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "P").Count();
-                int absentNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "An").Count();
-                int late = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "L").Count();
-                int lateNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "Ln").Count();
-                int erly = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "E").Count();
-                int erlyNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "En").Count();
-                int onBoard = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "Ob").Count();
-                int total = absent + present + absentNo + late + lateNo + erly + erlyNo + onBoard;
-                int absentNum = absent + absentNo;
-                int erlylateNum = late + lateNo + erly + erlyNo;
-                float noPerRate = (absentNo + lateNo + erlyNo) / (absentNum + erlylateNum);
-                float calculated = (erlylateNum / 2 + absentNum) / total;
-                float DisciplinaryPoint;
-                if (calculated <= 5)
+                int startMonth = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.StartDay.Month).FirstOrDefault();
+                int endMonth = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.EndDay.Month).FirstOrDefault();
+                int startYear = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.StartDay.Year).FirstOrDefault();
+                int endYear = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.EndDay.Year).FirstOrDefault();
+                for (var i = startYear; i <= endYear; i++)
                 {
-                    DisciplinaryPoint = 100;
+                    for (int j = startMonth; j <= endMonth; j++)
+                    {
+                        // Trainning
+                        float TopicContentAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TopicContent).Average());
+                        var TopicObjectiveAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TopicObjective).Average());
+                        var ApproriateTopicLevelAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.ApproriateTopicLevel).Average());
+                        var TopicUsefulnessAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TopicUsefulness).Average());
+                        var TrainingMaterialAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TrainingMaterial).Average());
+                        // Trainer
+                        var TrainerKnowledgeAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TrainerKnowledge).Average());
+                        var SubjectCoverageAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.SubjectCoverage).Average());
+                        var InstructionAndCommunicateAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.InstructionAndCommunicate).Average());
+                        var TrainerSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TrainerSupport).Average());
+                        // Organization
+                        var LogisticsAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.Logistics).Average());
+                        var InformationToTraineesAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.InformationToTrainees).Average());
+                        var AdminSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.AdminSupport).Average());
+                        // OJT Eval
+                        var OJTEval = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG
+                                        + TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG
+                                        + LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 12;
+                        // Trainning Program
+                        var TrainningProgram = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG) / 5;
+                        var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG);
+                        var Organization = (LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 3;
+                        var AverageScore = (TrainningProgram + Trainer + Organization) / 3;
+                        var fbReportAdd = new FeedbackReport
+                        {
+                            TopicContent = TopicContentAVG,
+                            TopicObjective = TopicObjectiveAVG,
+                            ApproriateTopicLevel = ApproriateTopicLevelAVG,
+                            TopicUsefulness = TopicContentAVG,
+                            TrainingMaterial = TrainingMaterialAVG,
+                            TrainerKnowledge = TrainerKnowledgeAVG,
+                            SubjectCoverage = SubjectCoverageAVG,
+                            InstructionAndCommunicate = InstructionAndCommunicateAVG,
+                            TrainerSupport = TrainerSupportAVG,
+                            Logistics = LogisticsAVG,
+                            InformationToTrainees = InformationToTraineesAVG,
+                            AdminSupport = AdminSupportAVG,
+                            TrainingPrograms = TrainningProgram,
+                            Trainer = Trainer,
+                            Organization = Organization,
+                            ContantEval = TrainningProgram,
+                            TrainerEval = Trainer,
+                            OrganizeEval = Organization,
+                            OJTEval = OJTEval,
+                            AverageScore = AverageScore,
+                        };
+                        feedbackReports.Add(fbReportAdd);
+                    }
                 }
-                else if (calculated <= 20)
-                {
-                    DisciplinaryPoint = 80;
-                }
-                else if (calculated <= 30)
-                {
-                    DisciplinaryPoint = 60;
-                }
-                else if (calculated < 50)
-                {
-                    DisciplinaryPoint = 50;
-                }
-                else if (calculated >= 50 && noPerRate == 20)
-                {
-                    DisciplinaryPoint = 0;
-                }
-                else
-                {
-                    DisciplinaryPoint = 20;
-                }
-                var newAReport = new AttendanceReport
-                {
-                    TraineeId = item.TraineeId,
-                    NumberOfAbsent = absentNum,
-                    NumberOfLateInAndEarlyOut = erlylateNum,
-                    NoPermissionRate = noPerRate,
-                    DisciplinaryPoint = DisciplinaryPoint,
-                };
-                listAReport.Add(newAReport);
             }
-            return listAReport;
+            else
+            {
+                var TopicContentAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TopicContent).Average());
+                var TopicObjectiveAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TopicObjective).Average());
+                var ApproriateTopicLevelAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.ApproriateTopicLevel).Average());
+                var TopicUsefulnessAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TopicUsefulness).Average());
+                var TrainingMaterialAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TrainingMaterial).Average());
+                // Trainer
+                var TrainerKnowledgeAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TrainerKnowledge).Average());
+                var SubjectCoverageAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.SubjectCoverage).Average());
+                var InstructionAndCommunicateAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.InstructionAndCommunicate).Average());
+                var TrainerSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TrainerSupport).Average());
+                // Organization
+                var LogisticsAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.Logistics).Average());
+                var InformationToTraineesAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.InformationToTrainees).Average());
+                var AdminSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.AdminSupport).Average());
+                // OJT Eval
+                var OJTEval = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG
+                    + TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG
+                    + LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 12;
+                // Trainning Program
+                var TrainningProgram = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG) / 5;
+                var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG);
+                var Organization = (LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 3;
+                var AverageScore = (TrainningProgram + Trainer + Organization) / 3;
+                var fbReportAdd = new FeedbackReport
+                {
+                    TopicContent = TopicContentAVG,
+                    TopicObjective = TopicObjectiveAVG,
+                    ApproriateTopicLevel = ApproriateTopicLevelAVG,
+                    TopicUsefulness = TopicContentAVG,
+                    TrainingMaterial = TrainingMaterialAVG,
+                    TrainerKnowledge = TrainerKnowledgeAVG,
+                    SubjectCoverage = SubjectCoverageAVG,
+                    InstructionAndCommunicate = InstructionAndCommunicateAVG,
+                    TrainerSupport = TrainerSupportAVG,
+                    Logistics = LogisticsAVG,
+                    InformationToTrainees = InformationToTraineesAVG,
+                    AdminSupport = AdminSupportAVG,
+                    TrainingPrograms = TrainningProgram,
+                    Trainer = Trainer,
+                    Organization = Organization,
+                    ContantEval = TrainningProgram,
+                    TrainerEval = Trainer,
+                    OrganizeEval = Organization,
+                    OJTEval = OJTEval,
+                    AverageScore = AverageScore,
+                };
+                feedbackReports.Add(fbReportAdd);
+            }
+            return feedbackReports;
         }
 
         /// <summary>
@@ -547,7 +621,7 @@ namespace kroniiapi.Services.Report
             //Set startDate again
             startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
             //Set Dictionary's key = first month of class duration
-            var key = startDate.Month;
+            var key = startDate;
             //Variable to check if key exceed over the number of months
             var nextKeyMonth = startDate;
             var topicIds = topicInfo.Select(i => i.TopicId).ToList();
@@ -555,7 +629,7 @@ namespace kroniiapi.Services.Report
             var trainees = _dataContext.Trainees.Where(f => f.ClassId == classId).Select(t => t.TraineeId).ToList();
             //Get mark by moduleId and traineeId
             var marks = _dataContext.Marks.Where(f => topicIds.Contains(f.ModuleId) && trainees.Contains(f.TraineeId)).OrderBy(c => c.TraineeId).ToList();
-            Dictionary<int, List<TraineeGrades>> traineeGrades = new Dictionary<int, List<TraineeGrades>>();
+            Dictionary<DateTime, List<TraineeGrades>> traineeGrades = new Dictionary<DateTime, List<TraineeGrades>>();
             List<TraineeGrades> traineeGradeList = new List<TraineeGrades>();
 
             foreach (var i in classModules)
@@ -579,21 +653,21 @@ namespace kroniiapi.Services.Report
                 traineeGradeList = new List<TraineeGrades>();
                 if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
                 {
-                    key = startDate.AddMonths(-1).Month;
+                    key = startDate.AddMonths(-1);
                     nextKeyMonth = startDate.AddMonths(-1);
                 }
                 if (nextKeyMonth.Year <= endDate.Year || nextKeyMonth.Month < endDate.Month)
                 {
                     nextKeyMonth = nextKeyMonth.AddMonths(1);
-                    key = nextKeyMonth.Month;
+                    key = nextKeyMonth;
                 }
 
             }
-            Dictionary<int, List<TraineeGrades>> traineeAvarageGrades = new Dictionary<int, List<TraineeGrades>>();
+            Dictionary<DateTime, List<TraineeGrades>> traineeAvarageGrades = new Dictionary<DateTime, List<TraineeGrades>>();
             List<TraineeGrades> traineeAvarageGradeList = new List<TraineeGrades>();
             //Set back variable
             nextKeyMonth = startDate;
-            key = startDate.Month;
+            key = startDate;
             foreach (var i in classModules)
             {
                 foreach (var item in marks)
@@ -621,13 +695,13 @@ namespace kroniiapi.Services.Report
                 traineeAvarageGradeList = new List<TraineeGrades>();
                 if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
                 {
-                    key = startDate.AddMonths(-1).Month;
+                    key = startDate.AddMonths(-1);
                     nextKeyMonth = startDate.AddMonths(-1);
                 }
                 if (nextKeyMonth.Year <= endDate.Year || nextKeyMonth.Month < endDate.Month)
                 {
                     nextKeyMonth = nextKeyMonth.AddMonths(1);
-                    key = nextKeyMonth.Month;
+                    key = nextKeyMonth;
                 }
             }
 
