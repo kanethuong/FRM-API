@@ -613,6 +613,10 @@ namespace kroniiapi.Services.Report
                     IsSumary = false,
                 };
                 feedbackReports.Add(fbReportAdd);
+                if (feedbackReports.Count() == 0)
+                {
+                    return null;
+                }
             }
             return feedbackReports;
         }
