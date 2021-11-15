@@ -301,7 +301,7 @@ namespace kroniiapi.Services.Report
         /// Get all reward and penalty of class then return it as a collection
         /// </summary>
         /// <param name="classId">If of class</param>
-        /// <param name="reportAt">Choose the time to report</param>
+        /// /// <param name="reportAt">Choose the time to report</param>
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt)
         {
