@@ -106,15 +106,19 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> ConfirmCompanyRequest(int id, [FromBody] ConfirmCompanyRequestInput input)
         {
             var rs = await _companyService.ConfirmCompanyRequest(id, input.isAccepted);
-            if (rs == -1)
+            if (rs.Item1 == -1)
             {
                 return NotFound(new ResponseDTO(404, "Company request cannot be found"));
             }
-            else if (rs == -2)
+            else if (rs.Item1 == -2)
             {
                 return BadRequest(new ResponseDTO(400, "Company request had been confirmed before"));
             }
-            else if (rs == 1)
+            else if (rs.Item1 == -3)
+            {
+                return BadRequest(new ResponseDTO(400, $"There are trainees in this list is in onboard: {string.Join(", ", rs.Item2)}"));
+            }
+            else if (rs.Item1 != 0)
             {
                 return Ok(new ResponseDTO(200, "The company request is processed"));
             }

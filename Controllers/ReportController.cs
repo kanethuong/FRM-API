@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using kroniiapi.DTO;
 using kroniiapi.DTO.ReportDTO;
 using kroniiapi.Services.Report;
 using Microsoft.AspNetCore.Authorization;
@@ -33,5 +32,17 @@ namespace kroniiapi.Controllers
         {
             return null;
         }
+        [HttpGet("attendance/{classId:int}")]
+        public async Task<ActionResult> GetAttReport(int classId, int month = 0)
+        {
+            // var rs = new Dictionary<int, List<AttendanceReport>>();
+            if (month == 0)
+            {
+                return Ok(_reportService.GetTotalAttendanceReports(classId));
+            }
+            else
+                return Ok(_reportService.GetAttendanceReportEachMonth(classId, month));
+        }
+
     }
 }

@@ -379,5 +379,17 @@ namespace kroniiapi.Controllers
                 return Conflict(new ResponseDTO(409, "Fail to update trainee wage"));
             }
         }
+
+        /// <summary>
+        /// Update trainee status
+        /// </summary>
+        /// <param name="id">id of trainee</param>
+        /// <param name="status"></param>
+        /// <returns>200: Update status success / 404: Trainee cannot be found</returns>
+        [HttpPut("{id:int}/status")]
+        public async Task<ActionResult> UpdateTraineeStatus(int id, [FromBody] string status)
+        {
+            return null;
+        }
     }
 }

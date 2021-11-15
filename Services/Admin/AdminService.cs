@@ -170,18 +170,5 @@ namespace kroniiapi.Services
             return _dataContext.Admins.Any(t => t.AdminId == id &&
            t.IsDeactivated == false);
         }
-        /// <summary>
-        /// Get Admin feedbacks by Admin ID
-        /// </summary>
-        /// <param name="adminId">Admin ID</param>
-        /// <returns>All admin feedbacks</returns>
-        // public async Task<ICollection<AdminFeedback>> GetAdminFeedbacksByAdminId(int adminId)
-        // {
-        //     if(!CheckAdminExist(adminId)) {
-        //         return null;
-        //     }
-        //     var adminFeedbacks = await _dataContext.AdminFeedbacks.Where(a => a.AdminId == adminId).ToListAsync();
-        //     return adminFeedbacks;
-        // }
     }
 }
