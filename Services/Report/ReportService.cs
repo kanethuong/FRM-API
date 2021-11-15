@@ -16,9 +16,9 @@ namespace kroniiapi.Services.Report
     {
         private DataContext _dataContext;
         private readonly IMapper _mapper;
-        private readonly TimetableService _timetableService;
+        private ITimetableService _timetableService;
 
-        public ReportService(DataContext dataContext, IMapper mapper, TimetableService timetableService)
+        public ReportService(DataContext dataContext, IMapper mapper, ITimetableService timetableService)
         {
             _dataContext = dataContext;
             _mapper = mapper;
