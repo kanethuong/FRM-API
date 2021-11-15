@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -64,39 +65,18 @@ namespace kroniiapi.Controllers
             return adminResponse;
         }
 
-        /// <summary>
-        /// Get all feedback of an admin
-        /// </summary>
-        /// <param name="id">admin id</param>
-        /// <returns>200: All feedback of admin with list / 404: Admin not found / 404: Admin feedbacks not found</returns>
-        [HttpGet("{id:int}/feedback")]
-        public async Task<ActionResult<IEnumerable<FeedbackContent>>> ViewAdminFeedback(int id)
-        {
-            // var adminFeedbacks = await _adminService.GetAdminFeedbacksByAdminId(id);
-            // if (adminFeedbacks == null) {
-
-            //     return NotFound(new ResponseDTO(404, "Admin not found!"));
-            // }
-            // else if (adminFeedbacks.Count() == 0) {
-            //     return NotFound(new ResponseDTO(404,"Admin feedbacks not found!"));
-            // }
-            // IEnumerable<FeedbackContent> feedbackContent = _mapper.Map<IEnumerable<FeedbackContent>>(adminFeedbacks);
-            // return Ok(feedbackContent);
-            return null;
-        }
-
         [HttpGet("{id:int}/dashboard")]
         public async Task<ActionResult<AdminDashboard>> ViewAdminDashboard(int id)
         {
 
             var classStatus = _reportService.GetClassStatusReport(id);
             var checkPoint = await _reportService.GetCheckpointReport(id);
-            // var feedback = _reportService.GetFeedbackReport(id);
+            var feedbackReports = _reportService.GetFeedbackReport(id);
             var adminDashBoard = new AdminDashboard
             {
                 ClassStatus = classStatus,
                 Checkpoint = checkPoint,
-                // Feedback = feedback
+                Feedback = (feedbackReports.Count > 0) ? feedbackReports.Where(f => f.IsSumary == true).FirstOrDefault() : feedbackReports.FirstOrDefault()
             };
             return Ok(adminDashBoard);
         }
