@@ -17,5 +17,6 @@ namespace kroniiapi.Services
         int GetTotalSlotsNeed(ICollection<Module> modulesList);
         bool CheckAvailabeSlotsForTrainer(int slotsNeed, int trainerId, DateTime startDay, DateTime endDay);
         Task<(int, string )> GenerateTimetable(int classId);
+        bool DayOffCheck(DateTime date);
     }
 }
