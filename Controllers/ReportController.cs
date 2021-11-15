@@ -33,16 +33,57 @@ namespace kroniiapi.Controllers
             return null;
         }
         [HttpGet("attendance/{classId:int}")]
-        public async Task<ActionResult> GetAttReport(int classId, int month = 0)
+        public async Task<ActionResult> GetAttReport(int classId, DateTime month = default(DateTime))
         {
             // var rs = new Dictionary<int, List<AttendanceReport>>();
-            if (month == 0)
+            if (month == default(DateTime))
             {
                 return Ok(_reportService.GetTotalAttendanceReports(classId));
             }
             else
                 return Ok(_reportService.GetAttendanceReportEachMonth(classId, month));
         }
+        [HttpGet("info/{classId:int}")]
+        public async Task<ActionResult> GetTraineesInfo(int classId)
+        {
 
+            return Ok(_reportService.GetTraineesInfo(classId));
+        }
+        [HttpGet("status/{classId:int}")]
+        public async Task<ActionResult> GetClassStatusReport(int classId)
+        {
+
+            return Ok(_reportService.GetClassStatusReport(classId));
+        }
+        [HttpGet("GetAttendanceInfo/{classId:int}")]
+        public async Task<ActionResult> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime))
+        {
+
+            return Ok(await _reportService.GetAttendanceInfo(classId, reportAt));
+        }
+        [HttpGet("GetRewardAndPenaltyScore/{classId:int}")]
+        public async Task<ActionResult> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
+        {
+
+            return Ok(_reportService.GetRewardAndPenaltyScore(classId,reportAt));
+        }
+        [HttpGet("GetTraineeGPAs/{classId:int}")]
+        public async Task<ActionResult> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
+        {
+
+            return Ok(await _reportService.GetTraineeGPAs(classId));
+        }
+        [HttpGet("GetTopicGrades/{classId:int}")]
+        public async Task<ActionResult> GetTopicGrades(int classId, DateTime reportAt = default(DateTime))
+        {
+
+            return Ok(_reportService.GetTopicGrades(classId));
+        }
+        [HttpGet("GetTraineeFeedbacks/{classId:int}")]
+        public async Task<ActionResult> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime))
+        {
+
+            return Ok(_reportService.GetTraineeFeedbacks(classId,reportAt));
+        }
     }
 }

@@ -161,7 +161,7 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A dictionary of store report month and list of tranee report</returns>
-        public Dictionary<int, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, int monthReport)
+        public Dictionary<DateTime, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, DateTime monthReport)
         {
             List<AttendanceReport> attendanceReports = new();
             var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
@@ -170,11 +170,11 @@ namespace kroniiapi.Services.Report
                 AttendanceReport ap = this.GetAttendanceReportByTraineeAndMonth(trainee, monthReport);
                 attendanceReports.Add(ap);
             }
-            return new Dictionary<int, List<AttendanceReport>> {
+            return new Dictionary<DateTime, List<AttendanceReport>> {
                     { monthReport, attendanceReports }
                 };
         }
-        private AttendanceReport GetAttendanceReportByTraineeAndMonth(Trainee trainee, int monthReport)
+        private AttendanceReport GetAttendanceReportByTraineeAndMonth(Trainee trainee, DateTime monthReport)
         {
             AttendanceReport ap = new AttendanceReport()
             {
@@ -186,12 +186,14 @@ namespace kroniiapi.Services.Report
             };
             //get Number of trainee absent with A or An Status with month in report
             ap.NumberOfAbsent = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                      && t.Date.Month == monthReport
+                                                                      && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year
                                                                       && (t.Status == nameof(_attendanceStatus.An)
                                                                          || t.Status == nameof(_attendanceStatus.A))).Count();
             //get Number of trainee Late in and early out with Ln/L/En/E Status with month in report
             ap.NumberOfLateInAndEarlyOut = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                      && t.Date.Month == monthReport
+                                                                      && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year
                                                                       && (t.Status == nameof(_attendanceStatus.Ln)
                                                                          || t.Status == nameof(_attendanceStatus.L)
                                                                          || t.Status == nameof(_attendanceStatus.En)
@@ -200,15 +202,21 @@ namespace kroniiapi.Services.Report
             if (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut != 0)  //Total of (L,Ln,A,An,E,En) != 0
             {
                 var numberOfNoPermission = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                     && t.Date.Month == monthReport
+                                                                     && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year
                                                                      && (t.Status == nameof(_attendanceStatus.Ln)
                                                                         || t.Status == nameof(_attendanceStatus.An)
                                                                         || t.Status == nameof(_attendanceStatus.En))).Count();
                 ap.NoPermissionRate = (float)numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
             }
             var attCount = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                        && t.Date.Month == monthReport).Count();
-            float violationRate = (float)(ap.NumberOfLateInAndEarlyOut / 2 + ap.NumberOfAbsent) / attCount;
+                                                                       && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year).Count();
+            float violationRate = 0;
+            if (attCount != 0)
+            {
+                violationRate = (float)(ap.NumberOfLateInAndEarlyOut / 2 + ap.NumberOfAbsent) / attCount;
+            }
             //Calculate disciplinary point by using formula from excel
             ap.DisciplinaryPoint = CalculateDisciplinaryPoint(violationRate, ap.NoPermissionRate);
             return ap;
@@ -266,7 +274,7 @@ namespace kroniiapi.Services.Report
             var listMonth = Enumerable.Range(0, Int32.MaxValue)
                                 .Select(e => start.AddMonths(e))
                                 .TakeWhile(e => e <= end)
-                                .Select(e => e.Month);
+                                .Select(e => e);
 
             var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             foreach (var trainee in traineeList)
@@ -301,11 +309,10 @@ namespace kroniiapi.Services.Report
         /// Get all reward and penalty of class then return it as a collection
         /// </summary>
         /// <param name="classId">If of class</param>
-        /// <param name="reportAt">Choose the time to report</param>
+        /// /// <param name="reportAt">Choose the time to report</param>
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt)
         {
-            
             var startDate = new DateTime();
             var endDate = new DateTime();
             if (reportAt != default(DateTime))
@@ -511,10 +518,44 @@ namespace kroniiapi.Services.Report
                             OrganizeEval = Organization,
                             OJTEval = OJTEval,
                             AverageScore = AverageScore,
-                        };
+                            ReportAt = new DateTime(i, j, 1),
+                            IsSumary = false,
+                    };
                         feedbackReports.Add(fbReportAdd);
                     }
                 }
+                var sumaryReport = new FeedbackReport
+                {
+                    TopicContent = feedbackReports.Average(fb => fb.TopicContent),
+                    TopicObjective = feedbackReports.Average(fb => fb.TopicObjective),
+                    ApproriateTopicLevel = feedbackReports.Average(fb => fb.ApproriateTopicLevel),
+                    TopicUsefulness = feedbackReports.Average(fb => fb.TopicUsefulness),
+                    TrainingMaterial = feedbackReports.Average(fb => fb.TrainingMaterial),
+                    TrainerKnowledge = feedbackReports.Average(fb => fb.TrainerKnowledge),
+                    SubjectCoverage = feedbackReports.Average(fb => fb.SubjectCoverage),
+                    InstructionAndCommunicate = feedbackReports.Average(fb => fb.InstructionAndCommunicate),
+                    TrainerSupport = feedbackReports.Average(fb => fb.TrainerSupport),
+                    Logistics = feedbackReports.Average(fb => fb.Logistics),
+                    InformationToTrainees = feedbackReports.Average(fb => fb.InformationToTrainees),
+                    AdminSupport = feedbackReports.Average(fb => fb.AdminSupport),
+
+                    TrainingPrograms = (feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5,
+                    Trainer = (feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4,
+                    Organization = (feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3,
+
+                    ContantEval = (feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5,
+                    TrainerEval = (feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4,
+                    OrganizeEval = (feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3,
+                    OJTEval = (feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)
+                                + feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)
+                                + feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)),
+                    AverageScore = (((feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5)
+                                        + ((feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4)
+                                        + ((feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3)) / 3,
+                    ReportAt = null,
+                    IsSumary = true,
+                };
+                feedbackReports.Add(sumaryReport);
             }
             else
             {
@@ -563,6 +604,8 @@ namespace kroniiapi.Services.Report
                     OrganizeEval = Organization,
                     OJTEval = OJTEval,
                     AverageScore = AverageScore,
+                    ReportAt = new DateTime(reportAt.Year, reportAt.Month,1),
+                    IsSumary = false,
                 };
                 feedbackReports.Add(fbReportAdd);
             }
