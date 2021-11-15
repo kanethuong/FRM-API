@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.ReportDTO;
 
 namespace kroniiapi.Services.Report
@@ -15,7 +17,7 @@ namespace kroniiapi.Services.Report
         Task<Dictionary<DateTime, List<TraineeAttendance>>> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime));
         ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime));
         ICollection<TraineeFeedback> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime));
-        Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime));
+        List<FeedbackReport> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime));
         Dictionary<int, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, int monthReport);
         List<AttendanceReport> GetTotalAttendanceReports(int classId);
     }
