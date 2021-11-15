@@ -66,7 +66,6 @@ namespace kroniiapi.Services.Report
         public ClassStatusReport GetClassStatusReport(int classId)
         {
             var listTraineeStatus = this.GetTraineesInfo(classId).Select(s => s.Status).ToList();
-
             int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0, learning = 0;
             foreach (var item in listTraineeStatus)
             {
@@ -86,7 +85,7 @@ namespace kroniiapi.Services.Report
                 {
                     deferred++;
                 }
-                else if (item.ToLower().Contains("dropOut"))
+                else if (item.ToLower().Contains("dropout"))
                 {
                     dropout++;
                 }

@@ -333,7 +333,9 @@ namespace kroniiapi.Helper
         {
             int startRow = excelRange.Start.Row + fromRow - 1;
             int startCol = excelRange.Start.Column + fromCol - 1;
-            return excelRange.Worksheet.SelectRange(startRow, startCol, toRow, toCol);
+            int endRow = excelRange.Start.Row + toRow - 1;
+            int endCol = excelRange.Start.Column + toCol - 1;
+            return excelRange.Worksheet.Cells[startRow, startCol, endRow, endCol];
         }
 
         /// <summary>
