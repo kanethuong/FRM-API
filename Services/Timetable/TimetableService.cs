@@ -135,7 +135,7 @@ namespace kroniiapi.Services
             var startDay = GetStartDayforClassToInsertModule(classId);
             var trainerDays = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.TrainerId == trainerId)).Count() / 2;
             var daysNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
-            if ((classGet.EndDay - startDay).Days >= daysNeed)
+            if (TimetableHelper.BusinessDaysUntil(startDay,classGet.EndDay,holidayss) >= daysNeed)
             {
                 return true;
             }
@@ -234,7 +234,12 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<(int, string)> GenerateTimetable(int classId)
         {
+            var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var listModuleClass = _datacontext.ClassModules.Where(cm => cm.ClassId == classId).ToList();
+            if (listModuleClass.Sum(mc => mc.Module.NoOfSlot) > TimetableHelper.BusinessDaysUntil(classGet.StartDay,classGet.EndDay,holidayss) )
+            {
+                return (0, "Not enought Day");
+            }
             foreach (var item in listModuleClass)
             {
                 int noOfSlot = _datacontext.Modules.Where(m => m.ModuleId == item.ModuleId).Select(m => m.NoOfSlot).FirstOrDefault();
