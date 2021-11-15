@@ -15,9 +15,14 @@ namespace kroniiapi.Services
         {
             _dataContext = dataContext;
         }
-        public async Task<int> InsertNewCost(BonusAndPunish bonusAndPunish)
+        public async Task<int> InsertNewBonusAndPunish(BonusAndPunish bonusAndPunish)
         {
-            return 0;
+            int rowInserted = 0;
+
+            _dataContext.BonusAndPunishes.Add(bonusAndPunish);
+            rowInserted = await _dataContext.SaveChangesAsync();
+
+            return rowInserted;
         }
         public async Task<Tuple<int, IEnumerable<BonusAndPunish>>> GetBonusAndPunishList(PaginationParameter paginationParameter)
         {
