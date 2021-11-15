@@ -492,7 +492,7 @@ namespace kroniiapi.Services.Report
                 };
                 listAReport.Add(newAReport);
             }
-            return listAReport;
+            return null;
         }
 
         /// <summary>

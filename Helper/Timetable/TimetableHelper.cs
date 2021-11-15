@@ -7,6 +7,21 @@ namespace kroniiapi.Helper.Timetable
 {
     public static class TimetableHelper
     {
+        static List<DateTime> holidayss = new List<DateTime> {
+            // New Year
+            new DateTime(1, 1, 1),
+            //
+            new DateTime(1, 4, 30),
+            //
+            new DateTime(1, 5, 1),
+            //
+            new DateTime(1, 9, 1),
+            //
+            new DateTime(1, 9, 2),
+            //
+            new DateTime(1, 9, 3),
+            //
+        };
         /// <summary>
         /// Calculates number of business days, taking into account:
         ///  - weekends (Saturdays and Sundays)
@@ -87,6 +102,26 @@ namespace kroniiapi.Helper.Timetable
             var Mon = date.AddDays(( - m));
             var NextMonday = Mon.AddDays(7);
             return NextMonday;
+        }
+        /// <summary>
+        /// Check if Date is a Day Off
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>true or false</returns>
+        public static bool DayOffCheck(DateTime date)
+        {
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return true;
+            }
+            foreach (var item in holidayss)
+            {
+                if (date.Day == item.Day && date.Month == item.Month)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
