@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace kroniiapi.DTO.MarkDTO
 {
@@ -9,6 +7,7 @@ namespace kroniiapi.DTO.MarkDTO
     {
         public int ModuleId { get; set; }
         public int TraineeId { get; set; }
+        [Range(1, 10, ErrorMessage = "Score can only from 1 to 5")]
         public float Score { get; set; }
 
     }

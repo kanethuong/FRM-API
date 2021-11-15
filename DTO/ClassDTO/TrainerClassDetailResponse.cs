@@ -1,9 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using kroniiapi.DTO.AdminDTO;
-using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.ModuleDTO;
 
 namespace kroniiapi.DTO.ClassDTO
