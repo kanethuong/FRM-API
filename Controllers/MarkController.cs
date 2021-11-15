@@ -291,7 +291,7 @@ namespace kroniiapi.Controllers
             var markList = new List<Mark>();
             foreach (var module in moduleList)
             {
-                var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId);
                 if (traineeMark == null)
                 {
                     Mark mark_zero = new Mark();
