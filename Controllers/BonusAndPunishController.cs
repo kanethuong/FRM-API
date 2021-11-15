@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using kroniiapi.DB.Models;
+using kroniiapi.DTO;
 using kroniiapi.DTO.BonusAndPunishDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
@@ -12,6 +16,14 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class BonusAndPunishController : ControllerBase
     {
+        private readonly IBonusAndPunishService _bonusAndPunishService;
+        private readonly IMapper _mapper;
+
+        public BonusAndPunishController(IBonusAndPunishService bonusAndPunishService, IMapper mapper)
+        {
+            _bonusAndPunishService = bonusAndPunishService;
+            _mapper = mapper;
+        }
         /// <summary>
         /// Create new Bonus and punish , bonus > 0, punish < 0
         /// </summary>
@@ -20,9 +32,12 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewBonusOrPunish([FromBody] BonusAndPunishInput input)
         {
-
-
-            return null;
+            BonusAndPunish bonusAndPunishInput = _mapper.Map<BonusAndPunish>(input);
+            int status = await _bonusAndPunishService.InsertNewBonusAndPunish(bonusAndPunishInput);
+            if (status == 0) {
+                return BadRequest(new ResponseDTO(400,"Failed to create new Bonus or Punish"));
+            }
+            return Ok(new ResponseDTO(201,"Created!"));
         }
         /// <summary>
         /// Get Bonus and punish list in pagination

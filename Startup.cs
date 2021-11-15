@@ -205,6 +205,7 @@ namespace kroniiapi
             services.AddScoped<ITimetableService, TimetableService>();
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IBonusAndPunishService, BonusAndPunishService>();
 
             // Setting JSON convert to camelCase in Object properties
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
