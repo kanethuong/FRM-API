@@ -253,7 +253,7 @@
     <div class="row mb-3">
         <div class="col-4 border-end">
             <h5>Allow</h5>
-            <p>Admin</p>
+            <p>Trainer</p>
         </div>
         <div class="col-4 border-end">
             <h5>Method</h5>
@@ -291,9 +291,9 @@
     "moduleName": "string",
     "date": "string",
     "slotDuration": int,
-    "class": {
-    "roomName": "string"
-    }
+    "roomName": "string",
+    "classId": int,
+    "className": "string"
   }
  ]
 </code></pre>
@@ -356,7 +356,8 @@
         "date": "datetime",
         "slotDuration": int,
         "roomName": "string",
-        "classId": int
+        "classId": int,
+        "className": "string"
     }
 ]
 </code></pre>
