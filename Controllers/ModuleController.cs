@@ -170,5 +170,15 @@ namespace kroniiapi.Controllers
                     Errors = errors
                 });
         }
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ModuleResponse>> ViewModuleById(int id)
+        {
+            var module = await _moduleService.GetModuleById(id);
+            if (module == null)
+            {
+                return NotFound(new ResponseDTO(404, "Module cannot be found"));
+            }
+            return Ok(_mapper.Map<ModuleResponse>(module));
+        }
     }
 }

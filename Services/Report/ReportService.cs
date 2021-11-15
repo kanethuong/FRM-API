@@ -161,7 +161,7 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>A dictionary of store report month and list of tranee report</returns>
-        public Dictionary<int, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, int monthReport)
+        public Dictionary<DateTime, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, DateTime monthReport)
         {
             List<AttendanceReport> attendanceReports = new();
             var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
@@ -170,11 +170,11 @@ namespace kroniiapi.Services.Report
                 AttendanceReport ap = this.GetAttendanceReportByTraineeAndMonth(trainee, monthReport);
                 attendanceReports.Add(ap);
             }
-            return new Dictionary<int, List<AttendanceReport>> {
+            return new Dictionary<DateTime, List<AttendanceReport>> {
                     { monthReport, attendanceReports }
                 };
         }
-        private AttendanceReport GetAttendanceReportByTraineeAndMonth(Trainee trainee, int monthReport)
+        private AttendanceReport GetAttendanceReportByTraineeAndMonth(Trainee trainee, DateTime monthReport)
         {
             AttendanceReport ap = new AttendanceReport()
             {
@@ -186,12 +186,14 @@ namespace kroniiapi.Services.Report
             };
             //get Number of trainee absent with A or An Status with month in report
             ap.NumberOfAbsent = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                      && t.Date.Month == monthReport
+                                                                      && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year
                                                                       && (t.Status == nameof(_attendanceStatus.An)
                                                                          || t.Status == nameof(_attendanceStatus.A))).Count();
             //get Number of trainee Late in and early out with Ln/L/En/E Status with month in report
             ap.NumberOfLateInAndEarlyOut = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                      && t.Date.Month == monthReport
+                                                                      && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year
                                                                       && (t.Status == nameof(_attendanceStatus.Ln)
                                                                          || t.Status == nameof(_attendanceStatus.L)
                                                                          || t.Status == nameof(_attendanceStatus.En)
@@ -200,15 +202,21 @@ namespace kroniiapi.Services.Report
             if (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut != 0)  //Total of (L,Ln,A,An,E,En) != 0
             {
                 var numberOfNoPermission = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                     && t.Date.Month == monthReport
+                                                                     && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year
                                                                      && (t.Status == nameof(_attendanceStatus.Ln)
                                                                         || t.Status == nameof(_attendanceStatus.An)
                                                                         || t.Status == nameof(_attendanceStatus.En))).Count();
                 ap.NoPermissionRate = (float)numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
             }
             var attCount = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
-                                                                        && t.Date.Month == monthReport).Count();
-            float violationRate = (float)(ap.NumberOfLateInAndEarlyOut / 2 + ap.NumberOfAbsent) / attCount;
+                                                                       && t.Date.Month == monthReport.Month
+                                                                      && t.Date.Year == monthReport.Year).Count();
+            float violationRate = 0;
+            if (attCount != 0)
+            {
+                violationRate = (float)(ap.NumberOfLateInAndEarlyOut / 2 + ap.NumberOfAbsent) / attCount;
+            }
             //Calculate disciplinary point by using formula from excel
             ap.DisciplinaryPoint = CalculateDisciplinaryPoint(violationRate, ap.NoPermissionRate);
             return ap;
@@ -266,7 +274,7 @@ namespace kroniiapi.Services.Report
             var listMonth = Enumerable.Range(0, Int32.MaxValue)
                                 .Select(e => start.AddMonths(e))
                                 .TakeWhile(e => e <= end)
-                                .Select(e => e.Month);
+                                .Select(e => e);
 
             var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             foreach (var trainee in traineeList)
@@ -305,7 +313,7 @@ namespace kroniiapi.Services.Report
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt)
         {
-            
+
             var startDate = new DateTime();
             var endDate = new DateTime();
             if (reportAt != default(DateTime))
