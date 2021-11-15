@@ -15,5 +15,6 @@ namespace kroniiapi.DTO.TrainerDTO
         public int SlotDuration { get; set; }
         public string RoomName { get; set; }
         public int ClassId { get; set; }
+        public string ClassName { get; set; }
     }
 }
