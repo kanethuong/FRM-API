@@ -519,10 +519,44 @@ namespace kroniiapi.Services.Report
                             OrganizeEval = Organization,
                             OJTEval = OJTEval,
                             AverageScore = AverageScore,
-                        };
+                            ReportAt = new DateTime(i, j, 1),
+                            IsSumary = false,
+                    };
                         feedbackReports.Add(fbReportAdd);
                     }
                 }
+                var sumaryReport = new FeedbackReport
+                {
+                    TopicContent = feedbackReports.Average(fb => fb.TopicContent),
+                    TopicObjective = feedbackReports.Average(fb => fb.TopicObjective),
+                    ApproriateTopicLevel = feedbackReports.Average(fb => fb.ApproriateTopicLevel),
+                    TopicUsefulness = feedbackReports.Average(fb => fb.TopicUsefulness),
+                    TrainingMaterial = feedbackReports.Average(fb => fb.TrainingMaterial),
+                    TrainerKnowledge = feedbackReports.Average(fb => fb.TrainerKnowledge),
+                    SubjectCoverage = feedbackReports.Average(fb => fb.SubjectCoverage),
+                    InstructionAndCommunicate = feedbackReports.Average(fb => fb.InstructionAndCommunicate),
+                    TrainerSupport = feedbackReports.Average(fb => fb.TrainerSupport),
+                    Logistics = feedbackReports.Average(fb => fb.Logistics),
+                    InformationToTrainees = feedbackReports.Average(fb => fb.InformationToTrainees),
+                    AdminSupport = feedbackReports.Average(fb => fb.AdminSupport),
+
+                    TrainingPrograms = (feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5,
+                    Trainer = (feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4,
+                    Organization = (feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3,
+
+                    ContantEval = (feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5,
+                    TrainerEval = (feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4,
+                    OrganizeEval = (feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3,
+                    OJTEval = (feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)
+                                + feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)
+                                + feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)),
+                    AverageScore = (((feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5)
+                                        + ((feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4)
+                                        + ((feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3)) / 3,
+                    ReportAt = new DateTime(1,1,1),
+                    IsSumary = true,
+                };
+                feedbackReports.Add(sumaryReport);
             }
             else
             {
@@ -571,6 +605,8 @@ namespace kroniiapi.Services.Report
                     OrganizeEval = Organization,
                     OJTEval = OJTEval,
                     AverageScore = AverageScore,
+                    ReportAt = new DateTime(reportAt.Year, reportAt.Month,1),
+                    IsSumary = false,
                 };
                 feedbackReports.Add(fbReportAdd);
             }

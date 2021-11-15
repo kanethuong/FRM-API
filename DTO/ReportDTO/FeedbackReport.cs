@@ -1,3 +1,5 @@
+using System;
+
 namespace kroniiapi.DTO.ReportDTO
 {
     public class FeedbackReport
@@ -32,5 +34,8 @@ namespace kroniiapi.DTO.ReportDTO
 
         // Total report
         public float AverageScore { get; set; }
+        // Date Report
+        public DateTime? ReportAt { get; set; }
+        public bool IsSumary { get; set; }
     }
 }
