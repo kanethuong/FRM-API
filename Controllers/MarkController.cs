@@ -113,7 +113,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of student mark in a class with pagination / 404: search student name not found</returns>
         [HttpGet("class/{classId:int}")]
-        [Authorize(Policy = "MarkGet")]
+        //[Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int classId, [FromQuery] PaginationParameter paginationParameter)
         {
             var class1 = await _classService.GetClassByClassID(classId);
@@ -133,7 +133,7 @@ namespace kroniiapi.Controllers
                 var markList = new List<Mark>();
                 foreach (var module in moduleList)
                 {
-                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, class1.StartDay, class1.EndDay);
                     if (traineeMark == null)
                     {
                         Mark mark_zero = new Mark();
@@ -173,6 +173,7 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScoreByTrainerId(int classId, int trainerId, [FromQuery] PaginationParameter paginationParameter)
         {
+            var class1 = await _classService.GetClassByClassID(classId);
             if (!_trainerService.CheckTrainerExist(trainerId) || !_classService.CheckClassExist(classId))
             {
                 return NotFound(new ResponseDTO(404, "Trainer not found or Class not found"));
@@ -195,7 +196,7 @@ namespace kroniiapi.Controllers
                 var markList = new List<Mark>();
                 foreach (var module in moduleList)
                 {
-                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, class1.StartDay, class1.EndDay);
                     if (traineeMark == null)
                     {
                         Mark mark_zero = new Mark();
@@ -290,7 +291,7 @@ namespace kroniiapi.Controllers
             var markList = new List<Mark>();
             foreach (var module in moduleList)
             {
-                var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, DateTime.MinValue, DateTime.Now);
+                var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId);
                 if (traineeMark == null)
                 {
                     Mark mark_zero = new Mark();

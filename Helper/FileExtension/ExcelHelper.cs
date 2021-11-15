@@ -278,6 +278,65 @@ namespace kroniiapi.Helper
         }
 
         /// <summary>
+        /// Create new columns and select the created cell range
+        /// </summary>
+        /// <param name="colRange">the initial column range</param>
+        /// <param name="newColCount">the new amount of columns</param>
+        /// <returns>the created cell range</returns>
+        public static ExcelRangeBase CreateNewColumns(this ExcelRangeBase colRange, int newColCount)
+        {
+            var worksheet = colRange.Worksheet;
+            int startRow = colRange.Start.Row;
+            int startCol = colRange.Start.Column;
+            int endRow = colRange.End.Row;
+            int endCol = startCol + (newColCount - 1);
+            worksheet.InsertColumn(startCol, newColCount - 1);
+            return worksheet.Cells[startRow, startCol, endRow, endCol];
+        }
+
+        /// <summary>
+        /// Expand the cell to the range
+        /// </summary>
+        /// <param name="cell">the cell</param>
+        /// <param name="newRowCount">the new amount of rows</param>
+        /// <param name="newColCount">the new amount of columns</param>
+        /// <returns>the expanded cell range</returns>
+        public static ExcelRangeBase Expand(this ExcelRangeBase cell, int newRowCount, int newColCount)
+        {
+            return cell.CreateNewColumns(newColCount).CreateNewRows(newRowCount);
+        }
+
+        /// <summary>
+        /// Select cell range from worksheet
+        /// </summary>
+        /// <param name="worksheet">the worksheet</param>
+        /// <param name="row">the start row</param>
+        /// <param name="col">the start column</param>
+        /// <param name="rowRange">how many rows will be selected?</param>
+        /// <param name="colRange">the many column will be selected?</param>
+        /// <returns>the selected cell range</returns>
+        public static ExcelRangeBase SelectRange(this ExcelWorksheet worksheet, int row, int col, int rowRange = 1, int colRange = 1)
+        {
+            return worksheet.Cells[row, col, row + rowRange - 1, col + colRange - 1]; 
+        }
+
+        /// <summary>
+        /// Select child cell range from the parent cell range 
+        /// </summary>
+        /// <param name="excelRange">the parent cell range</param>
+        /// <param name="fromRow">the start row in the parent cell range</param>
+        /// <param name="fromCol">the start column in the parent cell range</param>
+        /// <param name="toRow">the end row in the parent cell range</param>
+        /// <param name="toCol">the end column in the parent cell range</param>
+        /// <returns>the selected cell range</returns>
+        public static ExcelRangeBase SelectSubRange(this ExcelRangeBase excelRange, int fromRow, int fromCol, int toRow, int toCol)
+        {
+            int startRow = excelRange.Start.Row + fromRow - 1;
+            int startCol = excelRange.Start.Column + fromCol - 1;
+            return excelRange.Worksheet.SelectRange(startRow, startCol, toRow, toCol);
+        }
+
+        /// <summary>
         /// Generate the pie chart for the sheet
         /// </summary>
         /// <param name="worksheet">the worksheet</param>
@@ -292,31 +351,6 @@ namespace kroniiapi.Helper
             var pieChart = worksheet.Drawings.AddChart(chartName, eChartType.Pie);
             var series = pieChart.Series.Add(rangeValue, rangeLabel);
             var pieSeries = series as ExcelPieChartSerie;
-            pieSeries.DataLabel.ShowValue = true;
-            pieSeries.DataLabel.ShowSeriesName = true;
-            return pieChart;
-        }
-        /// <summary>
-        /// Fill the entity to the cell range in the worksheet
-        /// </summary>
-        /// <typeparam name="TEntity">the type of the entity</typeparam>
-        /// <param name="sheet">the worksheet</param>
-        /// <param name="chartName">the chartName</param>
-        /// <param name="rangeLabel">the range label </param>
-        /// <param name="rangeValue">the rangeValue</param>
-        /// <returns>the pie chart for continuous methods</returns>
-        public static ExcelChart PieChartGenerator(ExcelChartsheet sheet, string chartName, string rangeLabel, string rangeValue){
-            var worksheet = sheet;
-            var sheetCheck = worksheet.Drawings[chartName];
-            if(sheetCheck !=null){
-                worksheet.Drawings.Remove(sheetCheck);
-            }
-            var pieChart = worksheet.Drawings.AddChart(chartName,eChartType.Pie);
-            pieChart.Title.Text = chartName;
-            var rangeLabel1 = worksheet.Cells[rangeLabel];
-            var rangeValue1 = worksheet.Cells[rangeValue];
-            var series = pieChart.Series.Add(rangeValue1, rangeLabel1);
-            var pieSeries = (ExcelPieChartSerie)series;
             pieSeries.DataLabel.ShowValue = true;
             pieSeries.DataLabel.ShowSeriesName = true;
             return pieChart;
