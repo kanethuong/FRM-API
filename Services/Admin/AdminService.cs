@@ -175,5 +175,17 @@ namespace kroniiapi.Services
             return _dataContext.Admins.Any(t => t.AdminId == id &&
            t.IsDeactivated == false);
         }
+
+        /// <summary>
+        /// Get classes belonged to admin 
+        /// </summary>
+        /// <param name="adminId"></param>
+        /// <returns>Class list</returns>
+        public async Task<ICollection<Class>> GetAdminClassList(int adminId)
+        {
+            var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+                .Select(a => a.Classes.ToList()).FirstOrDefaultAsync();
+            return (ICollection<Class>)classes;
+        }
     }
 }
