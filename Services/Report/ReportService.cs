@@ -69,9 +69,13 @@ namespace kroniiapi.Services.Report
         {
             var listTraineeStatus = this.GetTraineesInfo(classId).Select(s => s.Status).ToList();
             ClassStatusReport statusReport = new ClassStatusReport();
-            int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0;
+            int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0, learning = 0;
             foreach (var item in listTraineeStatus)
             {
+                if (item == null || item.ToLower().Contains("learning"))
+                {
+                    learning++;
+                }
                 if (item.ToLower().Contains("passed"))
                 {
                     passed++;
@@ -94,7 +98,7 @@ namespace kroniiapi.Services.Report
                 }
                 var itemToResponse = new ClassStatusReport
                 {
-
+                    Learning = learning,
                     Passed = passed,
                     Failed = failed,
                     Deferred = deferred,
@@ -132,7 +136,8 @@ namespace kroniiapi.Services.Report
             List<TraineeAttendance> traineeAttendances;
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                if(_timetableService.DayOffCheck(date)){
+                if (_timetableService.DayOffCheck(date))
+                {
                     continue;
                 }
                 traineeAttendances = new List<TraineeAttendance>();
@@ -307,11 +312,11 @@ namespace kroniiapi.Services.Report
             startDate = startDate.AddMonths(-1);
             endDate = endDate.AddMonths(1);
             endDate = endDate.Add(oneday);
-            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            var trainees = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             List<BonusAndPunish> rp = new List<BonusAndPunish>();
             foreach (var item in trainees)
             {
-                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
+                rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
             }
             List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
             return rpDto;
