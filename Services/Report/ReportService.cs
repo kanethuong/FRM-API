@@ -16,11 +16,13 @@ namespace kroniiapi.Services.Report
     {
         private DataContext _dataContext;
         private readonly IMapper _mapper;
+        private readonly TimetableService _timetableService;
 
-        public ReportService(DataContext dataContext, IMapper mapper)
+        public ReportService(DataContext dataContext, IMapper mapper, TimetableService timetableService)
         {
             _dataContext = dataContext;
             _mapper = mapper;
+            _timetableService = timetableService;
         }
 
         /// <summary>
@@ -123,23 +125,26 @@ namespace kroniiapi.Services.Report
             Dictionary<DateTime, List<TraineeAttendance>> attendanceInfo = new Dictionary<DateTime, List<TraineeAttendance>>();
             if (reportAt == default(DateTime))
             {
-                startDate = _dataContext.Classes.Where(c => c.ClassId==classId).Select(c => c.StartDay).FirstOrDefault();
-                endDate = _dataContext.Classes.Where(c => c.ClassId==classId).Select(c => c.EndDay).FirstOrDefault();
+                startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => c.StartDay).FirstOrDefault();
+                endDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => c.EndDay).FirstOrDefault();
             }
 
             List<TraineeAttendance> traineeAttendances;
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
+                if(_timetableService.DayOffCheck(date)){
+                    continue;
+                }
                 traineeAttendances = new List<TraineeAttendance>();
                 foreach (int traineeId in traineeIdList)
                 {
-                traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
-                                                       .Select(a => new TraineeAttendance
-                                                       {
-                                                           TraineeId = a.TraineeId,
-                                                           Status = a.Status
-                                                       })
-                                                       .FirstOrDefaultAsync());
+                    traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
+                                                           .Select(a => new TraineeAttendance
+                                                           {
+                                                               TraineeId = a.TraineeId,
+                                                               Status = a.Status
+                                                           })
+                                                           .FirstOrDefaultAsync());
                 }
                 attendanceInfo.Add(date, traineeAttendances);
             }
@@ -338,7 +343,7 @@ namespace kroniiapi.Services.Report
             }
 
             var totalAttendanceReports = GetTotalAttendanceReports(classId);
-            if(totalAttendanceReports != null)
+            if (totalAttendanceReports != null)
             {
                 foreach (var attendanceInfor in totalAttendanceReports)
                 {
@@ -402,7 +407,7 @@ namespace kroniiapi.Services.Report
         {
             var traineeIds = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToList();
             List<Feedback> traineeFeedbacks = new();
-            if (reportAt == new DateTime(1,1,1))
+            if (reportAt == new DateTime(1, 1, 1))
             {
                 foreach (var item in traineeIds)
                 {
@@ -668,7 +673,7 @@ namespace kroniiapi.Services.Report
         {
             IEnumerable<TraineeGPA> traineeGPAList = await GetTraineeGPAs(classId);
 
-            if(traineeGPAList.Count() == 0)
+            if (traineeGPAList.Count() == 0)
                 return null;
 
             CheckpointReport result = new CheckpointReport();
@@ -677,19 +682,19 @@ namespace kroniiapi.Services.Report
                 switch (trainee.Level)
                 {
                     case "A+":
-                            result.Aplus++;
+                        result.Aplus++;
                         break;
                     case "A":
-                            result.A++;
+                        result.A++;
                         break;
                     case "B":
-                            result.B++;
+                        result.B++;
                         break;
                     case "C":
-                            result.C++;
+                        result.C++;
                         break;
                     case "D":
-                            result.D++;
+                        result.D++;
                         break;
                 }
             }
