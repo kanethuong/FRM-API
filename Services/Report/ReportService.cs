@@ -547,7 +547,7 @@ namespace kroniiapi.Services.Report
             //Set startDate again
             startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
             //Set Dictionary's key = first month of class duration
-            var key = startDate.Month;
+            var key = startDate;
             //Variable to check if key exceed over the number of months
             var nextKeyMonth = startDate;
             var topicIds = topicInfo.Select(i => i.TopicId).ToList();
@@ -555,7 +555,7 @@ namespace kroniiapi.Services.Report
             var trainees = _dataContext.Trainees.Where(f => f.ClassId == classId).Select(t => t.TraineeId).ToList();
             //Get mark by moduleId and traineeId
             var marks = _dataContext.Marks.Where(f => topicIds.Contains(f.ModuleId) && trainees.Contains(f.TraineeId)).OrderBy(c => c.TraineeId).ToList();
-            Dictionary<int, List<TraineeGrades>> traineeGrades = new Dictionary<int, List<TraineeGrades>>();
+            Dictionary<DateTime, List<TraineeGrades>> traineeGrades = new Dictionary<DateTime, List<TraineeGrades>>();
             List<TraineeGrades> traineeGradeList = new List<TraineeGrades>();
 
             foreach (var i in classModules)
@@ -579,21 +579,21 @@ namespace kroniiapi.Services.Report
                 traineeGradeList = new List<TraineeGrades>();
                 if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
                 {
-                    key = startDate.AddMonths(-1).Month;
+                    key = startDate.AddMonths(-1);
                     nextKeyMonth = startDate.AddMonths(-1);
                 }
                 if (nextKeyMonth.Year <= endDate.Year || nextKeyMonth.Month < endDate.Month)
                 {
                     nextKeyMonth = nextKeyMonth.AddMonths(1);
-                    key = nextKeyMonth.Month;
+                    key = nextKeyMonth;
                 }
 
             }
-            Dictionary<int, List<TraineeGrades>> traineeAvarageGrades = new Dictionary<int, List<TraineeGrades>>();
+            Dictionary<DateTime, List<TraineeGrades>> traineeAvarageGrades = new Dictionary<DateTime, List<TraineeGrades>>();
             List<TraineeGrades> traineeAvarageGradeList = new List<TraineeGrades>();
             //Set back variable
             nextKeyMonth = startDate;
-            key = startDate.Month;
+            key = startDate;
             foreach (var i in classModules)
             {
                 foreach (var item in marks)
@@ -621,13 +621,13 @@ namespace kroniiapi.Services.Report
                 traineeAvarageGradeList = new List<TraineeGrades>();
                 if (nextKeyMonth.Year == endDate.Year && nextKeyMonth.Month == endDate.Month)
                 {
-                    key = startDate.AddMonths(-1).Month;
+                    key = startDate.AddMonths(-1);
                     nextKeyMonth = startDate.AddMonths(-1);
                 }
                 if (nextKeyMonth.Year <= endDate.Year || nextKeyMonth.Month < endDate.Month)
                 {
                     nextKeyMonth = nextKeyMonth.AddMonths(1);
-                    key = nextKeyMonth.Month;
+                    key = nextKeyMonth;
                 }
             }
 
