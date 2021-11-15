@@ -10,8 +10,6 @@ namespace kroniiapi.DTO.ModuleDTO
         [StringLength(100, ErrorMessage = "Module name must be less than 100 characters")]
         public string ModuleName { get; set; }
         [Required]
-        public int NoOfSlot { get; set; }
-        [Required]
         [StringLength(300, ErrorMessage = "Description must be less than 300 characters")]
         public string Description { get; set; }
         [Required]
@@ -27,8 +25,6 @@ namespace kroniiapi.DTO.ModuleDTO
         [Required]
         [StringLength(100, ErrorMessage = "Module name must be less than 100 characters")]
         public string ModuleName { get; set; }
-        [Required]
-        public int NoOfSlot { get; set; }
         [Required]
         [StringLength(300, ErrorMessage = "Description must be less than 300 characters")]
         public string Description { get; set; }

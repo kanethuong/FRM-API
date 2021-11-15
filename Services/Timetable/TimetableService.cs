@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.TimetableDTO;
 using kroniiapi.Helper.Timetable;
 using kroniiapi.Services.Attendance;
 using Microsoft.EntityFrameworkCore;
@@ -27,28 +28,29 @@ namespace kroniiapi.Services
             _classService = classService;
             _attendaceService = attendanceService;
         }
+
         List<DateTime> holidayss = new List<DateTime> {
             // New Year
-            new DateTime(2000, 1, 1),
+            new DateTime(1, 1, 1),
             //
-            new DateTime(2000, 4, 30),
+            new DateTime(1, 4, 30),
             //
-            new DateTime(2000, 5, 1),
+            new DateTime(1, 5, 1),
             //
-            new DateTime(2000,9,1),
+            new DateTime(1, 9, 1),
             //
-            new DateTime(2000, 9, 2),
+            new DateTime(1, 9, 2),
             //
-            new DateTime(2000,9,3),
+            new DateTime(1, 9, 3),
             //
-    };
+        };
 
         /// <summary>
         /// Check if Date is a Day Off
         /// </summary>
         /// <param name="date"></param>
         /// <returns>true or false</returns>
-        private bool DayOffCheck(DateTime date)
+        public bool DayOffCheck(DateTime date)
         {
             if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
             {
@@ -64,207 +66,109 @@ namespace kroniiapi.Services
             return false;
         }
         /// <summary>
-        /// Get Number of All Modules Slot
-        /// </summary>
-        /// <param name="modulesList"></param>
-        /// <returns></returns>
-        public int CalculateSlotForWeek(int moduleSlot, DateTime startDay, DateTime endDay)
-        {
-            int availableDays = (endDay - startDay).Days;
-            int availableWeeks = availableDays / 7;
-            int slot4week = moduleSlot / availableWeeks;
-            return slot4week;
-        }
-        /// <summary>
-        /// Check The Weekend
-        /// </summary>
-        /// <param name="date"></param>
-        /// <returns></returns>
-        private bool WeekendCheck(DateTime date)
-        {
-            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
-            {
-                return true;
-            }
-            return false;
-        }
-        /// <summary>
-        /// Check if Day is valid or not
-        /// </summary>
-        /// <param name="calendar"></param>
-        /// <returns>true or false</returns>
-        private bool DayCheck(Calendar calendar, int roomId)
-        {
-            // if (_datacontext.Calendars.Any(c => c.Date == calendar.Date)
-            //  && _datacontext.Calendars.Any(c => c.SlotInDay == calendar.SlotInDay)
-            //  && _datacontext.Calendars.Any(c => c.Class.RoomId == roomId)
-            //  )
-            // {
-            //     return false;
-            // }
-            return true;
-        }
-        /// <summary>
-        /// Check Trainer with the time
-        /// </summary>
-        /// <param name="calendar"></param>
-        /// <param name="trainerId"></param>
-        /// <returns></returns>
-        private bool TrainerCheck(Calendar calendar, int trainerId)
-        {
-            // if (_datacontext.Calendars.Any(c => c.Date == calendar.Date)
-            //  && _datacontext.Calendars.Any(c => c.SlotInDay == calendar.SlotInDay)
-            //  && _datacontext.Calendars.Any(c => c.Class.TrainerId == trainerId))
-            // {
-            //     return false;
-            // }
-            return true;
-        }
-        /// <summary>
-        /// Get Number of Slot in that day
-        /// </summary>
-        /// <param name="date"></param>
-        /// <param name="classId"></param>
-        /// <returns></returns>
-        private int GetDaySlot(DateTime date, int classId)
-        {
-            var daySlot = _datacontext.Calendars.Where(c => c.Date.Day == date.Day && c.Date.Month == date.Month && c.Date.Year == date.Year && c.ClassId == classId).ToList();
-            int slotsDay = daySlot.Count();
-            return slotsDay;
-        }
-        /// <summary>
-        /// Check Available Day for Module
-        /// </summary>
-        /// <param name="modulesList"></param>
-        /// <param name="startDay"></param>
-        /// <param name="endDay"></param>
-        /// <returns></returns>
-        public bool CheckAvailableModule(ICollection<Module> modulesList, DateTime startDay, DateTime endDay)
-        {
-            int record = 0;
-
-            foreach (var item in modulesList)
-            {
-                record += item.NoOfSlot;
-            }
-            int availableDays = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
-            if (modulesList.Count() == 1)
-            {
-                if (record > availableDays * 2)
-                {
-                    return true;
-                }
-            }
-
-            if (record > availableDays * 3)
-            {
-                return true;
-            }
-            return false;
-        }
-        /// <summary>
-        /// Nhu cai ten
+        /// Get Total Day need for all Module in Class
         /// </summary>
         /// <param name="classId"></param>
         /// <returns></returns>
-        public async Task<ICollection<Module>> GetModuleListlByClassId(int classId)
+        private int GetTotalDaysNeed(int classId)
         {
-            var moduleList = await _datacontext.Classes.Where(m => m.ClassId == classId).Select(c => c.Modules).FirstOrDefaultAsync();
-            return moduleList;
-        }
-        /// <summary>
-        /// Check available slots for the room in the among of time
-        /// </summary>
-        /// <param name="roomId"></param>
-        /// <returns></returns>
-        public bool CheckAvailabeSlotsForRoom(int slotsNeed, int roomId, DateTime startDay, DateTime endDay)
-        {
-            // DateTime dateCount = startDay;
-            // int slotsAvai = 0;
-            // while (dateCount < endDay)
-            // {
-            //     var count = _datacontext.Calendars.Where(c => c.Date.Day == dateCount.Day && c.Date.Month == dateCount.Month && c.Date.Year == dateCount.Year && c.Class.RoomId == roomId).Count();
-            //     if (count <= 3)
-            //     {
-            //         slotsAvai += 3;
-            //     }
-            //     else
-            //     {
-            //         slotsAvai += 6 - count;
-            //     }
-            //     dateCount = dateCount.AddDays(1);
-            // }
-            // if (slotsAvai < slotsNeed)
-            // {
-            //     return false;
-            // }
-            return true;
-        }
-        /// <summary>
-        /// Check available slots for the trainer in the among of time
-        /// </summary>
-        /// <param name="slotsNeed"></param>
-        /// <param name="trainerId"></param>
-        /// <param name="startDay"></param>
-        /// <param name="endDay"></param>
-        /// <returns></returns>
-        public bool CheckAvailabeSlotsForTrainer(int slotsNeed, int trainerId, DateTime startDay, DateTime endDay)
-        {
-            // DateTime dateCount = startDay;
-            // int slotsAvai = 0;
-            // while (dateCount < endDay)
-            // {
-            //     var count = _datacontext.Calendars.Where(c => c.Date.Day == dateCount.Day && c.Date.Month == dateCount.Month && c.Date.Year == dateCount.Year && c.Class.TrainerId == trainerId).Count();
-            //     if (count <= 3)
-            //     {
-            //         slotsAvai += 3;
-            //     }
-            //     else
-            //     {
-            //         slotsAvai += 6 - count;
-            //     }
-            //     dateCount = dateCount.AddDays(1);
-            // }
-            // if (slotsAvai < slotsNeed)
-            // {
-            //     return false;
-            // }
-            return true;
-        }
-        /// <summary>
-        /// Get Other Rooms For Class
-        /// </summary>
-        /// <param name="slotsNeed"></param>
-        /// <param name="roomId"></param>
-        /// <param name="startDay"></param>
-        /// <param name="endDay"></param>
-        /// <returns>Room Name List</returns>
-        public async Task<IEnumerable<string>> GetOtherRoomsForClass(int slotsNeed, int roomId, DateTime startDay, DateTime endDay)
-        {
-            var roomList = await _datacontext.Rooms.Where(r => r.RoomId != roomId).ToListAsync();
-            List<String> roomName = new List<string>();
-            foreach (var item in roomList)
+            ICollection<Module> moduleList = _datacontext.Classes.Where(c => c.ClassId == classId).Select(c => c.Modules).FirstOrDefault();
+            int totalDay = 0;
+            foreach (var item in moduleList)
             {
-                if (CheckAvailabeSlotsForRoom(slotsNeed, roomId, startDay, endDay))
+                totalDay += item.NoOfSlot;
+            }
+            return totalDay;
+        }
+        /// <summary>
+        /// Check Available for Class
+        /// </summary>
+        /// <param name="startDay"></param>
+        /// <param name="endDay"></param>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        private (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
+        {
+            int daysAvailable = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
+            int daysNeed = GetTotalDaysNeed(classId);
+            if (daysAvailable >= daysNeed)
+            {
+                return (true, 0);
+            }
+            return (false, daysNeed - daysAvailable);
+        }
+        /// <summary>
+        /// Get Room Available
+        /// </summary>
+        /// <param name="startDay"></param>
+        /// <param name="endDay"></param>
+        /// <param name="slotNeed"></param>
+        /// <returns></returns>
+        public int GetRoomIdAvailableForModule(DateTime startDay, DateTime endDay, int slotNeed)
+        {
+            for (int i = 1; i <= 10; i++)
+            {
+                Room room = _datacontext.Rooms.Where(r => r.RoomId == i).FirstOrDefault();
+                int dayAlreadyHave = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= endDay).Count() / 2;
+                int dayLeft = (endDay - startDay).Days;
+                if ((dayLeft - dayAlreadyHave) >= slotNeed)
                 {
-                    roomName.Add(item.RoomName);
+                    return i;
                 }
             }
-            return roomName;
+            return 0;
         }
         /// <summary>
-        /// Get Total Slots in ModulesList
+        /// Check Trainer Available
         /// </summary>
-        /// <param name="modulesList"></param>
+        /// <param name="startDay"></param>
+        /// <param name="endDay"></param>
+        /// <param name="trainerId"></param>
+        /// <param name="daysNeed"></param>
         /// <returns></returns>
-        public int GetTotalSlotsNeed(ICollection<Module> modulesList)
+        public int CheckTrainerAvailableForModule(DateTime startDay, DateTime endDay, int trainerId, int daysNeed)
         {
-            int totalRecord = 0;
-            foreach (var item in modulesList)
+            var trainerDays = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.TrainerId == trainerId)).Count() / 2;
+            if ((endDay - startDay).Days >= daysNeed)
             {
-                totalRecord += item.NoOfSlot;
+                return 1;
             }
-            return totalRecord;
+            return 0;
+        }
+        /// <summary>
+        /// Get Startday for Class to insert module
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public DateTime GetStartDayforClassToInsertModule(int classId)
+        {
+            
+            if (!_datacontext.Calendars.Any(c => c.ClassId == classId))
+            {
+                return _datacontext.Classes.Where(c => c.ClassId == classId).Select(c => c.StartDay).FirstOrDefault();
+            }
+            DateTime startDay = _datacontext.Calendars.Select(cl => cl.Date).OrderBy(cl => cl).LastOrDefault().AddDays(1);
+            DateTime returnDay = new DateTime(startDay.Year, startDay.Month, startDay.Day, 0,0,0);
+            while (DayOffCheck(returnDay))
+            {
+                returnDay = returnDay.AddDays(1);
+            }
+            return returnDay;
+        }
+        /// <summary>
+        /// Check day left available
+        /// </summary>
+        /// <param name="startDay"></param>
+        /// <param name="endDay"></param>
+        /// <returns></returns>
+        private bool DayLeftAvailableCheck(DateTime startDay, DateTime endDay, int dayNeed)
+        {
+            int businessday = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
+            if (dayNeed > businessday)
+            {
+                return false;
+            }
+            return true;
         }
         /// <summary>
         /// Insert Module To Class
@@ -272,87 +176,44 @@ namespace kroniiapi.Services
         /// <param name="moduleId"></param>
         /// <param name="classId"></param>
         /// <param name="numSlotWeek"></param>
-        /// <returns>status</returns>
-        public async Task<int> InsertModuleToClass(int moduleId, int classId, int numSlotWeek)
+        /// <returns>status 1: Success / 0: Not enough Day</returns>
+        public async Task<int> InsertModuleToClass( int classId, int moduleId, int noOfSlot)
         {
-            var module = await _moduleService.GetModuleById(moduleId);
             var classGet = await _classService.GetClassByClassID(classId);
-            int moduleSlot = module.NoOfSlot;
-            int slotCount = 1;
-            int slotInWeek = 0;
-            DateTime dateCount = classGet.StartDay;
-            while (slotCount <= moduleSlot)
+            DateTime dateCount = GetStartDayforClassToInsertModule(classId);
+            if (dateCount == new DateTime(1,1,1))
             {
-                var ts = new TimeSpan(7, 0, 0);
-                var slotTime = new TimeSpan(1, 30, 0);
-                var breaktime = new TimeSpan(0, 15, 0);
+                dateCount = classGet.StartDay;
+            }
+            if (DayLeftAvailableCheck(dateCount,classGet.EndDay,noOfSlot))
+            {
+                return 0;
+            }
+            int slotCount = 1;
+            while (slotCount <= noOfSlot)
+            {
                 while (DayOffCheck(dateCount))
                 {
-                    if (WeekendCheck(dateCount))
-                    {
-                        slotInWeek = 0;
-                    }
-                    dateCount = dateCount.AddDays(1);
+                    dateCount =  dateCount.AddDays(1);
                 }
-                int slotModuleInDay = 0;
-                int slotInDay = GetDaySlot(dateCount, classId);
-                for (var i = 1; i <= 6; i++)
+                Calendar calendarMor = new Calendar
                 {
-                    if (i == 4)
-                    {
-                        breaktime = new TimeSpan(0, 45, 0);
-                    }
-                    else
-                    {
-                        breaktime = new TimeSpan(0, 15, 0);
-                    }
-                    Calendar calendarToAdd = new Calendar
-                    {
-                        SyllabusSlot = slotCount,
-                        Date = dateCount + ts + (i - 1) * slotTime + (i - 1) * breaktime,
-                        // SlotInDay = i,
-                        ModuleId = module.ModuleId,
-                        Module = module,
-                        ClassId = classGet.ClassId,
-                        Class = classGet,
-                    };
-                    if (slotCount > moduleSlot)
-                    {
-                        break;
-                    }
-                    if (slotInDay == 3)
-                    {
-                        break;
-                    }
-                    if (slotModuleInDay == 2)
-                    {
-                        if (slotInWeek == numSlotWeek)
-                        {
-                            slotInWeek = 0;
-                            dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
-                        }
-                        break;
-                    }
-                    if (slotInWeek == numSlotWeek)
-                    {
-                        slotInWeek = 0;
-                        dateCount = TimetableHelper.NextMonday(dateCount).AddDays(-1);
-                        break;
-                    }
-                    // if (DayCheck(calendarToAdd, classGet.RoomId) && TrainerCheck(calendarToAdd, classGet.TrainerId))
-                    // {
-                    //     slotCount += 1;
-                    //     slotModuleInDay += 1;
-                    //     slotInDay += 1;
-                    //     slotInWeek += 1;
-                    //     _datacontext.Calendars.Add(calendarToAdd);
-                    // };
-                }
+                    SyllabusSlot = slotCount,
+                    Date = dateCount + new TimeSpan(8, 0, 0),
+                    ModuleId = moduleId,
+                    ClassId = classId,
+                };
+                _datacontext.Calendars.Add(calendarMor);
+                Calendar calendarAft = new Calendar
+                {
+                    SyllabusSlot = slotCount,
+                    Date = dateCount + new TimeSpan(13, 0, 0),
+                    ModuleId = moduleId,
+                    ClassId = classId,
+                };
+                _datacontext.Calendars.Add(calendarAft);
+                slotCount += 1;
                 dateCount = dateCount.AddDays(1);
-            }
-            if (dateCount.Day > classGet.EndDay.Day && dateCount.Month > classGet.EndDay.Month && dateCount.Year > classGet.EndDay.Year)
-            {
-                return -1;
             }
             await _datacontext.SaveChangesAsync();
             return 1;
@@ -364,42 +225,12 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<(int, string)> GenerateTimetable(int classId)
         {
-            // var moduleList = await GetModuleListlByClassId(classId);
-            // var classGet = await _classService.GetClassByClassID(classId);
-            // if (CheckAvailableModule(moduleList, classGet.StartDay, classGet.EndDay))
-            // {
-            //     return (-1, "Too much Module");
-            // }
-            // int slotsNeed = GetTotalSlotsNeed(moduleList);
-            // if (!CheckAvailabeSlotsForRoom(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay))
-            // {
-            //     var otherRooms = await GetOtherRoomsForClass(slotsNeed, classGet.RoomId, classGet.StartDay, classGet.EndDay);
-            //     string message = "Room is already full of slot, Recommend:";
-            //     foreach (var item in otherRooms)
-            //     {
-            //         message += " " + item;
-            //     }
-            //     return (-1, message);
-            // }
-            // if (!CheckAvailabeSlotsForTrainer(slotsNeed, classGet.TrainerId, classGet.StartDay, classGet.EndDay))
-            // {
-            //     return (-1, "This trainer is too bussy at that moment");
-            // }
-            // foreach (var item in moduleList)
-            // {
-            //     var slotForWeek = CalculateSlotForWeek(item.NoOfSlot, classGet.StartDay, classGet.EndDay);
-            //     var slotss = item.NoOfSlot;
-            //     var status = await InsertModuleToClass(item.ModuleId, classId, slotForWeek);
-            //     if (status == -1)
-            //     {
-            //         return (0, "Failed To Insert");
-            //     }
-            //     var idList = await _calendarService.GetCalendarsIdListByModuleAndClassId(item.ModuleId, classId);
-            //     foreach (var id in idList)
-            //     {
-            //         await _attendaceService.AddNewAttendance(id, classGet.Trainees);
-            //     }
-            // }
+            var listModuleClass = _datacontext.ClassModules.Where(cm => cm.ClassId == classId).ToList();
+            foreach (var item in listModuleClass)
+            {
+                int noOfSlot = _datacontext.Modules.Where(m => m.ModuleId == item.ModuleId).Select(m => m.NoOfSlot).FirstOrDefault();
+                int status = await InsertModuleToClass(item.ClassId, item.ModuleId, noOfSlot);
+            }
             return (1, "Succes");
         }
     }

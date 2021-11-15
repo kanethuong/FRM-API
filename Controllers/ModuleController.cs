@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ModuleDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TimetableDTO;
 using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Helper.UploadDownloadFile;
@@ -83,6 +84,8 @@ namespace kroniiapi.Controllers
             using (var stream = syllabus.OpenReadStream())
             {
                 module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
+                var details = _moduleService.GetModuleLessonDetail(module.ModuleName, stream);
+                module.NoOfSlot = GetNoOfSlot(details);
             }
 
             // Insert module & Return Result
@@ -95,6 +98,11 @@ namespace kroniiapi.Controllers
             {
                 return Conflict(new ResponseDTO(409, "Fail to create new module"));
             }
+        }
+
+        private static int GetNoOfSlot(IEnumerable<ModuleExcelInput> moduleDetails)
+        {
+            return moduleDetails.Select(md => md.Day).Max();
         }
 
         /// <summary>
@@ -124,10 +132,10 @@ namespace kroniiapi.Controllers
                 (success, message) = FileHelper.CheckExcelExtension(syllabus);
                 if (success)
                 {
-                    using (var stream = syllabus.OpenReadStream())
-                    {
-                        module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
-                    }
+                    using var stream = syllabus.OpenReadStream();
+                    module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
+                    var details = _moduleService.GetModuleLessonDetail(module.ModuleName, stream);
+                    module.NoOfSlot = GetNoOfSlot(details);
                 }
                 else
                 {
@@ -140,10 +148,8 @@ namespace kroniiapi.Controllers
                 (success, message) = FileHelper.CheckImageExtension(icon);
                 if (success)
                 {
-                    using (var stream = icon.OpenReadStream())
-                    {
-                        module.IconURL = await _imgHelper.Upload(stream, icon.FileName, icon.Length, icon.ContentType);
-                    }
+                    using var stream = icon.OpenReadStream();
+                    module.IconURL = await _imgHelper.Upload(stream, icon.FileName, icon.Length, icon.ContentType);
                 }
                 else
                 {

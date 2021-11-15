@@ -174,11 +174,16 @@ namespace kroniiapi.Services
             var moduleName = await _dataContext.Modules.Where(m => m.ModuleId == moduleId).Select(m => m.ModuleName).FirstOrDefaultAsync();
             var stream = await _megaHelper.Download(new Uri(SyllabusURL));
 
+            return GetModuleLessonDetail(moduleName, stream);
+        }
+
+        public IEnumerable<ModuleExcelInput> GetModuleLessonDetail(string moduleName, Stream stream)
+        {
             List<ModuleExcelInput> moduleExcelInputs = new();
             using var package = new ExcelPackage(stream);
 
             ExcelWorkbook workbook = package.Workbook;
-            if (workbook.Worksheets.Count() < 2)
+            if (workbook.Worksheets.Count < 2)
             {
                 return null;
             }
@@ -219,11 +224,11 @@ namespace kroniiapi.Services
 
                 foreach (var day in days)
                 {
-                    if (days.Count() > 1)
+                    if (days.Count > 1)
                     {
                         ModuleExcelInput moduleExcelInput = new();
                         moduleExcelInput.Day = day;
-                        moduleExcelInput.Duration_mins = duration/days.Count();
+                        moduleExcelInput.Duration_mins = duration / days.Count();
                         moduleExcelInputs.Add(moduleExcelInput);
                     }
                     else
