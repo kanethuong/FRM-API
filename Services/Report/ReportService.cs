@@ -553,7 +553,7 @@ namespace kroniiapi.Services.Report
                     AverageScore = (((feedbackReports.Average(fb => fb.TopicContent) + feedbackReports.Average(fb => fb.TopicObjective) + feedbackReports.Average(fb => fb.ApproriateTopicLevel) + feedbackReports.Average(fb => fb.TopicUsefulness) + feedbackReports.Average(fb => fb.TrainingMaterial)) / 5)
                                         + ((feedbackReports.Average(fb => fb.TrainerKnowledge) + feedbackReports.Average(fb => fb.SubjectCoverage) + feedbackReports.Average(fb => fb.InstructionAndCommunicate) + feedbackReports.Average(fb => fb.TrainerSupport)) / 4)
                                         + ((feedbackReports.Average(fb => fb.Logistics) + feedbackReports.Average(fb => fb.InformationToTrainees) + feedbackReports.Average(fb => fb.AdminSupport)) / 3)) / 3,
-                    ReportAt = null,
+                    ReportAt = new DateTime(1,1,1),
                     IsSumary = true,
                 };
                 feedbackReports.Add(sumaryReport);
