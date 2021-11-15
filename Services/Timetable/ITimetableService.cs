@@ -11,7 +11,6 @@ namespace kroniiapi.Services
         Task<(int, string)> GenerateTimetable(int classId);
         int GetRoomIdAvailableForModule(DateTime startDay, DateTime endDay, int slotNeed);
         int CheckTrainerAvailableForModule(DateTime startDay, DateTime endDay, int trainerId, int daysNeed);
-        DateTime GetStartDayforClassToInsertModule(int classId);
         Task<int> InsertModuleToClass(int classId, int moduleId, int noOfSlot);
         bool DayOffCheck(DateTime date);
     }   

@@ -140,7 +140,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="classId"></param>
         /// <returns></returns>
-        public DateTime GetStartDayforClassToInsertModule(int classId)
+        private DateTime GetStartDayforClassToInsertModule(int classId)
         {
             
             if (!_datacontext.Calendars.Any(c => c.ClassId == classId))
@@ -161,10 +161,13 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        private bool DayLeftAvailableCheck(DateTime startDay, DateTime endDay, int dayNeed)
+        private bool DayLeftAvailableCheck(int moduleId, int classId)
         {
-            int businessday = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
-            if (dayNeed > businessday)
+            var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
+            var moduleGet = _datacontext.Modules.Where(cl => cl.ModuleId == moduleId).FirstOrDefault();
+            var startDay = GetStartDayforClassToInsertModule(classId);
+            int businessday = TimetableHelper.BusinessDaysUntil(startDay, classGet.EndDay, holidayss);
+            if (moduleGet.NoOfSlot > businessday)
             {
                 return false;
             }
@@ -185,7 +188,7 @@ namespace kroniiapi.Services
             {
                 dateCount = classGet.StartDay;
             }
-            if (DayLeftAvailableCheck(dateCount,classGet.EndDay,noOfSlot))
+            if (DayLeftAvailableCheck(moduleId,classId))
             {
                 return 0;
             }
