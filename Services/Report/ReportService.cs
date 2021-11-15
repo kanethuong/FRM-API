@@ -133,13 +133,13 @@ namespace kroniiapi.Services.Report
                 traineeAttendances = new List<TraineeAttendance>();
                 foreach (int traineeId in traineeIdList)
                 {
-                traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
-                                                       .Select(a => new TraineeAttendance
-                                                       {
-                                                           TraineeId = a.TraineeId,
-                                                           Status = a.Status
-                                                       })
-                                                       .FirstOrDefaultAsync());
+                    traineeAttendances.Add(await _dataContext.Attendances.Where(a => a.Date.Date.CompareTo(date.Date) == 0 && a.TraineeId == traineeId)
+                                                           .Select(a => new TraineeAttendance
+                                                           {
+                                                               TraineeId = a.TraineeId,
+                                                               Status = a.Status
+                                                           })
+                                                           .FirstOrDefaultAsync());
                 }
                 attendanceInfo.Add(date, traineeAttendances);
             }
@@ -195,7 +195,7 @@ namespace kroniiapi.Services.Report
                                                                      && (t.Status == nameof(_attendanceStatus.Ln)
                                                                         || t.Status == nameof(_attendanceStatus.An)
                                                                         || t.Status == nameof(_attendanceStatus.En))).Count();
-                ap.NoPermissionRate = numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
+                ap.NoPermissionRate = (float)numberOfNoPermission / (ap.NumberOfAbsent + ap.NumberOfLateInAndEarlyOut);
             }
             var attCount = _dataContext.Attendances.Where(t => t.TraineeId == trainee.TraineeId
                                                                         && t.Date.Month == monthReport).Count();
@@ -268,7 +268,7 @@ namespace kroniiapi.Services.Report
                     NumberOfAbsent = 0,
                     NumberOfLateInAndEarlyOut = 0,
                     NoPermissionRate = 0,
-                    DisciplinaryPoint = 1
+                    DisciplinaryPoint = 0
                 };
                 // calculate the sum of absent, late in and early out 
                 // sum of no permission rate and disciplinary point to calculate average later
@@ -296,11 +296,25 @@ namespace kroniiapi.Services.Report
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
+<<<<<<< HEAD
+            TimeSpan oneday = new TimeSpan(23, 59, 59);
+            var startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
+            var endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
+            startDate = startDate.AddMonths(-1);
+            endDate = endDate.AddMonths(1);
+            endDate = endDate.Add(oneday);
+            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
+            List<BonusAndPunish> rp = new List<BonusAndPunish>();
+            foreach (var item in trainees)
+            {
+                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
+=======
             var trainees = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             List<BonusAndPunish> rp = new List<BonusAndPunish>();
             foreach (var item in trainees)
             {
                 rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
+>>>>>>> a7ca3ad9511de3282a533f04ea61542c1c0c6059
             }
             List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
             return rpDto;
@@ -450,19 +464,24 @@ namespace kroniiapi.Services.Report
                 if (calculated <= 5)
                 {
                     DisciplinaryPoint = 100;
-                } else if (calculated <= 20)
+                }
+                else if (calculated <= 20)
                 {
                     DisciplinaryPoint = 80;
-                } else if (calculated <= 30)
+                }
+                else if (calculated <= 30)
                 {
                     DisciplinaryPoint = 60;
-                } else if (calculated < 50)
+                }
+                else if (calculated < 50)
                 {
                     DisciplinaryPoint = 50;
-                } else if (calculated >= 50 && noPerRate == 20)
+                }
+                else if (calculated >= 50 && noPerRate == 20)
                 {
                     DisciplinaryPoint = 0;
-                } else
+                }
+                else
                 {
                     DisciplinaryPoint = 20;
                 }
