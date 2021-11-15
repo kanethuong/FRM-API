@@ -331,7 +331,7 @@ namespace kroniiapi.Services.Report
                     key = startDate.AddMonths(-1).Month;
                     nextKeyMonth = startDate.AddMonths(-1);
                 }
-                if (nextKeyMonth.Year <= endDate.Year && nextKeyMonth.Month < endDate.Month)
+                if (nextKeyMonth.Year <= endDate.Year || nextKeyMonth.Month < endDate.Month)
                 {
                     nextKeyMonth = nextKeyMonth.AddMonths(1);
                     key = nextKeyMonth.Month;
@@ -373,7 +373,7 @@ namespace kroniiapi.Services.Report
                     key = startDate.AddMonths(-1).Month;
                     nextKeyMonth = startDate.AddMonths(-1);
                 }
-                if (nextKeyMonth.Year <= endDate.Year && nextKeyMonth.Month < endDate.Month)
+                if (nextKeyMonth.Year <= endDate.Year || nextKeyMonth.Month < endDate.Month)
                 {
                     nextKeyMonth = nextKeyMonth.AddMonths(1);
                     key = nextKeyMonth.Month;
