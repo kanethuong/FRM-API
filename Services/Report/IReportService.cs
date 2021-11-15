@@ -18,7 +18,7 @@ namespace kroniiapi.Services.Report
         ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime));
         ICollection<TraineeFeedback> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime));
         List<FeedbackReport> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime));
-        Dictionary<int, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, int monthReport);
+        Dictionary<DateTime, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, DateTime monthReport);
         List<AttendanceReport> GetTotalAttendanceReports(int classId);
         Task<CheckpointReport> GetCheckpointReport(int classId);
     }
