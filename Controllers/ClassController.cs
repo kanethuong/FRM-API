@@ -12,8 +12,10 @@ using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
+using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
+using kroniiapi.Services.Attendance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +38,8 @@ namespace kroniiapi.Controllers
         private readonly IMarkService _markService;
 
         private readonly ICertificateService _certificateService;
-
+        private readonly IAttendanceService _attendanceServices;
+        private readonly IRoomService _roomService;
         public ClassController(IClassService classService,
                                ITraineeService traineeService,
                                IAdminService adminService,
@@ -45,7 +48,9 @@ namespace kroniiapi.Controllers
                                IMapper mapper,
                                ITimetableService timetableService,
                                IMarkService markService,
-                               ICertificateService certificateService)
+                               ICertificateService certificateService,
+                               IAttendanceService attendanceServices,
+                               IRoomService roomService)
         {
             _classService = classService;
             _adminService = adminService;
@@ -57,6 +62,8 @@ namespace kroniiapi.Controllers
             _traineeService = traineeService;
             _markService = markService;
             _certificateService = certificateService;
+            _attendanceServices = attendanceServices;
+            _roomService = roomService;
         }
 
         /// <summary>
@@ -72,13 +79,17 @@ namespace kroniiapi.Controllers
 
             foreach (Class c in classList)
             {
-                //c.Trainer = await _trainerService.GetTrainerById(c.TrainerId);
                 c.Admin = await _adminService.GetAdminById(c.AdminId);
             }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if (totalRecord == 0)
             {
                 return NotFound(new ResponseDTO(404, "Classes not found"));
+            }
+            foreach (var item in classListDto)
+            {
+                var trainers = await _trainerService.GetTrainerListByClassId(item.ClassId);
+                item.Trainer = _mapper.Map<List<TrainerInClassResponse>>(trainers);
             }
             return Ok(new PaginationResponse<IEnumerable<ClassResponse>>(totalRecord, classListDto));
         }
@@ -152,7 +163,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> id of class</param>
         /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("{id:int}")]
-        [Authorize(Policy = "ClassGet")]
+        //[Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
             Class s = await _classService.GetClassDetail(id);
@@ -162,6 +173,12 @@ namespace kroniiapi.Controllers
             }
 
             var cdr = _mapper.Map<ClassDetailResponse>(s);
+            cdr.Trainer = _mapper.Map<List<TrainerResponse>>(await _trainerService.GetTrainerListByClassId(id));
+            var rooms = await _roomService.GetRoomByClassId(id);
+            foreach (var item in rooms)
+            {
+                cdr.RoomName.Add(item.RoomName);
+            }
             return Ok(cdr);
         }
 
@@ -171,6 +188,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> id of class</param>
         /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("trainee/{traineeId:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetailByTraineeId(int traineeId)
         {
             var (classId, message) = await _traineeService.GetClassIdByTraineeId(traineeId);
@@ -294,14 +312,15 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest("Some error occur");
             }
-            // var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
+            var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
+            int a = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
             // (int result, string message) = _timetableService.GenerateTimetable(classGet.ClassId).Result;
             // if (result != 1)
             // {
             //     return BadRequest(new ResponseDTO(400, message));
             // }
-            else
-                return Created("", new ResponseDTO(201, "Successfully inserted class without timetable"));
+
+            return Created("", new ResponseDTO(201, "Successfully inserted class without timetable"));
         }
 
         /// <summary>
@@ -599,7 +618,7 @@ namespace kroniiapi.Controllers
                         await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
                     }
                 }
-                
+
                 // Save Changes
                 try
                 {
@@ -626,6 +645,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns>List with pagination/ 404: Not found</returns>
         [HttpGet("trainer/{id:int}")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerClassListResponse>>>> GetClassListByTrainerId(int id, [FromQuery] PaginationParameter paginationParameter)
         {
             if (!_trainerService.CheckTrainerExist(id))
@@ -648,7 +668,8 @@ namespace kroniiapi.Controllers
         /// <param name="assignModuleInput">AssignModuleInput</param>
         /// <returns>200: Assigned / 404: Class/Trainer is not exist / 409: Fail to assign</returns>
         [HttpPost("module")]
-        public async Task<ActionResult> AssignModuleToClass(AssignModuleInput assignModuleInput)
+        [Authorize(Policy = "ClassModule")]
+        public async Task<ActionResult> AssignModuleToClass([FromBody] AssignModuleInput assignModuleInput)
         {
             var moduleToAssign = await _moduleService.GetModuleById(assignModuleInput.ModuleId);
             if (moduleToAssign == null)
@@ -694,6 +715,7 @@ namespace kroniiapi.Controllers
         /// <param name="moduleId">module id</param>
         /// <returns>200: Deleted / 404: Class/Trainer/Module is not exist / 409: Fail to delete</returns>
         [HttpDelete("module/{moduleId:int}")]
+        [Authorize(Policy = "ClassModule")]
         public async Task<ActionResult> RemoveModule(RemoveModuleInput assignModuleInput)
         {
             var classInfor = await _classService.GetClassByClassID(assignModuleInput.ClassId);

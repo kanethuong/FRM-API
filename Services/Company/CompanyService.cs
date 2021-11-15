@@ -187,22 +187,53 @@ namespace kroniiapi.Services
             var cr = await _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == id).FirstOrDefaultAsync();
             return cr;
         }
-        public async Task<int> ConfirmCompanyRequest(int id, bool isAccepted)
+        /// <summary>
+        /// Accept or reject company request
+        /// </summary>
+        /// <param name="id"> company request id </param>
+        /// <param name="isAccepted"> accept or reject</param>
+        /// <returns></returns>
+        public async Task<(int, List<string>)> ConfirmCompanyRequest(int id, bool isAccepted)
         {
             var cr = await _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == id).FirstOrDefaultAsync();
             if (cr == null)
             {
-                return -1;
+                return (-1, null);
             }
             if (cr.IsAccepted is not null)
             {
-                return -2;
+                return (-2, null);
+            }
+
+            // if request is accepted, update trainee wage and onboard
+            if (isAccepted == true)
+            {
+                var traineeOnBoard = new List<string>();
+                var crdList = await _dataContext.CompanyRequestDetails.Where(c => c.CompanyRequestId == id).ToListAsync();
+                foreach (var item in crdList)
+                {
+                    var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
+                    if (trainee.OnBoard != true)
+                    {
+                        trainee.Wage = item.Wage;
+                        trainee.OnBoard = true;
+                    }
+                    else
+                    {
+                        //if trainees are already in onboard, add them to a list and inform these trainees to user
+                        traineeOnBoard.Add(trainee.Username);
+                    }
+                }
+                if (traineeOnBoard.Count() != 0)
+                {
+                    return (-3, traineeOnBoard);
+                }
             }
             cr.IsAccepted = isAccepted;
             cr.AcceptedAt = DateTime.Now;
             int rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();
-            return rowUpdated;
+            return (rowUpdated, null);
         }
         public async Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter)
         {
@@ -223,9 +254,9 @@ namespace kroniiapi.Services
                     ReportURL = c.ReportURL,
                     IsAccepted = c.IsAccepted,
                     AcceptedAt = c.AcceptedAt,
-                    Company = c.Company,                    
+                    Company = c.Company,
                     CompanyRequestDetails = c.CompanyRequestDetails
-                                            .Where(comreq => comreq.CompanyRequestId == c.CompanyRequestId && comreq.Trainee.IsDeactivated == false)        
+                                            .Where(comreq => comreq.CompanyRequestId == c.CompanyRequestId && comreq.Trainee.IsDeactivated == false)
                                             .ToList()
                 }
                                     )
@@ -236,14 +267,14 @@ namespace kroniiapi.Services
             {
                 CompanyRequestResponse itemToResponse = new CompanyRequestResponse()
                 {
-                     CompanyRequestId = item.CompanyRequestId,
-                     CompanyName = item.Company.Fullname,
-                     NumberOfTrainee = item.CompanyRequestDetails.Count(),
-                     Content = item.Content,
-                     CreatedAt = item.CreatedAt
+                    CompanyRequestId = item.CompanyRequestId,
+                    CompanyName = item.Company.Fullname,
+                    NumberOfTrainee = item.CompanyRequestDetails.Count(),
+                    Content = item.Content,
+                    CreatedAt = item.CreatedAt
                 };
                 companyRequestResponses.Add(itemToResponse);
-                
+
             }
             return Tuple.Create(totalRecords, companyRequestResponses.GetPage(paginationParameter));
         }
