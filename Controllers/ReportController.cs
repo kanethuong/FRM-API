@@ -27,21 +27,17 @@ namespace kroniiapi.Controllers
         /// <param name="at">Choose time to export report</param>
         /// <returns></returns>
         [HttpGet("{classId:int}")]
-        [Authorize(Policy = "ReportGet")]
+       // [Authorize(Policy = "ReportGet")]
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTimeOffset? at = null)
         {
             return null;
         }
         [HttpGet("attendance/{classId:int}")]
-        public async Task<ActionResult> GetAttReport(int classId, int month = 0)
+        public async Task<ActionResult> GetAttReport(int classId, DateTime reportAt = default(DateTime))
         {
             // var rs = new Dictionary<int, List<AttendanceReport>>();
-            if (month == 0)
-            {
-                return Ok(_reportService.GetTotalAttendanceReports(classId));
-            }
-            else
-                return Ok(_reportService.GetAttendanceReportEachMonth(classId, month));
+            var rs =  _reportService.GetRewardAndPenaltyScore(classId,reportAt);
+            return Ok(rs);
         }
 
     }

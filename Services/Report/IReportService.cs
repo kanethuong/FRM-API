@@ -20,6 +20,5 @@ namespace kroniiapi.Services.Report
         Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime));
         Dictionary<int, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, int monthReport);
         List<AttendanceReport> GetTotalAttendanceReports(int classId);
-        Task<Tuple<int, IEnumerable<BonusAndPunish>>> GetBonusAndPunish(PaginationParameter paginationParameter);
     }
 }
