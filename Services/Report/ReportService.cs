@@ -66,7 +66,6 @@ namespace kroniiapi.Services.Report
         public ClassStatusReport GetClassStatusReport(int classId)
         {
             var listTraineeStatus = this.GetTraineesInfo(classId).Select(s => s.Status).ToList();
-            ClassStatusReport statusReport = new ClassStatusReport();
             int passed = 0, failed = 0, deferred = 0, dropout = 0, cancel = 0, learning = 0;
             foreach (var item in listTraineeStatus)
             {
@@ -74,37 +73,37 @@ namespace kroniiapi.Services.Report
                 {
                     learning++;
                 }
-                if (item.ToLower().Contains("passed"))
+                else if (item.ToLower().Contains("passed"))
                 {
                     passed++;
                 }
-                if (item.ToLower().Contains("failed"))
+                else if (item.ToLower().Contains("failed"))
                 {
                     failed++;
                 }
-                if (item.ToLower().Contains("deferred"))
+                else if (item.ToLower().Contains("deferred"))
                 {
                     deferred++;
                 }
-                if (item.ToLower().Contains("dropOut"))
+                else if (item.ToLower().Contains("dropout"))
                 {
                     dropout++;
                 }
-                if (item.ToLower().Contains("cancel"))
+                else if (item.ToLower().Contains("cancel"))
                 {
                     cancel++;
                 }
-                var itemToResponse = new ClassStatusReport
-                {
-                    Learning = learning,
-                    Passed = passed,
-                    Failed = failed,
-                    Deferred = deferred,
-                    DropOut = dropout,
-                    Cancel = cancel,
-                };
-                statusReport = itemToResponse;
             }
+            ClassStatusReport statusReport = new ClassStatusReport()
+            {
+                Learning = learning,
+                Passed = passed,
+                Failed = failed,
+                Deferred = deferred,
+                DropOut = dropout,
+                Cancel = cancel,
+            };
+
             return statusReport;
         }
 
