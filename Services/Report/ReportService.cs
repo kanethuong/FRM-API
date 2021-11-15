@@ -132,9 +132,6 @@ namespace kroniiapi.Services.Report
             List<TraineeAttendance> traineeAttendances;
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                if(_timetableService.DayOffCheck(date)){
-                    continue;
-                }
                 traineeAttendances = new List<TraineeAttendance>();
                 foreach (int traineeId in traineeIdList)
                 {
@@ -145,6 +142,9 @@ namespace kroniiapi.Services.Report
                                                                Status = a.Status
                                                            })
                                                            .FirstOrDefaultAsync());
+                }
+                if(traineeAttendances==null || traineeAttendances.Any(t => t==null)){
+                    continue;
                 }
                 attendanceInfo.Add(date, traineeAttendances);
             }
