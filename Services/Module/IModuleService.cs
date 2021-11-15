@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
@@ -19,5 +20,6 @@ namespace kroniiapi.Services
         Task<IEnumerable<int>> GetModulesIdByTraineeId(int traineeId);
         Task<IEnumerable<Module>> GetModulesByTraineeId(int traineeId);
         Task<IEnumerable<ModuleExcelInput>> GetModuleLessonDetail(int moduleId);
+        IEnumerable<ModuleExcelInput> GetModuleLessonDetail(string moduleName, Stream stream);
     }
 }
