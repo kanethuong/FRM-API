@@ -9,9 +9,9 @@ namespace kroniiapi.Services
     public interface ITimetableService
     {
         Task<(int, string)> GenerateTimetable(int classId);
-        int GetRoomIdAvailableForModule(DateTime startDay, DateTime endDay, int slotNeed);
-        int CheckTrainerAvailableForModule(DateTime startDay, DateTime endDay, int trainerId, int daysNeed);
-        Task<int> InsertModuleToClass(int classId, int moduleId, int noOfSlot);
+        int GetRoomIdAvailableForModule(int classId , int moduleId);
+        bool CheckTrainerAvailableForModule(int classId, int trainerId, int moduleId);
+        Task<int> InsertCalendarsToClass( int classId, int moduleId);
         bool DayOffCheck(DateTime date);
     }   
 }

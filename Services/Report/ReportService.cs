@@ -495,7 +495,8 @@ namespace kroniiapi.Services.Report
                             OrganizeEval = Organization,
                             OJTEval = OJTEval,
                             AverageScore = AverageScore,
-                        };
+                            ReportAt = new DateTime(i, j, 1),
+                    };
                         feedbackReports.Add(fbReportAdd);
                     }
                 }
@@ -547,6 +548,7 @@ namespace kroniiapi.Services.Report
                     OrganizeEval = Organization,
                     OJTEval = OJTEval,
                     AverageScore = AverageScore,
+                    ReportAt = new DateTime(reportAt.Year, reportAt.Month,1),
                 };
                 feedbackReports.Add(fbReportAdd);
             }
