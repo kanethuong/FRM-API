@@ -34,10 +34,11 @@ namespace kroniiapi.Controllers
         {
             BonusAndPunish bonusAndPunishInput = _mapper.Map<BonusAndPunish>(input);
             int status = await _bonusAndPunishService.InsertNewBonusAndPunish(bonusAndPunishInput);
-            if (status == 0) {
-                return BadRequest(new ResponseDTO(400,"Failed to create new Bonus or Punish"));
+            if (status == 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Failed to create new Bonus or Punish"));
             }
-            return Ok(new ResponseDTO(201,"Created!"));
+            return Ok(new ResponseDTO(201, "Created!"));
         }
         /// <summary>
         /// Get Bonus and punish list in pagination
@@ -47,8 +48,15 @@ namespace kroniiapi.Controllers
         [HttpGet("page")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<BonusAndPunishResponse>>>> ViewBonusAndPunish([FromQuery] PaginationParameter paginationParameter)
         {
+            (int totalRecord, IEnumerable<BonusAndPunish> bNpList) = await _bonusAndPunishService.GetBonusAndPunishList(paginationParameter);
+            IEnumerable<BonusAndPunishResponse> bNpListDto = _mapper.Map<IEnumerable<BonusAndPunishResponse>>(bNpList);
+            if (totalRecord <= 0)
+            {
+                return NotFound(new ResponseDTO(404, "Searched trainee name cannot be found"));
 
-            return null;
+            }
+            return Ok(new PaginationResponse<IEnumerable<BonusAndPunishResponse>>(totalRecord, bNpListDto));
+
         }
 
     }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.ReportDTO;
 
 namespace kroniiapi.Services.Report
