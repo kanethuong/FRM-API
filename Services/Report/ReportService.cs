@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.ReportDTO;
+using kroniiapi.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static kroniiapi.Services.Attendance.AttendanceStatus;
@@ -296,25 +298,17 @@ namespace kroniiapi.Services.Report
         /// <returns>List of reward and penalty of a class</returns>
         public ICollection<RewardAndPenalty> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
-<<<<<<< HEAD
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(reportAt.Year, reportAt.Month, 1);
             var endDate = new DateTime(reportAt.Year, reportAt.Month, DateTime.DaysInMonth(reportAt.Year, reportAt.Month));
             startDate = startDate.AddMonths(-1);
             endDate = endDate.AddMonths(1);
             endDate = endDate.Add(oneday);
-            var trainees =  _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
-            List<BonusAndPunish> rp = new List<BonusAndPunish>();
-            foreach (var item in trainees)
-            {
-                rp.AddRange( _dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
-=======
             var trainees = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             List<BonusAndPunish> rp = new List<BonusAndPunish>();
             foreach (var item in trainees)
             {
-                rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId).ToList());
->>>>>>> a7ca3ad9511de3282a533f04ea61542c1c0c6059
+                rp.AddRange(_dataContext.BonusAndPunishes.Where(b => b.TraineeId == item.TraineeId && item.CreatedAt >= startDate && item.CreatedAt <= endDate).ToList());
             }
             List<RewardAndPenalty> rpDto = _mapper.Map<List<RewardAndPenalty>>(rp);
             return rpDto;
@@ -352,7 +346,7 @@ namespace kroniiapi.Services.Report
             }
 
             var totalAttendanceReports = GetTotalAttendanceReports(classId);
-            if(totalAttendanceReports != null)
+            if (totalAttendanceReports != null)
             {
                 foreach (var attendanceInfor in totalAttendanceReports)
                 {
@@ -416,7 +410,7 @@ namespace kroniiapi.Services.Report
         {
             var traineeIds = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).Select(t => t.TraineeId).ToList();
             List<Feedback> traineeFeedbacks = new();
-            if (reportAt == new DateTime(1,1,1))
+            if (reportAt == new DateTime(1, 1, 1))
             {
                 foreach (var item in traineeIds)
                 {
@@ -682,7 +676,7 @@ namespace kroniiapi.Services.Report
         {
             IEnumerable<TraineeGPA> traineeGPAList = await GetTraineeGPAs(classId);
 
-            if(traineeGPAList.Count() == 0)
+            if (traineeGPAList.Count() == 0)
                 return null;
 
             CheckpointReport result = new CheckpointReport();
@@ -691,19 +685,19 @@ namespace kroniiapi.Services.Report
                 switch (trainee.Level)
                 {
                     case "A+":
-                            result.Aplus++;
+                        result.Aplus++;
                         break;
                     case "A":
-                            result.A++;
+                        result.A++;
                         break;
                     case "B":
-                            result.B++;
+                        result.B++;
                         break;
                     case "C":
-                            result.C++;
+                        result.C++;
                         break;
                     case "D":
-                            result.D++;
+                        result.D++;
                         break;
                 }
             }
@@ -720,5 +714,49 @@ namespace kroniiapi.Services.Report
         {
             return null;
         }
+
+        public async Task<Tuple<int, IEnumerable<BonusAndPunish>>> GetBonusAndPunish(PaginationParameter paginationParameter)
+        {
+            IQueryable<BonusAndPunish> bNpList = _dataContext.BonusAndPunishes.Select(b => new BonusAndPunish
+            {
+                BonusAndPunishId = b.BonusAndPunishId,
+                CreatedAt = b.CreatedAt,
+                Reason = b.Reason,
+                Score = b.Score,
+                TraineeId = b.TraineeId,
+                Trainee = new Trainee
+                {
+                    TraineeId = b.Trainee.TraineeId,
+                    Fullname = b.Trainee.Fullname,
+                    AvatarURL = b.Trainee.AvatarURL,
+                    ClassId = b.Trainee.ClassId,
+                    Email = b.Trainee.Email,
+                    Class = new Class
+                    {
+                        ClassName = b.Trainee.Class.ClassName
+                    }
+                }
+            });
+            if (paginationParameter.SearchName != "")
+            {
+                bNpList = bNpList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Reason.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Trainee.Fullname.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Trainee.Email.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Trainee.Class.ClassName.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+
+            IEnumerable<BonusAndPunish> rs = await bNpList
+                .GetCount(out var totalRecords)
+                .OrderBy(e => e.CreatedAt)
+                .GetPage(paginationParameter)
+                .ToListAsync();
+
+            return Tuple.Create(totalRecords, rs);
+        }
+        
     }
 }

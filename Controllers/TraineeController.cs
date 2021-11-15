@@ -389,7 +389,24 @@ namespace kroniiapi.Controllers
         [HttpPut("{id:int}/status")]
         public async Task<ActionResult> UpdateTraineeStatus(int id, [FromBody] string status)
         {
-            return null;
+            Trainee trainee = await _traineeService.GetTraineeById(id);
+            if (trainee is null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
+            }
+            if (status == null)
+            {
+                return BadRequest(new ResponseDTO(400, "Fail to update trainee wage"));
+            }
+            trainee.Status = status;
+            if (await _traineeService.UpdateTrainee(id, trainee) == 1)
+            {
+                return Ok(new ResponseDTO(200, "Update trainee's status success"));
+            }
+            else
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update trainee status"));
+            }
         }
     }
 }
