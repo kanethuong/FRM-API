@@ -71,6 +71,10 @@ namespace kroniiapi.Controllers
         [HttpGet("{classId:int}")]
         public async Task<ActionResult<ICollection<FeedbackResponse>>> ViewClassFeedback(int classId)
         {
+            // if(_classService.CheckClassExist(classId)==false){
+            //     return NotFound(new ResponseDTO(404,"Class not found"));
+            // }
+            // ICollection<Trainee> traineeList=await _traineeService.GetTraineeByClassId(classId);
             return null;
         }
     }

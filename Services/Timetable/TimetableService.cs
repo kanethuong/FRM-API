@@ -48,7 +48,7 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="date"></param>
         /// <returns>true or false</returns>
-        private bool DayOffCheck(DateTime date)
+        public bool DayOffCheck(DateTime date)
         {
             if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
             {
