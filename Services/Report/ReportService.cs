@@ -16,13 +16,11 @@ namespace kroniiapi.Services.Report
     {
         private DataContext _dataContext;
         private readonly IMapper _mapper;
-        private ITimetableService _timetableService;
 
-        public ReportService(DataContext dataContext, IMapper mapper, ITimetableService timetableService)
+        public ReportService(DataContext dataContext, IMapper mapper)
         {
             _dataContext = dataContext;
             _mapper = mapper;
-            _timetableService = timetableService;
         }
 
         /// <summary>
@@ -136,10 +134,6 @@ namespace kroniiapi.Services.Report
             List<TraineeAttendance> traineeAttendances;
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                if (_timetableService.DayOffCheck(date))
-                {
-                    continue;
-                }
                 traineeAttendances = new List<TraineeAttendance>();
                 foreach (int traineeId in traineeIdList)
                 {
@@ -150,6 +144,9 @@ namespace kroniiapi.Services.Report
                                                                Status = a.Status
                                                            })
                                                            .FirstOrDefaultAsync());
+                }
+                if(traineeAttendances==null || traineeAttendances.Any(t => t==null)){
+                    continue;
                 }
                 attendanceInfo.Add(date, traineeAttendances);
             }
@@ -443,61 +440,121 @@ namespace kroniiapi.Services.Report
         /// <param name="classId">Id of class</param>
         /// <param name="reportAt">Choose the time to report</param>
         /// <returns>Feedback report data</returns>
-        public async Task<List<AttendanceReport>> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
+        public List<FeedbackReport> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
         {
-            var listTrainee = await _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToListAsync();
-            List<AttendanceReport> listAReport = new List<AttendanceReport>();
-            foreach (var item in listTrainee)
+            List<FeedbackReport> feedbackReports = new List<FeedbackReport>();
+            if (reportAt == new DateTime(1, 1, 1))
             {
-                int absent = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "A").Count();
-                int present = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "P").Count();
-                int absentNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "An").Count();
-                int late = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "L").Count();
-                int lateNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "Ln").Count();
-                int erly = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "E").Count();
-                int erlyNo = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "En").Count();
-                int onBoard = _dataContext.Attendances.Where(a => a.Date.Year == reportAt.Year && a.Date.Month == reportAt.Month && a.Status == "Ob").Count();
-                int total = absent + present + absentNo + late + lateNo + erly + erlyNo + onBoard;
-                int absentNum = absent + absentNo;
-                int erlylateNum = late + lateNo + erly + erlyNo;
-                float noPerRate = (absentNo + lateNo + erlyNo) / (absentNum + erlylateNum);
-                float calculated = (erlylateNum / 2 + absentNum) / total;
-                float DisciplinaryPoint;
-                if (calculated <= 5)
+                int startMonth = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.StartDay.Month).FirstOrDefault();
+                int endMonth = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.EndDay.Month).FirstOrDefault();
+                int startYear = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.StartDay.Year).FirstOrDefault();
+                int endYear = _dataContext.Classes.Where(cl => cl.ClassId == classId).Select(cl => cl.EndDay.Year).FirstOrDefault();
+                for (var i = startYear; i <= endYear; i++)
                 {
-                    DisciplinaryPoint = 100;
+                    for (int j = startMonth; j <= endMonth; j++)
+                    {
+                        // Trainning
+                        float TopicContentAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TopicContent).Average());
+                        var TopicObjectiveAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TopicObjective).Average());
+                        var ApproriateTopicLevelAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.ApproriateTopicLevel).Average());
+                        var TopicUsefulnessAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TopicUsefulness).Average());
+                        var TrainingMaterialAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TrainingMaterial).Average());
+                        // Trainer
+                        var TrainerKnowledgeAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TrainerKnowledge).Average());
+                        var SubjectCoverageAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.SubjectCoverage).Average());
+                        var InstructionAndCommunicateAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.InstructionAndCommunicate).Average());
+                        var TrainerSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.TrainerSupport).Average());
+                        // Organization
+                        var LogisticsAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.Logistics).Average());
+                        var InformationToTraineesAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.InformationToTrainees).Average());
+                        var AdminSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == i && fb.CreatedAt.Month == j).Select(fb => fb.AdminSupport).Average());
+                        // OJT Eval
+                        var OJTEval = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG
+                                        + TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG
+                                        + LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 12;
+                        // Trainning Program
+                        var TrainningProgram = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG) / 5;
+                        var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG);
+                        var Organization = (LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 3;
+                        var AverageScore = (TrainningProgram + Trainer + Organization) / 3;
+                        var fbReportAdd = new FeedbackReport
+                        {
+                            TopicContent = TopicContentAVG,
+                            TopicObjective = TopicObjectiveAVG,
+                            ApproriateTopicLevel = ApproriateTopicLevelAVG,
+                            TopicUsefulness = TopicContentAVG,
+                            TrainingMaterial = TrainingMaterialAVG,
+                            TrainerKnowledge = TrainerKnowledgeAVG,
+                            SubjectCoverage = SubjectCoverageAVG,
+                            InstructionAndCommunicate = InstructionAndCommunicateAVG,
+                            TrainerSupport = TrainerSupportAVG,
+                            Logistics = LogisticsAVG,
+                            InformationToTrainees = InformationToTraineesAVG,
+                            AdminSupport = AdminSupportAVG,
+                            TrainingPrograms = TrainningProgram,
+                            Trainer = Trainer,
+                            Organization = Organization,
+                            ContantEval = TrainningProgram,
+                            TrainerEval = Trainer,
+                            OrganizeEval = Organization,
+                            OJTEval = OJTEval,
+                            AverageScore = AverageScore,
+                        };
+                        feedbackReports.Add(fbReportAdd);
+                    }
                 }
-                else if (calculated <= 20)
-                {
-                    DisciplinaryPoint = 80;
-                }
-                else if (calculated <= 30)
-                {
-                    DisciplinaryPoint = 60;
-                }
-                else if (calculated < 50)
-                {
-                    DisciplinaryPoint = 50;
-                }
-                else if (calculated >= 50 && noPerRate == 20)
-                {
-                    DisciplinaryPoint = 0;
-                }
-                else
-                {
-                    DisciplinaryPoint = 20;
-                }
-                var newAReport = new AttendanceReport
-                {
-                    TraineeId = item.TraineeId,
-                    NumberOfAbsent = absentNum,
-                    NumberOfLateInAndEarlyOut = erlylateNum,
-                    NoPermissionRate = noPerRate,
-                    DisciplinaryPoint = DisciplinaryPoint,
-                };
-                listAReport.Add(newAReport);
             }
-            return listAReport;
+            else
+            {
+                var TopicContentAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TopicContent).Average());
+                var TopicObjectiveAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TopicObjective).Average());
+                var ApproriateTopicLevelAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.ApproriateTopicLevel).Average());
+                var TopicUsefulnessAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TopicUsefulness).Average());
+                var TrainingMaterialAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TrainingMaterial).Average());
+                // Trainer
+                var TrainerKnowledgeAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TrainerKnowledge).Average());
+                var SubjectCoverageAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.SubjectCoverage).Average());
+                var InstructionAndCommunicateAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.InstructionAndCommunicate).Average());
+                var TrainerSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.TrainerSupport).Average());
+                // Organization
+                var LogisticsAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.Logistics).Average());
+                var InformationToTraineesAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.InformationToTrainees).Average());
+                var AdminSupportAVG = Convert.ToSingle(_dataContext.Feedbacks.Where(fb => fb.Trainee.ClassId == classId && fb.CreatedAt.Year == reportAt.Year && fb.CreatedAt.Month == reportAt.Month).Select(fb => fb.AdminSupport).Average());
+                // OJT Eval
+                var OJTEval = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG
+                    + TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG
+                    + LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 12;
+                // Trainning Program
+                var TrainningProgram = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG) / 5;
+                var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG);
+                var Organization = (LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 3;
+                var AverageScore = (TrainningProgram + Trainer + Organization) / 3;
+                var fbReportAdd = new FeedbackReport
+                {
+                    TopicContent = TopicContentAVG,
+                    TopicObjective = TopicObjectiveAVG,
+                    ApproriateTopicLevel = ApproriateTopicLevelAVG,
+                    TopicUsefulness = TopicContentAVG,
+                    TrainingMaterial = TrainingMaterialAVG,
+                    TrainerKnowledge = TrainerKnowledgeAVG,
+                    SubjectCoverage = SubjectCoverageAVG,
+                    InstructionAndCommunicate = InstructionAndCommunicateAVG,
+                    TrainerSupport = TrainerSupportAVG,
+                    Logistics = LogisticsAVG,
+                    InformationToTrainees = InformationToTraineesAVG,
+                    AdminSupport = AdminSupportAVG,
+                    TrainingPrograms = TrainningProgram,
+                    Trainer = Trainer,
+                    Organization = Organization,
+                    ContantEval = TrainningProgram,
+                    TrainerEval = Trainer,
+                    OrganizeEval = Organization,
+                    OJTEval = OJTEval,
+                    AverageScore = AverageScore,
+                };
+                feedbackReports.Add(fbReportAdd);
+            }
+            return feedbackReports;
         }
 
         /// <summary>
