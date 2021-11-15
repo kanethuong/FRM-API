@@ -38,7 +38,7 @@ namespace kroniiapi.DTO.AttendanceDTO
                         _status = _attendanceStatus.P.ToString();
                         break;
                     case nameof(_attendanceStatus.Ob):
-                        _status = _attendanceStatus.P.ToString();
+                        _status = _attendanceStatus.Ob.ToString();
                         break;
                     default:
                         _status = null;
