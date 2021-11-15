@@ -1,24 +1,25 @@
 <div class="mb-5">
-    <h2 class="fw-bold">Feedback</h2>
-    <p>Help trainee to give feedback about their admin and trainer</p>
-
-    <!-- Give trainer feedback -->
-    <div id="giveTrainerFeedback">
+    <h2 class="fw-bold">Bonus and Punish</h2>
+    <p>
+        View Bonus and Punish point
+    </p>
+    <!-- Create new Bonus or Punish -->
+    <div id="createNewBonusOrPunish">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>Send Feedback</h3>
+            <h3>Create New Bonus or Punish</h3>
         </div>
-        <p>By ToanTK</p>
+        <p>By HoangNN</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/Feedback</p>
+            <p>/api/BonusAndPunish</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Trainee</p>
+                <p>Administrator</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
@@ -26,7 +27,7 @@
             </div>
             <div class="col-4">
                 <h5>Status</h5>
-                <p>201 404 400</p>
+                <p>201 400</p>
             </div>
         </div>
 
@@ -43,50 +44,41 @@
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
                 <p>
-                    <pre><code>
+                <pre><code>
 {
-    "topicContent": int,
-    "topicObjective": int,
-    "approriateTopicLevel": int,
-    "topicUsefulness": int,
-    "trainingMaterial": int,
-    "trainerKnowledge": int,
-    "subjectCoverage": int,
-    "instructionAndCommunicate": int,
-    "trainerSupport": int,
-    "logistics": int,
-    "informationToTrainees": int,
-    "adminSupport": int,
-    "otherComment": "string",
-    "traineeId": int
+    "score": 0,
+    "reason": "string",
+    "traineeId": 0
 }
-                      </code></pre>
+                </code></pre>
                 </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p>Error Reponse</p>
+                <p>
+                    Error Ressponse
+                </p>
             </div>
         </div>
     </div>
-   
-    <!-- Get class's feedback -->
-    <div id="viewClassFeedback">
+
+    <!-- Create new Bonus or Punish -->
+    <div id="viewBonusOrPunish">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>View Class Feedback</h3>
+            <h3>View Bonus or Punish</h3>
         </div>
-        <p>By KhangTD</p>
+        <p>By DatLT</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/Feedback/{classId}</p>
+            <p>/api/BonusAndPunish/page</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Admin</p>
+                <p>Administrator</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
@@ -102,7 +94,9 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Parameter</h5>
-                <p>classID: ID of class</p>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Reason, Trainee Fullname, Trainee Email, Classname field</p>
             </div>
         </div>
 
@@ -110,28 +104,32 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>No</p>
+                <p>
+                    No
+                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
                 <pre><code>
 {
-    "topicContent": int,
-    "topicObjective": int,
-    "approriateTopicLevel": int,
-    "topicUsefulness": int,
-    "trainingMaterial": int,
-    "trainerKnowledge": int,
-    "subjectCoverage": int,
-    "instructionAndCommunicate": int,
-    "trainerSupport": int,
-    "logistics": int,
-    "informationToTrainees": int,
-    "adminSupport": int,
-    "otherComment": "string"
+    "totalRecords": 0,
+    "payload": [
+        {
+        "trainee": {
+            "traineeId": 0,
+            "fullname": "string",
+            "avatarURL": "string",
+            "classId": 0,
+            "className": "string"
+        },
+        "score": 0,
+        "reason": "string",
+        "createdAt": "2021-11-15T08:00:33.659Z"
+        }
+    ]
 }
-            </code></pre>
+                </code></pre>
                 </p>
             </div>
         </div>
