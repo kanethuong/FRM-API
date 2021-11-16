@@ -5,6 +5,102 @@
     </p>
     <!-- Get Admin List -->
     <div id="getAdminList">
+
+        <div id="adminDashboard">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Admin dasbhoard</h3>
+        </div>
+        <p>By PhuTT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/admin/dashboard/{adminId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 400</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>adminId: Id of admin (required)</p>
+                <p>classId: Id of class (required)</p>
+                <p>reportAt: DateTime to export report (export final report when no input)</p>
+            </div>
+            <div class="col-6">
+                <h5>Note</h5>
+                <p>Call <a href="#getAdminClass">get admin class by year</a> to get admin class by year</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>None</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p><pre><code>
+{
+    "classStatus": {
+        "learning": float,
+        "passed": float,
+        "failed": float,
+        "deferred": float,
+        "dropOut": float,
+        "cancel": float
+    },
+    "checkpoint": {
+        "aplus": float,
+        "a": float,
+        "b": float,
+        "c": float,
+        "d": float
+    },
+    "feedback": {
+        "topicContent": float,
+        "topicObjective": float,
+        "approriateTopicLevel": float,
+        "topicUsefulness": float,
+        "trainingMaterial": float,
+        "trainerKnowledge": float,
+        "subjectCoverage": float,
+        "instructionAndCommunicate": float,
+        "trainerSupport": float,
+        "logistics": float,
+        "informationToTrainees": float,
+        "adminSupport": float,
+        "trainingPrograms": float,
+        "trainer": float,
+        "organization": float,
+        "contantEval": float,
+        "trainerEval": float,
+        "organizeEval": float,
+        "ojtEval": float,
+        "averageScore": float,
+        "reportAt": "DateTime",
+        "isSumary": bool
+    }
+}</code></pre></p>
+            </div>
+        </div>
+    </div>
+
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
             <h3>View Admin List</h3>
