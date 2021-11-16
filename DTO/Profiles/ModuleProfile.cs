@@ -15,9 +15,11 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<Module, ModuleResponse>();
             CreateMap<ModuleInput, Module>()
+                .ForMember(output => output.SlotDuration, opt => opt.MapFrom(src => TimeSpan.FromMinutes(src.SlotDuration)))
                 .ForSourceMember(input => input.Syllabus, opt => opt.DoNotValidate())
                 .ForSourceMember(input => input.Icon, opt => opt.DoNotValidate());
             CreateMap<ModuleUpdateInput, Module>()
+                .ForMember(output => output.SlotDuration, opt => opt.MapFrom(src => TimeSpan.FromMinutes(src.SlotDuration)))
                 .ForSourceMember(input => input.Syllabus, opt => opt.DoNotValidate())
                 .ForSourceMember(input => input.Icon, opt => opt.DoNotValidate());
             CreateMap<AssignModuleInput, ClassModule>();
