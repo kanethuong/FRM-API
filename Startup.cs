@@ -148,10 +148,17 @@ namespace kroniiapi
                 options.AddPolicy("RulePost", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
 
-                options.AddPolicy("Trainer", policy =>
+                options.AddPolicy("TrainerGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
+                options.AddPolicy("TrainerPut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
-                options.AddPolicy("Trainee", policy =>
+
+                options.AddPolicy("TraineeGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer", "trainee" })));
+                options.AddPolicy("TraineePut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
+                options.AddPolicy("TraineePutAdmin", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
             });
 
             // Increase input file size limit
