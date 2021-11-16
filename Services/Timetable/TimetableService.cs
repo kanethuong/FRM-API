@@ -87,7 +87,7 @@ namespace kroniiapi.Services
         /// <param name="endDay"></param>
         /// <param name="classId"></param>
         /// <returns></returns>
-        private (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
+        public (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
         {
             int daysAvailable = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
             int daysNeed = GetTotalDaysNeed(classId);
@@ -166,7 +166,7 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        private bool DayLeftAvailableCheck(int moduleId, int classId)
+        public bool DayLeftAvailableCheck(int moduleId, int classId)
         {
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var moduleGet = _datacontext.Modules.Where(cl => cl.ModuleId == moduleId).FirstOrDefault();
@@ -193,10 +193,6 @@ namespace kroniiapi.Services
             if (dateCount == new DateTime(1,1,1))
             {
                 dateCount = classGet.StartDay;
-            }
-            if (!DayLeftAvailableCheck(moduleId,classId))
-            {
-                return 0;
             }
             int slotCount = 1;
             while (slotCount <= noOfSlot)
