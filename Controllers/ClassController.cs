@@ -771,5 +771,29 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(409, "Fail to delete! Unexpected error"));
             }
         }
+
+        [HttpGet("admin/{id:int}")]
+        public async Task<ActionResult<ICollection<AdminDashboardClassResponse>>> GetAdminClassByYear(int id, [FromQuery] DateTime at)
+        {
+            if (at == default(DateTime))
+            {
+                at = DateTime.Now;
+            }
+
+            var verify = _adminService.CheckAdminExist(id);
+            if (verify == false)
+            {
+                return NotFound(new ResponseDTO(404, "Admin id not found"));
+            }
+
+            var classList = await _classService.GetClassListByAdminId(id, at);
+
+            if (classList == null)
+            {
+                return NotFound(new ResponseDTO(404, "Admin does not have any class"));
+            }
+
+            return Ok(_mapper.Map<ICollection<AdminDashboardClassResponse>>(classList));
+        }
     }
 }

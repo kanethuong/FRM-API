@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    [Authorize(Policy = "Trainee")]
+    // [Authorize(Policy = "Trainee")]
     [Route("api/[controller]")]
     public class TraineeController : ControllerBase
     {

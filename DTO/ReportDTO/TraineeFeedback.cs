@@ -8,6 +8,7 @@ namespace kroniiapi.DTO.ReportDTO
     public class TraineeFeedback
     {
         public float TraineeId { get; set; }
+        public string Email { get; set; }
         public float TopicContent { get; set; }
         public float TopicObjective { get; set; }
         public float ApproriateTopicLevel { get; set; }

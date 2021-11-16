@@ -21,5 +21,6 @@ namespace kroniiapi.Services.Report
         Dictionary<DateTime, List<AttendanceReport>> GetAttendanceReportEachMonth(int classId, DateTime monthReport);
         List<AttendanceReport> GetTotalAttendanceReports(int classId);
         Task<CheckpointReport> GetCheckpointReport(int classId);
+        Dictionary<DateTime, ICollection<TraineeFeedback>> GetAllTraineeFeedbacks(int classId);
     }
 }
