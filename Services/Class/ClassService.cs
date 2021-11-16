@@ -47,6 +47,7 @@ namespace kroniiapi.Services
                 .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
+
         /// <summary>
         /// Get Class By ClassName
         /// </summary>
@@ -56,6 +57,7 @@ namespace kroniiapi.Services
         {
             return await _dataContext.Classes.Where(c => c.ClassName == className).FirstOrDefaultAsync();
         }
+
         /// <summary>
         /// Get Request Deleted Class List
         /// </summary>
@@ -63,7 +65,7 @@ namespace kroniiapi.Services
         /// <returns>Tuple List of  Class Delete Request</returns>
         public async Task<Tuple<int, IEnumerable<DeleteClassRequest>>> GetRequestDeleteClassList(PaginationParameter paginationParameter)
         {
-            IQueryable<DeleteClassRequest> listRequest =  _dataContext.DeleteClassRequests
+            IQueryable<DeleteClassRequest> listRequest = _dataContext.DeleteClassRequests
                                     .Where(c => c.IsAccepted == null)
                                     .Select(c => new DeleteClassRequest
                                     {
@@ -93,7 +95,7 @@ namespace kroniiapi.Services
             {
                 listRequest = listRequest.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Class.ClassName.ToLower()))
                     .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
-            }                        
+            }
 
             IEnumerable<DeleteClassRequest> rs = await listRequest
                 .GetCount(out var totalRecords)
@@ -102,6 +104,7 @@ namespace kroniiapi.Services
                 .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
+
         /// <summary>
         /// Update Deleted Class
         /// </summary>
@@ -145,6 +148,7 @@ namespace kroniiapi.Services
             }
             return -1;
         }
+
         public async Task<int> DeleteTraineeClass(int deleteClassId)
         {
             var traineeList = await _dataContext.Trainees.Where(c => c.ClassId == deleteClassId).ToListAsync();
@@ -170,6 +174,7 @@ namespace kroniiapi.Services
             int rs = await _dataContext.SaveChangesAsync();
             return rs;
         }
+
         /// <summary>
         ///  Get Deleted Class List
         /// </summary>
@@ -192,6 +197,7 @@ namespace kroniiapi.Services
 
             return Tuple.Create(totalRecords, rs);
         }
+
         /// <summary>
         /// Get detail of a class 
         /// </summary>
@@ -303,6 +309,7 @@ namespace kroniiapi.Services
         {
             return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).FirstOrDefaultAsync();
         }
+
         /// <summary>
         /// add Class Id to Trainee model (after add new class)
         /// </summary>
@@ -319,6 +326,7 @@ namespace kroniiapi.Services
                 trainee.ClassId = classId;
             }
         }
+
         /// <summary>
         /// add module id and class id to class module model (after add new class)
         /// </summary>
@@ -341,6 +349,7 @@ namespace kroniiapi.Services
                 _dataContext.ClassModules.Add(classModule);
             }
         }
+
         /// <summary>
         /// Insert new class and save change
         /// </summary>
@@ -412,6 +421,7 @@ namespace kroniiapi.Services
         {
             _dataContext.ChangeTracker.Clear();
         }
+
         /// <summary>
         /// Get Trainer and Admin using TraineeId
         /// </summary>
@@ -515,10 +525,17 @@ namespace kroniiapi.Services
             return await _dataContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Get all module of that class
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <param name="moduleId"></param>
+        /// <returns>Module list</returns>
         public async Task<ClassModule> GetClassModule(int classId, int moduleId)
         {
             return await _dataContext.ClassModules.Where(t => t.ClassId == classId && t.ModuleId == moduleId).FirstOrDefaultAsync();
         }
+
         /// <summary>
         /// Get Trainee List in a class with pagination
         /// </summary>
@@ -540,6 +557,12 @@ namespace kroniiapi.Services
             .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
+
+        /// <summary>
+        /// Check there is any class with input id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>bool</returns>
         public bool CheckClassExist(int id)
         {
             return _dataContext.Classes.Any(c => c.ClassId == id &&
@@ -559,5 +582,23 @@ namespace kroniiapi.Services
             return rowInserted;
         }
 
+        /// <summary>
+        /// Get classes belonged to admin in every year by input
+        /// </summary>
+        /// <param name="adminId"></param>
+        /// <param name="at"></param>
+        /// <returns>Class list</returns>
+        public async Task<ICollection<Class>> GetClassListByAdminId(int adminId, DateTime at = default(DateTime))
+        {
+            if (at == default(DateTime)) at = DateTime.Now;
+            var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+                .Select(a => a.Classes
+                    .Where(c => c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
+                    .OrderByDescending(c => c.StartDay)
+                    .ToList()
+                )
+                .FirstOrDefaultAsync();
+            return (ICollection<Class>)classes;
+        }
     }
 }
