@@ -8,11 +8,13 @@ using kroniiapi.DTO;
 using kroniiapi.DTO.ExamDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "Exam")]
     [Route("api/[controller]")]
     public class ExamController : ControllerBase
     {
@@ -42,6 +44,8 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
+            var errorNotfound = new List<String>();
+            var errorNotModule = new List<String>();
             if (newExamInput.ExamDay <= DateTime.Now)
             {
                 return BadRequest(new ResponseDTO(400, "Exam time can't be smaller than current time"));
@@ -62,6 +66,7 @@ namespace kroniiapi.Controllers
             var classCheck = await _classService.GetClassByClassID(newExamInput.classId.GetValueOrDefault());
             if (newExamInput.classId != 0 && classCheck == null)
             {
+                //errorNotfound.Add("Class not found");
                 return NotFound(new ResponseDTO(404, "Class not found"));
             }
             //Check admin deactivated == false
@@ -78,11 +83,16 @@ namespace kroniiapi.Controllers
             foreach (var item in newExamInput.TraineeIdList)
             {
                 var traineeCheck = await _traineeService.GetTraineeById(item);
+
                 if (traineeCheck == null)
                 {
-                    return NotFound(new ResponseDTO(404, "Trainee(s) not found"));
+                    errorNotfound.Add(item.ToString());
+                    //return NotFound(new ResponseDTO(404, "Trainee(s) not found"));
                 }
-                traineeList1.Add(traineeCheck);
+                else
+                {
+                    traineeList1.Add(traineeCheck);
+                }
             }
             exam.Trainees = traineeList1;
             //Check if trainee have right module
@@ -92,10 +102,41 @@ namespace kroniiapi.Controllers
                 bool checkModule = modules.Contains(exam.ModuleId);
                 if (checkModule == false)
                 {
-                    return NotFound(new ResponseDTO(404, "Trainee " + item.Fullname + " doesn't have module " + exam.ModuleId));
+                    errorNotModule.Add(item.Fullname + "(" + item.Email + ")");
                 }
-            }
 
+            }
+            if (errorNotfound.Count() != 0 || errorNotModule.Count() != 0)
+            {
+                var temp = await _moduleService.GetModuleById(newExamInput.ModuleId);
+                string rp = "";
+                if (errorNotfound.Count() != 0)
+                {
+                    rp += "There are (" + errorNotfound.Count() + ") problem about student id not found :";
+                    foreach (var item in errorNotfound)
+                    {
+                        rp += item;
+                        if (item != errorNotfound[errorNotfound.Count - 1])
+                        {
+                            rp += ", ";
+                        }
+                    }
+                    rp+="\n";
+                }
+                if (errorNotModule.Count() != 0)
+                {
+                    rp += "There are (" + errorNotModule.Count() + ") problem about student name not in module (" + temp.ModuleName + ") :";
+                    foreach (var item in errorNotModule)
+                    {
+                        rp += item;
+                        if (item != errorNotModule[errorNotModule.Count - 1])
+                        {
+                            rp += ", ";
+                        }
+                    }
+                }
+                return NotFound(new ResponseDTO(404, rp));
+            }
             //Set variable cho traineeExams
             List<TraineeExam> traineeExams = new List<TraineeExam>();
             foreach (var item in exam.Trainees)

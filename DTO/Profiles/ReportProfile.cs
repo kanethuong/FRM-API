@@ -24,7 +24,8 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Feedback, TraineeFeedback>();
 
             CreateMap<BonusAndPunish, RewardAndPenalty>()
-                .ForMember(rw => rw.BonusAndPenaltyPoint, a => a.MapFrom(s => s.Score));
+                .ForMember(rw => rw.BonusAndPenaltyPoint, a => a.MapFrom(s => s.Score))
+                .ForMember(rw => rw.Date, a => a.MapFrom(s => s.CreatedAt));
         }
     }
 }

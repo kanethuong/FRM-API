@@ -7,10 +7,12 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ModuleDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TimetableDTO;
 using kroniiapi.Helper;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Helper.UploadDownloadFile;
 using kroniiapi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,6 +40,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns>All module response with pagination</returns>
         [HttpGet("page")]
+        [Authorize(Policy = "ModuleGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ModuleResponse>>>> ViewModuleList([FromQuery] PaginationParameter paginationParameter)
         {
 
@@ -57,6 +60,7 @@ namespace kroniiapi.Controllers
         /// <param name="moduleInput">Module input to add to DB</param>
         /// <returns>400 : The File/Icon is invalid / 409 : Fail to create / 201 : Created</returns>
         [HttpPost]
+        [Authorize(Policy = "ModulePost")]
         public async Task<ActionResult> CreateNewModule([FromForm] ModuleInput moduleInput)
         {
             // Map to module
@@ -80,6 +84,8 @@ namespace kroniiapi.Controllers
             using (var stream = syllabus.OpenReadStream())
             {
                 module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
+                var details = _moduleService.GetModuleLessonDetail(module.ModuleName, stream);
+                module.NoOfSlot = GetNoOfSlot(details);
             }
 
             // Insert module & Return Result
@@ -94,6 +100,11 @@ namespace kroniiapi.Controllers
             }
         }
 
+        private static int GetNoOfSlot(IEnumerable<ModuleExcelInput> moduleDetails)
+        {
+            return moduleDetails.Select(md => md.Day).Max();
+        }
+
         /// <summary>
         /// Update module
         /// </summary>
@@ -101,6 +112,7 @@ namespace kroniiapi.Controllers
         /// <param name="moduleInput">module input to update</param>
         /// <returns>404 : The module is not found / 409 : Fail to create / 200 : Updated</returns>
         [HttpPut("{moduleId:int}")]
+        [Authorize(Policy = "ModulePut")]
         public async Task<ActionResult> UpdateModule(int moduleId, [FromForm] ModuleUpdateInput moduleInput)
         {
             List<string> errors = new();
@@ -120,10 +132,10 @@ namespace kroniiapi.Controllers
                 (success, message) = FileHelper.CheckExcelExtension(syllabus);
                 if (success)
                 {
-                    using (var stream = syllabus.OpenReadStream())
-                    {
-                        module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
-                    }
+                    using var stream = syllabus.OpenReadStream();
+                    module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
+                    var details = _moduleService.GetModuleLessonDetail(module.ModuleName, stream);
+                    module.NoOfSlot = GetNoOfSlot(details);
                 }
                 else
                 {
@@ -136,10 +148,8 @@ namespace kroniiapi.Controllers
                 (success, message) = FileHelper.CheckImageExtension(icon);
                 if (success)
                 {
-                    using (var stream = icon.OpenReadStream())
-                    {
-                        module.IconURL = await _imgHelper.Upload(stream, icon.FileName, icon.Length, icon.ContentType);
-                    }
+                    using var stream = icon.OpenReadStream();
+                    module.IconURL = await _imgHelper.Upload(stream, icon.FileName, icon.Length, icon.ContentType);
                 }
                 else
                 {
@@ -160,10 +170,15 @@ namespace kroniiapi.Controllers
                     Errors = errors
                 });
         }
-        [HttpGet("test")]
-        public async Task<ActionResult> Test(int moduleId) {
-            var listTest = await _moduleService.GetModuleLessonDetail(moduleId);
-            return Ok(listTest);
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ModuleResponse>> ViewModuleById(int id)
+        {
+            var module = await _moduleService.GetModuleById(id);
+            if (module == null)
+            {
+                return NotFound(new ResponseDTO(404, "Module cannot be found"));
+            }
+            return Ok(_mapper.Map<ModuleResponse>(module));
         }
     }
 }

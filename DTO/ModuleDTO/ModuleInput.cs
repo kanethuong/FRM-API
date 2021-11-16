@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace kroniiapi.DTO.ModuleDTO
@@ -10,10 +7,10 @@ namespace kroniiapi.DTO.ModuleDTO
     public class ModuleInput
     {
         [Required]
+        [StringLength(100, ErrorMessage = "Module name must be less than 100 characters")]
         public string ModuleName { get; set; }
         [Required]
-        public int NoOfSlot { get; set; }
-        [Required]
+        [StringLength(300, ErrorMessage = "Description must be less than 300 characters")]
         public string Description { get; set; }
         [Required]
         public TimeSpan SlotDuration { get; set; }
@@ -26,10 +23,10 @@ namespace kroniiapi.DTO.ModuleDTO
     public class ModuleUpdateInput
     {
         [Required]
+        [StringLength(100, ErrorMessage = "Module name must be less than 100 characters")]
         public string ModuleName { get; set; }
         [Required]
-        public int NoOfSlot { get; set; }
-        [Required]
+        [StringLength(300, ErrorMessage = "Description must be less than 300 characters")]
         public string Description { get; set; }
         [Required]
         public TimeSpan SlotDuration { get; set; }
