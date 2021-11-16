@@ -21,7 +21,8 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(ti => ti.StartDate, a => a.MapFrom(s => s.Class.StartDay))
                 .ForMember(ti => ti.EndDate, a => a.MapFrom(s => s.Class.EndDay));
 
-            CreateMap<Feedback, TraineeFeedback>();
+            CreateMap<Feedback, TraineeFeedback>()
+                .ForMember(fb => fb.Email, a => a.MapFrom(t => t.Trainee.Email));
 
             CreateMap<BonusAndPunish, RewardAndPenalty>()
                 .ForMember(rw => rw.BonusAndPenaltyPoint, a => a.MapFrom(s => s.Score))
