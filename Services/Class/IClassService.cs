@@ -34,5 +34,6 @@ namespace kroniiapi.Services
         bool CheckClassExist(int id);
         Task<ClassModule> GetClassModule(int classId, int moduleId);
         Task<int> AssignModuleToClass(ClassModule classModule);
+        Task<ICollection<Class>> GetClassListByAdminId(int adminId, DateTime at = default(DateTime));
     }
 }

@@ -69,15 +69,16 @@ namespace kroniiapi.Controllers
             return adminResponse;
         }
 
+        /// <summary>
+        /// Admin dashboard with class detail report
+        /// </summary>
+        /// <param name="adminId"></param>
+        /// <param name="classId"></param>
+        /// <param name="reportAt"></param>
+        /// <returns>200: Report data / 400: There is a problem with client request</returns>
         [HttpGet("dashboard/{adminId:int}")]
         public async Task<ActionResult<AdminDashboard>> ViewAdminDashboard(int adminId, [FromQuery] int classId, [FromQuery] DateTime reportAt)
         {
-            // // Check month
-            // if (month < 0 || month > 12)
-            // {
-            //     return BadRequest(new ResponseDTO(400, "Month in a year can only from 1 to 12"));
-            // }
-
             // Check admin id
             var adminDetail = await _adminService.GetAdminById(adminId);
             if (adminDetail == null)
@@ -86,7 +87,7 @@ namespace kroniiapi.Controllers
             }
 
             // Check is class belong to admin
-            List<Class> classList = (List<Class>)await _adminService.GetAdminClassList(adminId);
+            List<Class> classList = (List<Class>)await _classService.GetClassListByAdminId(adminId, reportAt);
             if (classId == 0)
             {
                 classId = classList.Select(c => c.ClassId).FirstOrDefault();
@@ -100,9 +101,9 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(400, "Class id does not belong to admin id"));
             }
 
-            // Check month is in range from start to end date of class
+            // Check report time is in range from start to end date of class
             var clazz = classList.Where(c => c.ClassId == classId).FirstOrDefault();
-            if (!(reportAt >= clazz.StartDay && reportAt <= clazz.EndDay))
+            if (!(reportAt >= clazz.StartDay && reportAt <= clazz.EndDay) && reportAt != default(DateTime))
             {
                 return BadRequest(new ResponseDTO(400, "Report time can be only from " + clazz.StartDay + " to " + clazz.EndDay));
             }
