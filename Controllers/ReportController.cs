@@ -85,5 +85,11 @@ namespace kroniiapi.Controllers
 
             return Ok(_reportService.GetTraineeFeedbacks(classId,reportAt));
         }
+        [HttpGet("GetAllTraineeFeedbacks/{classId:int}")]
+        public async Task<ActionResult> GetAllTraineeFeedbacks(int classId)
+        {
+
+            return Ok(_reportService.GetAllTraineeFeedbacks(classId));
+        }
     }
 }
