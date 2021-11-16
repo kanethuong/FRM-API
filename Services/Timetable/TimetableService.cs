@@ -166,7 +166,7 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        private bool DayLeftAvailableCheck(int moduleId, int classId)
+        public bool DayLeftAvailableCheck(int moduleId, int classId)
         {
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var moduleGet = _datacontext.Modules.Where(cl => cl.ModuleId == moduleId).FirstOrDefault();
