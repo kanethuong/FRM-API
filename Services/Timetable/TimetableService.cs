@@ -87,7 +87,7 @@ namespace kroniiapi.Services
         /// <param name="endDay"></param>
         /// <param name="classId"></param>
         /// <returns></returns>
-        private (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
+        public (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
         {
             int daysAvailable = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
             int daysNeed = GetTotalDaysNeed(classId);
@@ -193,10 +193,6 @@ namespace kroniiapi.Services
             if (dateCount == new DateTime(1,1,1))
             {
                 dateCount = classGet.StartDay;
-            }
-            if (!DayLeftAvailableCheck(moduleId,classId))
-            {
-                return 0;
             }
             int slotCount = 1;
             while (slotCount <= noOfSlot)
