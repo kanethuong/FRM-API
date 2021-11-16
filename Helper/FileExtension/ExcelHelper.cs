@@ -357,5 +357,25 @@ namespace kroniiapi.Helper
             pieSeries.DataLabel.ShowSeriesName = true;
             return pieChart;
         }
+
+        /// <summary>
+        /// Generate the bar chart for the sheet
+        /// </summary>
+        /// <param name="worksheet">the worksheet</param>
+        /// <param name="chartName">the chartName</param>
+        /// <param name="rangeLabel">the range labels</param>
+        /// <param name="rangeValue">the range values</param>
+        /// <returns>the pie chart</returns>
+        public static ExcelChart GenerateBarChart(this ExcelWorksheet worksheet, string chartName, ExcelRangeBase rangeLabel, ExcelRangeBase rangeValue)
+        {
+            var sheetCheck = worksheet.Drawings[chartName];
+            if (sheetCheck != null) worksheet.Drawings.Remove(sheetCheck);
+            var barChart = worksheet.Drawings.AddChart(chartName,eChartType.BarClustered) ;
+            var series = barChart.Series.Add(rangeValue, rangeLabel);
+            var barSeries = (ExcelBarChartSerie)series;
+            barSeries.DataLabel.ShowValue = true;
+            barSeries.DataLabel.Position = eLabelPosition.InEnd;
+            return barChart;
+        }
     }
 }

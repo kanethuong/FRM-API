@@ -7,6 +7,7 @@ namespace kroniiapi.DTO.MarkDTO
 {
     public class ModuleMark
     {
+        public int ModuleId { get; set; }
         public string ModuleName { get; set; }
         public float Score { get; set; }
     }
