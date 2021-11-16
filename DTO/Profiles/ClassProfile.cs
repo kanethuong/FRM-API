@@ -31,10 +31,10 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<Class, ClassDetailResponse>()
             .ForMember(rs => rs.RoomName, m => m.MapFrom(d => ""));
             CreateMap<Trainee, TraineeInclassResponse>();
-            CreateMap<Class,TrainerClassListResponse>();
-            CreateMap<Class,TrainerClassDetailResponse>();
+            CreateMap<Class, TrainerClassListResponse>();
+            CreateMap<Class, TrainerClassDetailResponse>();
             CreateMap<AssignModuleInput, ClassModule>();
-
+            CreateMap<Class, AdminDashboardClassResponse>();
         }
     }
 }

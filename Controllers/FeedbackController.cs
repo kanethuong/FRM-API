@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -71,11 +72,22 @@ namespace kroniiapi.Controllers
         [HttpGet("{classId:int}")]
         public async Task<ActionResult<ICollection<FeedbackResponse>>> ViewClassFeedback(int classId)
         {
-            // if(_classService.CheckClassExist(classId)==false){
-            //     return NotFound(new ResponseDTO(404,"Class not found"));
-            // }
-            // ICollection<Trainee> traineeList=await _traineeService.GetTraineeByClassId(classId);
-            return null;
+            if (_classService.CheckClassExist(classId) == false)
+            {
+                return NotFound(new ResponseDTO(404, "Class not found"));
+            }
+            ICollection<FeedbackResponse> classFeedback=new Collection<FeedbackResponse>(); 
+            ICollection<Trainee> traineeList = await _traineeService.GetTraineeByClassId(classId);
+            foreach (Trainee trainee in traineeList)
+            {
+                Feedback feedback=await _feedbackService.GetFeedbackByTraineeId(trainee.TraineeId);
+                if(feedback==null){
+                    continue;
+                }
+                FeedbackResponse feedbackResponse=_mapper.Map<FeedbackResponse>(feedback);
+                classFeedback.Add(feedbackResponse);
+            }
+            return Ok(classFeedback);
         }
     }
 }
