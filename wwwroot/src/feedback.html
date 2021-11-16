@@ -74,19 +74,19 @@
     <div id="viewClassFeedback">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
-            <h3>Get Class Feedback</h3>
+            <h3>View Class Feedback</h3>
         </div>
-        <p>By HoangNN</p>
+        <p>By KhangTD</p>
         <div>
             <h5>Endpoint</h5>
-            <p>/api/feedback/{classId}</p>
+            <p>/api/Feedback/{classId}</p>
         </div>
 
         <!-- Role, Method and Status code -->
         <div class="row mb-3">
             <div class="col-4 border-end">
                 <h5>Allow</h5>
-                <p>Administrator</p>
+                <p>Admin</p>
             </div>
             <div class="col-4 border-end">
                 <h5>Method</h5>
@@ -117,32 +117,19 @@
                 <p>
                 <pre><code>
 {
-    "trainerFeedback": {
-        "trainer": {
-        "fullname": "string",
-        "email": "string",
-        "avatarURL": "string"
-        },
-        "feedbacks": [
-        {
-            "rate": int,
-            "content": "string"
-            }
-        ]
-    },
-    "adminFeedback": {
-        "admin": {
-        "fullname": "string",
-        "email": "string",
-        "avatarURL": "string"
-        },
-        "feedbacks": [
-        {
-            "rate": int,
-            "content": "string"
-            }
-        ]
-    }
+    "topicContent": int,
+    "topicObjective": int,
+    "approriateTopicLevel": int,
+    "topicUsefulness": int,
+    "trainingMaterial": int,
+    "trainerKnowledge": int,
+    "subjectCoverage": int,
+    "instructionAndCommunicate": int,
+    "trainerSupport": int,
+    "logistics": int,
+    "informationToTrainees": int,
+    "adminSupport": int,
+    "otherComment": "string"
 }
             </code></pre>
                 </p>
