@@ -8,7 +8,7 @@ namespace kroniiapi.DB.Models
         public string Fullname { get; set; }
         public string AvatarURL { get; set; }
         public string Email { get; set; }
-        public string Phone { get; set; }
+        public string Phone { get; set; } = "";
 
         // One-Many role
         public int RoleId { get; set; }

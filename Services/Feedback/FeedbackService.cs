@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.FeedbackDTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace kroniiapi.Services
@@ -113,6 +114,11 @@ namespace kroniiapi.Services
             int row = await _dataContext.SaveChangesAsync();
             return (row, "Send feedback successfully");
 
+        }
+
+        public async Task<Feedback> GetFeedbackByTraineeId(int traineeId)
+        {
+            return await _dataContext.Feedbacks.Where(fb => fb.TraineeId==traineeId).FirstOrDefaultAsync();
         }
 
         /// <summary>
