@@ -113,7 +113,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List of student mark in a class with pagination / 404: search student name not found</returns>
         [HttpGet("class/{classId:int}")]
-        //[Authorize(Policy = "MarkGet")]
+        [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScore(int classId, [FromQuery] PaginationParameter paginationParameter)
         {
             var class1 = await _classService.GetClassByClassID(classId);
@@ -171,7 +171,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">pagination</param>
         /// <returns>200: List of student mark in a class with pagination / 404:not found</returns>
         [HttpGet("trainer/class/{classId:int}")]
-        //[Authorize(Policy = "MarkGet")]
+        [Authorize(Policy = "MarkGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<MarkResponse>>>> ViewClassScoreByTrainerId(int classId, int trainerId, [FromQuery] PaginationParameter paginationParameter)
         {
             var class1 = await _classService.GetClassByClassID(classId);
