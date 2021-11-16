@@ -65,6 +65,7 @@ namespace kroniiapi.Controllers
         {
             // Map to module
             Module module = _mapper.Map<Module>(moduleInput);
+            module.SlotDuration = TimeSpan.FromMinutes(moduleInput.SlotDuration);
 
             // Check File Extension on Icon & Syllabus
             var icon = moduleInput.Icon;
@@ -122,6 +123,7 @@ namespace kroniiapi.Controllers
             if (module is null)
                 return NotFound(new ResponseDTO(404, "The module id is not found"));
             _mapper.Map(moduleInput, module);
+            module.SlotDuration = TimeSpan.FromMinutes(moduleInput.SlotDuration);
 
             // If File is not null, check file extension & assign URL to Module
             bool success;
