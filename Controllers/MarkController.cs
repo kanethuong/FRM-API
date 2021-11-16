@@ -127,6 +127,7 @@ namespace kroniiapi.Controllers
             foreach (Trainee trainee in trainees)
             {
                 MarkResponse markResponse = new MarkResponse();
+                markResponse.TraineeId = trainee.TraineeId;
                 markResponse.TraineeName = trainee.Fullname;
 
                 var mark_empty = new List<Mark>();
@@ -190,6 +191,7 @@ namespace kroniiapi.Controllers
             foreach (Trainee trainee in trainees)
             {
                 MarkResponse markResponse = new MarkResponse();
+                markResponse.TraineeId = trainee.TraineeId;
                 markResponse.TraineeName = trainee.Fullname;
 
                 var mark_empty = new List<Mark>();
