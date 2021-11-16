@@ -133,9 +133,9 @@ namespace kroniiapi.Services
         {
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var startDay = GetStartDayforClassToInsertModule(classId);
-            var trainerDays = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.TrainerId == trainerId)).Count() / 2;
+            var trainerDays = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.TrainerId == trainerId) && c.Date >= startDay && c.Date <= classGet.EndDay).Count() / 2;
             var daysNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
-            if (TimetableHelper.BusinessDaysUntil(startDay,classGet.EndDay,holidayss) >= daysNeed)
+            if (TimetableHelper.BusinessDaysUntil(startDay,classGet.EndDay,holidayss) - trainerDays >= daysNeed)
             {
                 return true;
             }

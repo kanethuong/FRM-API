@@ -277,14 +277,15 @@ namespace kroniiapi.AttendanceServicesss
             // Update to DB
             var rowUpdated = await _datacontext.SaveChangesAsync();
 
-            if (rowUpdated == 0)
-            {
-                return (false, "There is an error when updating trainees attendance");
-            }
-            else if (rowUpdated != attendances.Count())
-            {
-                return (false, "Update is almost success please check again");
-            }
+            // if (rowUpdated == 0)
+            // {
+            //     return (false, "There is an error when updating trainees attendance");
+            // }
+            // else 
+            // if (rowUpdated != attendances.Count())
+            // {
+            //     return (false, "Update is almost success please check again");
+            // }
             return (true, "");
         }
     }
