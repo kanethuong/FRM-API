@@ -152,7 +152,7 @@ namespace kroniiapi.Services
             {
                 return _datacontext.Classes.Where(c => c.ClassId == classId).Select(c => c.StartDay).FirstOrDefault();
             }
-            DateTime startDay = _datacontext.Calendars.Select(cl => cl.Date).OrderBy(cl => cl).LastOrDefault().AddDays(1);
+            DateTime startDay = _datacontext.Calendars.Where(cl => cl.ClassId == classId).Select(cl => cl.Date).OrderBy(cl => cl).LastOrDefault().AddDays(1);
             DateTime returnDay = new DateTime(startDay.Year, startDay.Month, startDay.Day, 0,0,0);
             while (DayOffCheck(returnDay))
             {
@@ -194,7 +194,7 @@ namespace kroniiapi.Services
             {
                 dateCount = classGet.StartDay;
             }
-            if (DayLeftAvailableCheck(moduleId,classId))
+            if (!DayLeftAvailableCheck(moduleId,classId))
             {
                 return 0;
             }
