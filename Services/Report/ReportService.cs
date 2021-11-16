@@ -524,6 +524,10 @@ namespace kroniiapi.Services.Report
                         feedbackReports.Add(fbReportAdd);
                     }
                 }
+                if (feedbackReports.Count() == 0)
+                {
+                    return null;
+                }
                 var sumaryReport = new FeedbackReport
                 {
                     TopicContent = feedbackReports.Average(fb => fb.TopicContent),
@@ -608,6 +612,10 @@ namespace kroniiapi.Services.Report
                     IsSumary = false,
                 };
                 feedbackReports.Add(fbReportAdd);
+                if (feedbackReports.Count() == 0)
+                {
+                    return null;
+                }
             }
             return feedbackReports;
         }

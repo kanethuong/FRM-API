@@ -11,12 +11,12 @@ namespace kroniiapi.DB.Models
         public string Fullname { get; set; }
         public string AvatarURL { get; set; }
         public string Email { get; set; }
-        public string Phone { get; set; }
-        public DateTime DOB { get; set; }
-        public string Address { get; set; }
-        public string Gender { get; set; }
+        public string Phone { get; set; } = "";
+        public DateTime DOB { get; set; } = default(DateTime);
+        public string Address { get; set; } = "";
+        public string Gender { get; set; } = "";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string Facebook { get; set; }
+        public string Facebook { get; set; } = "";
         public bool IsDeactivated { get; set; } = false;
         public DateTime? DeactivatedAt { get; set; }
 
