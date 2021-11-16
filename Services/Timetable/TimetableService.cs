@@ -194,7 +194,7 @@ namespace kroniiapi.Services
             {
                 dateCount = classGet.StartDay;
             }
-            if (DayLeftAvailableCheck(moduleId,classId))
+            if (!DayLeftAvailableCheck(moduleId,classId))
             {
                 return 0;
             }
