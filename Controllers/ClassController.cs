@@ -689,6 +689,12 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Trainer is not exist"));
             }
 
+            var isTrainerAvailable = _timetableService.CheckTrainerAvailableForModule(assignModuleInput.ClassId, assignModuleInput.TrainerId, assignModuleInput.ModuleId);
+            if (isTrainerAvailable == false)
+            {
+                return Conflict(new ResponseDTO(409, "Trainer is not available for teaching this module"));
+            }
+
             var classModuleInfor = await _classService.GetClassModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
             if (classModuleInfor != null)
             {
@@ -696,6 +702,12 @@ namespace kroniiapi.Controllers
             }
 
             ClassModule classModule = _mapper.Map<ClassModule>(assignModuleInput);
+            classModule.RoomId = _timetableService.GetRoomIdAvailableForModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            int insertCalendar = await _timetableService.InsertCalendarsToClass(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            if (insertCalendar == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Not enough day left to assign this module to class"));
+            }
             int rs = await _classService.AssignModuleToClass(classModule);
             if (rs == 0)
             {

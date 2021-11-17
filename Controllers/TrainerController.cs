@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    [Authorize(Policy = "Trainer")]
     [Route("api/[controller]")]
     public class TrainerController : ControllerBase
     {
@@ -38,6 +37,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
         [HttpGet("page")]
+        [Authorize(Policy = "TrainerGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TrainerResponse>>>> ViewTrainerList([FromQuery] PaginationParameter paginationParameter)
         {
 
@@ -58,6 +58,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainer id</param>
         /// <returns>200: trainer profile / 404: not found</returns>
         [HttpGet("{id:int}/profile")]
+        [Authorize(Policy = "TrainerGet")]
         public async Task<ActionResult<TrainerProfileDetail>> ViewTrainerProfile(int id)
         {
             Trainer trainer = await _trainerService.GetTrainerById(id);
@@ -75,6 +76,7 @@ namespace kroniiapi.Controllers
         /// <param name="date"></param>
         /// <returns>list module in 1 month / 404: Trainer Not found</returns>
         [HttpGet("{id:int}/timetable")]
+        [Authorize(Policy = "TrainerGet")]
         public async Task<ActionResult<IEnumerable<TrainerTimeTable>>> ViewTimeTable(int id, DateTime date)
         {
             TimeSpan oneday = new TimeSpan(23, 59, 59);
@@ -109,6 +111,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">Trainer id</param>
         /// <returns>200 :trainee module (two day) / 404: Trainee not found or Class has been deactivated</returns>
         [HttpGet("{id:int}/dashboard")]
+        [Authorize(Policy = "TrainerGet")]
         public async Task<ActionResult<IEnumerable<TrainerDashboard>>> ViewTrainerDashboard(int id)
         {
             if (id == 0 || _trainerService.CheckTrainerExist(id) == false)
@@ -126,7 +129,6 @@ namespace kroniiapi.Controllers
             return Ok(tdbDto);
         }
 
-
         /// <summary>
         /// Edit trainer profile
         /// </summary>
@@ -134,6 +136,7 @@ namespace kroniiapi.Controllers
         /// <param name="traineeProfileDetail">detail trainer profile</param>
         /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
         [HttpPut("{id:int}/profile")]
+        [Authorize(Policy = "TrainerPut")]
         public async Task<ActionResult> EditProfile(int id, [FromBody] TrainerProfileDetailInput trainerProfileDetail)
         {
             Trainer trainer = _mapper.Map<Trainer>(trainerProfileDetail);
@@ -163,7 +166,5 @@ namespace kroniiapi.Controllers
                 return Ok(new ResponseDTO(200, "Update profile success"));
             }
         }
-
-
     }
 }
