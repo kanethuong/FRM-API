@@ -237,15 +237,16 @@ namespace kroniiapi.Services
         public async Task<(int, string)> GenerateTimetable(int classId)
         {
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
-            var listModuleClass = _datacontext.ClassModules.Where(cm => cm.ClassId == classId).ToList();
-            if (listModuleClass.Sum(mc => mc.Module.NoOfSlot) > TimetableHelper.BusinessDaysUntil(classGet.StartDay,classGet.EndDay,holidayss) )
+            var listModuleClass = _datacontext.ClassModules.Where(cm => cm.ClassId == classId).Select(cl => cl.Module).ToList();
+            var (check, message) = CheckAvailableForClass(GetStartDayforClassToInsertModule(classId), classGet.EndDay, classId);
+            if (!check)
             {
-                return (0, "Not enought Day");
+                return (0, "Missing: " + message + " Day ");
             }
             foreach (var item in listModuleClass)
             {
                 int noOfSlot = _datacontext.Modules.Where(m => m.ModuleId == item.ModuleId).Select(m => m.NoOfSlot).FirstOrDefault();
-                int status = await InsertCalendarsToClass(item.ClassId, item.ModuleId);
+                int status = await InsertCalendarsToClass(classId, item.ModuleId);
             }
             return (1, "Succes");
         }
