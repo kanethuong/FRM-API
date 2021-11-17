@@ -98,7 +98,7 @@ namespace kroniiapi.Controllers
             }
             else if (classList == null || classList.Where(c => c.ClassId == classId).FirstOrDefault() == null)
             {
-                return BadRequest(new ResponseDTO(400, "Class id does not belong to admin id"));
+                return BadRequest(new ResponseDTO(400, "Cannot find class was studying in input time"));
             }
 
             // Check report time is in range from start to end date of class
@@ -127,8 +127,8 @@ namespace kroniiapi.Controllers
             }
             var adminDashBoard = new AdminDashboard
             {
-                ClassStatus = classStatus,
-                Checkpoint = checkPoint,
+                ClassStatus = (classStatus == null) ? new ClassStatusReport() : classStatus,
+                Checkpoint = (checkPoint == null) ? new CheckpointReport() : checkPoint,
                 Feedback = (feedbackReports.Count > 1) ? feedbackReports.Where(f => f.IsSumary == true).FirstOrDefault() : feedbackReports.FirstOrDefault()
             };
             return Ok(adminDashBoard);
