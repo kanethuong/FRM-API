@@ -76,6 +76,12 @@ namespace kroniiapi.DB
                 .HasForeignKey(c => c.RoomId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<Room>()
+                .HasMany(r => r.Exams)
+                .WithOne(c => c.Room)
+                .HasForeignKey(c => c.RoomId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<Trainer>()
                 .HasMany(t => t.ClassModules)
                 .WithOne(c => c.Trainer)
