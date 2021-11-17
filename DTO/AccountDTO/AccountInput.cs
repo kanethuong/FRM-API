@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace kroniiapi.DTO.AccountDTO
@@ -16,5 +17,10 @@ namespace kroniiapi.DTO.AccountDTO
         public string Email { get; set; }
         [Required]
         public string Role { get; set; }
+        public string Phone { get; set; } = "";
+        public DateTime DOB { get; set; } = default(DateTime);
+        public string Address { get; set; } = "";
+        public string Gender { get; set; } = "";
+        public string Facebook { get; set; } = "";
     }
 }

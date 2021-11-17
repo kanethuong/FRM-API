@@ -537,11 +537,11 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
-        /// Get Trainee List in a class with pagination
+        /// Get Class list of Trainer with pagination
         /// </summary>
         /// <param name="trainerId">id of the class</param>
-        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
-        /// <returns>tuple list of trainee</returns>
+        /// <param name="paginationParameter">pagination param to get approriate class in a page</param>
+        /// <returns>tuple list of classes</returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassListByTrainerId(int trainerId, PaginationParameter paginationParameter)
         {
             IQueryable<Class> result = _dataContext.Classes.Where(c => c.ClassModules.Any(cm => cm.TrainerId == trainerId) && c.IsDeactivated == false).Distinct();
@@ -554,6 +554,12 @@ namespace kroniiapi.Services
             .GetCount(out var totalRecords)
             .OrderBy(c => c.CreatedAt)
             .GetPage(paginationParameter)
+            .Select(c => new Class {
+                ClassName = c.ClassName,
+                ClassId = c.ClassId,
+                Description = c.Description,
+                ClassModules = c.ClassModules
+            })
             .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
