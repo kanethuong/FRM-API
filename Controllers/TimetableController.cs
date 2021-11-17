@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
@@ -36,10 +37,10 @@ namespace kroniiapi.Controllers
             _datacontext = dataContext;
         }
         [HttpPost("create")]
-        public async Task<ActionResult> CreateTimetableForClass(int classId)
+        public async Task<ActionResult> CreateTimetableForClass(DateTime start,DateTime end, List<int> moduleIdList)
         {
-            var (status, message) = await _timetableService.GenerateTimetable(classId);
-            return Ok(new ResponseDTO(200, message));
+            var (check, message) = _timetableService.CheckRoomsNewClass(moduleIdList, start, end);
+            return Ok(message);
         }
 
     }
