@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    // [Authorize(Policy = "Trainee")]
     [Route("api/[controller]")]
     public class TraineeController : ControllerBase
     {
@@ -83,6 +82,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> trainee id</param>
         /// <returns>200 :trainee module (two day) and exam (one week)/ 404: Trainee not found or Class has been deactivated</returns>
         [HttpGet("{id:int}/dashboard")]
+        [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<List<Object>>> ViewTraineeDashboard(int id)
         {
             var checkTrainee = await _traineeService.GetTraineeById(id);
@@ -145,6 +145,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>Trainee profile / 404: Profile not found</returns>
         [HttpGet("{id:int}/profile")]
+        [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<TraineeProfileDetail>> ViewProfile(int id)
         {
             Trainee trainee = await _traineeService.GetTraineeById(id);
@@ -162,6 +163,7 @@ namespace kroniiapi.Controllers
         /// <param name="traineeProfileDetail">detail trainee profile</param>
         /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
         [HttpPut("{id:int}/profile")]
+        [Authorize(Policy = "TraineePut")]
         public async Task<ActionResult> EditProfile(int id, [FromBody] TraineeProfileDetailInput traineeProfileDetail)
         {
             Trainee trainee = _mapper.Map<Trainee>(traineeProfileDetail);
@@ -199,6 +201,7 @@ namespace kroniiapi.Controllers
         /// <param name="image">The avatar to update</param>
         /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/avatar")]
+        [Authorize(Policy = "TraineePut")]
         public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
         {
             (bool isImage, string errorMsg) = FileHelper.CheckImageExtension(image);
@@ -234,19 +237,19 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>trainee attendance report in pagination</returns>
         [HttpGet("{id:int}/attendance")]
+        [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
-
-            // if (await _traineeService.GetTraineeById(id) == null)
-            // {
-            //     return NotFound(new ResponseDTO(404, "id not found"));
-            // }
-            // TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
-            // if (attendanceReport == null)
-            // {
-            //     return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
-            // }
-            return Ok(await reportService.GetTraineeGPAs(id));
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return NotFound(new ResponseDTO(404, "id not found"));
+            }
+            TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
+            if (attendanceReport == null)
+            {
+                return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
+            }
+            return Ok(attendanceReport);
         }
 
         /// <summary>
@@ -255,6 +258,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">trainee id</param>
         /// <returns>list event in 1 month, include module and exam</returns>
         [HttpGet("{id:int}/timetable")]
+        [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<List<Object>>> ViewTimeTable(int id, DateTime date)
         {
             TimeSpan oneday = new TimeSpan(23, 59, 59);
@@ -322,6 +326,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
         [HttpGet("free_trainee")]
+        [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> GetTraineeWithoutClass([FromQuery] PaginationParameter paginationParameter)
         {
 
@@ -341,6 +346,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
         [HttpGet("page")]
+        [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecords, IEnumerable<Trainee> trainees) = await _traineeService.GetAllTrainee(paginationParameter);
@@ -358,6 +364,7 @@ namespace kroniiapi.Controllers
         /// <param name="wage"></param>
         /// <returns>200: Update wage success / 404: Trainee profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/wage")]
+        [Authorize(Policy = "TraineePutAdmin")]
         public async Task<ActionResult> UpdateTraineeWage(int id, [FromBody] decimal wage)
         {
             Trainee trainee = await _traineeService.GetTraineeById(id);
@@ -387,6 +394,7 @@ namespace kroniiapi.Controllers
         /// <param name="status"></param>
         /// <returns>200: Update status success / 404: Trainee cannot be found</returns>
         [HttpPut("{id:int}/status")]
+        [Authorize(Policy = "TraineePutAdmin")]
         public async Task<ActionResult> UpdateTraineeStatus(int id, [FromBody] int status)
         {
             Trainee trainee = await _traineeService.GetTraineeById(id);
@@ -398,27 +406,33 @@ namespace kroniiapi.Controllers
             {
                 return BadRequest(new ResponseDTO(400, "Fail to update trainee status"));
             }
-            switch(status){
-                case 1: {
-                    trainee.Status = "Passed";
-                    break;
-                }
-                case 2: {
-                    trainee.Status = "Failed";
-                    break;
-                }
-                case 3: {
-                    trainee.Status = "Deferred";
-                    break;
-                }
-                case 4: {
-                    trainee.Status = "Drop-out";
-                    break;
-                }
-                case 5: {
-                    trainee.Status = "Cancel";
-                    break;
-                }
+            switch (status)
+            {
+                case 1:
+                    {
+                        trainee.Status = "Passed";
+                        break;
+                    }
+                case 2:
+                    {
+                        trainee.Status = "Failed";
+                        break;
+                    }
+                case 3:
+                    {
+                        trainee.Status = "Deferred";
+                        break;
+                    }
+                case 4:
+                    {
+                        trainee.Status = "Drop-out";
+                        break;
+                    }
+                case 5:
+                    {
+                        trainee.Status = "Cancel";
+                        break;
+                    }
             }
             if (await _traineeService.UpdateTrainee(id, trainee) == 1)
             {

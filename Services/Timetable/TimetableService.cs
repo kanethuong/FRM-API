@@ -87,7 +87,7 @@ namespace kroniiapi.Services
         /// <param name="endDay"></param>
         /// <param name="classId"></param>
         /// <returns></returns>
-        private (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
+        public (bool, int) CheckAvailableForClass(DateTime startDay, DateTime endDay, int classId)
         {
             int daysAvailable = TimetableHelper.BusinessDaysUntil(startDay, endDay, holidayss);
             int daysNeed = GetTotalDaysNeed(classId);
@@ -109,12 +109,18 @@ namespace kroniiapi.Services
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var startDay = GetStartDayforClassToInsertModule(classId);
             var slotNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
+            DateTime lastDay = startDay;
+            while (TimetableHelper.BusinessDaysUntil(startDay,lastDay,holidayss) < slotNeed)
+            {
+                lastDay = lastDay.AddDays(1);
+                if (lastDay == classGet.EndDay)
+                {
+                    return 0;
+                }
+            }
             for (int i = 1; i <= 10; i++)
             {
-                Room room = _datacontext.Rooms.Where(r => r.RoomId == i).FirstOrDefault();
-                int dayAlreadyHave = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= classGet.EndDay).Count() / 2;
-                int dayLeft = (classGet.EndDay - startDay).Days;
-                if ((dayLeft - dayAlreadyHave) >= slotNeed)
+                if(!_datacontext.Calendars.Any(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= lastDay))
                 {
                     return i;
                 }
@@ -152,7 +158,7 @@ namespace kroniiapi.Services
             {
                 return _datacontext.Classes.Where(c => c.ClassId == classId).Select(c => c.StartDay).FirstOrDefault();
             }
-            DateTime startDay = _datacontext.Calendars.Select(cl => cl.Date).OrderBy(cl => cl).LastOrDefault().AddDays(1);
+            DateTime startDay = _datacontext.Calendars.Where(cl => cl.ClassId == classId).Select(cl => cl.Date).OrderBy(cl => cl).LastOrDefault().AddDays(1);
             DateTime returnDay = new DateTime(startDay.Year, startDay.Month, startDay.Day, 0,0,0);
             while (DayOffCheck(returnDay))
             {
@@ -166,7 +172,7 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        private bool DayLeftAvailableCheck(int moduleId, int classId)
+        public bool DayLeftAvailableCheck(int moduleId, int classId)
         {
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var moduleGet = _datacontext.Modules.Where(cl => cl.ModuleId == moduleId).FirstOrDefault();
@@ -193,10 +199,6 @@ namespace kroniiapi.Services
             if (dateCount == new DateTime(1,1,1))
             {
                 dateCount = classGet.StartDay;
-            }
-            if (DayLeftAvailableCheck(moduleId,classId))
-            {
-                return 0;
             }
             int slotCount = 1;
             while (slotCount <= noOfSlot)
@@ -235,15 +237,16 @@ namespace kroniiapi.Services
         public async Task<(int, string)> GenerateTimetable(int classId)
         {
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
-            var listModuleClass = _datacontext.ClassModules.Where(cm => cm.ClassId == classId).ToList();
-            if (listModuleClass.Sum(mc => mc.Module.NoOfSlot) > TimetableHelper.BusinessDaysUntil(classGet.StartDay,classGet.EndDay,holidayss) )
+            var listModuleClass = _datacontext.ClassModules.Where(cm => cm.ClassId == classId).Select(cl => cl.Module).ToList();
+            var (check, message) = CheckAvailableForClass(GetStartDayforClassToInsertModule(classId), classGet.EndDay, classId);
+            if (!check)
             {
-                return (0, "Not enought Day");
+                return (0, "Missing: " + message + " Day ");
             }
             foreach (var item in listModuleClass)
             {
                 int noOfSlot = _datacontext.Modules.Where(m => m.ModuleId == item.ModuleId).Select(m => m.NoOfSlot).FirstOrDefault();
-                int status = await InsertCalendarsToClass(item.ClassId, item.ModuleId);
+                int status = await InsertCalendarsToClass(classId, item.ModuleId);
             }
             return (1, "Succes");
         }

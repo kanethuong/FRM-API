@@ -103,9 +103,14 @@ namespace kroniiapi.Controllers
 
             // Check report time is in range from start to end date of class
             var clazz = classList.Where(c => c.ClassId == classId).FirstOrDefault();
-            if (!(reportAt >= clazz.StartDay && reportAt <= clazz.EndDay) && reportAt != default(DateTime))
+
+            // Re-format start day and end day of class to check yyyy-MM only
+            var classStartDay = new DateTime(clazz.StartDay.Year, clazz.StartDay.Month, 1);
+            var classEndDay = new DateTime(clazz.EndDay.Year, clazz.EndDay.Month, DateTime.DaysInMonth(clazz.EndDay.Year, clazz.EndDay.Month), 23, 59, 59);
+
+            if (reportAt != default(DateTime) && !(reportAt >= classStartDay && reportAt <= classEndDay))
             {
-                return BadRequest(new ResponseDTO(400, "Report time can be only from " + clazz.StartDay + " to " + clazz.EndDay));
+                return BadRequest(new ResponseDTO(400, "Report time can be only from " + clazz.StartDay.ToString("MMM-yyyy") + " to " + clazz.EndDay.ToString("MMM-yyyy")));
             }
 
             // Get dashboard value for chart

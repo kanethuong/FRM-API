@@ -13,7 +13,8 @@ namespace kroniiapi.DTO.ModuleDTO
         [StringLength(300, ErrorMessage = "Description must be less than 300 characters")]
         public string Description { get; set; }
         [Required]
-        public TimeSpan SlotDuration { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "Duration must be non-negative")]
+        public int SlotDuration { get; set; }
         [Required]
         public IFormFile Syllabus { get; set; }
         [Required]
@@ -29,7 +30,8 @@ namespace kroniiapi.DTO.ModuleDTO
         [StringLength(300, ErrorMessage = "Description must be less than 300 characters")]
         public string Description { get; set; }
         [Required]
-        public TimeSpan SlotDuration { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "Duration must be non-negative")]
+        public int SlotDuration { get; set; }
         public IFormFile Syllabus { get; set; }
         public IFormFile Icon { get; set; }
     }

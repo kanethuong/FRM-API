@@ -30,7 +30,6 @@ using kroniiapi.DTO.Email;
 using OfficeOpenXml;
 using kroniiapi.Helper.Upload;
 using kroniiapi.Helper.UploadDownloadFile;
-using kroniiapi.Helper.Converter;
 using Microsoft.OpenApi.Any;
 using kroniiapi.Services.Attendance;
 using kroniiapi.AttendanceServicesss;
@@ -137,9 +136,9 @@ namespace kroniiapi
                 options.AddPolicy("ModuleGet", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
                 options.AddPolicy("ModulePost", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
                 options.AddPolicy("ModulePut", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
 
                 options.AddPolicy("ReportGet", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
@@ -149,10 +148,17 @@ namespace kroniiapi
                 options.AddPolicy("RulePost", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
 
-                options.AddPolicy("Trainer", policy =>
+                options.AddPolicy("TrainerGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
+                options.AddPolicy("TrainerPut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
-                options.AddPolicy("Trainee", policy =>
+
+                options.AddPolicy("TraineeGet", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer", "trainee" })));
+                options.AddPolicy("TraineePut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainee" })));
+                options.AddPolicy("TraineePutAdmin", policy =>
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin" })));
             });
 
             // Increase input file size limit
@@ -224,7 +230,6 @@ namespace kroniiapi
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-                options.JsonSerializerOptions.Converters.Add(new JsonTimeSpanConverter());
             }).ConfigureApiBehaviorOptions(opt => // Custome Model State response object
             {
                 opt.InvalidModelStateResponseFactory = actionContext =>
@@ -243,11 +248,6 @@ namespace kroniiapi
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "kroniiapi", Version = "v1" });
-                c.MapType(typeof(TimeSpan), () => new OpenApiSchema
-                {
-                    Type = "string",
-                    Example = new OpenApiString("00:00:00")
-                });
             });
         }
 

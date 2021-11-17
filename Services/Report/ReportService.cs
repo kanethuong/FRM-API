@@ -798,9 +798,7 @@ namespace kroniiapi.Services.Report
                         TraineeId = item.TraineeId,
                         Score = (item.Score * averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
                                                                 .Select(w => w.WeightNumber)
-                                                                .FirstOrDefault()) / (averageScoreInfo.Where(m => m.TopicId == item.ModuleId)
-                                                                            .Select(m => m.MaxScore)
-                                                                            .FirstOrDefault())
+                                                                .FirstOrDefault())
 
                     };
                     //Add to list, distinct by ModuleId
@@ -839,7 +837,7 @@ namespace kroniiapi.Services.Report
                     Score = item.Score * (topicInfo.Where(m => m.TopicId == item.ModuleId).Select(w => w.WeightNumber).FirstOrDefault())
                 };
                 //Score = score/final max score
-                itemToResponse.Score = itemToResponse.Score / finalMaxScore;
+                // itemToResponse.Score = itemToResponse.Score / finalMaxScore;
                 //If that traineeId exist in list
                 if (finalMarks.Select(m => m.TraineeId).Contains(itemToResponse.TraineeId))
                 {
@@ -851,7 +849,12 @@ namespace kroniiapi.Services.Report
                     finalMarks.Add(itemToResponse);
                 }
             }
-
+            FinalMarksInfo finalMarksInfo = new FinalMarksInfo()
+            {
+                MaxScore = finalMaxScore,
+                PassingScore = averageScoreInfo.Select(m => m.PassingScore).Sum(),
+                WeightNumber = averageScoreInfo.Select(m => m.WeightNumber).Sum()
+            };
 
             TopicGrades topicGrades = new TopicGrades()
             {
@@ -859,6 +862,7 @@ namespace kroniiapi.Services.Report
                 TraineeTopicGrades = traineeGrades,
                 AverageScoreInfos = averageScoreInfo,
                 TraineeAverageGrades = traineeAvarageGrades,
+                FinalMarksInfo = finalMarksInfo,
                 FinalMarks = finalMarks
             };
             return topicGrades;
