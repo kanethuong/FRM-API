@@ -85,6 +85,10 @@ namespace kroniiapi.Controllers
             {
                 module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
                 var details = _moduleService.GetModuleLessonDetail(module.ModuleName, stream);
+                if (details == null)
+                {
+                    return BadRequest(new ResponseDTO(400, "The Syllabus is invalid: Invalid Format"));
+                }
                 module.NoOfSlot = GetNoOfSlot(details);
             }
 
@@ -135,7 +139,9 @@ namespace kroniiapi.Controllers
                     using var stream = syllabus.OpenReadStream();
                     module.SyllabusURL = await _megaHelper.Upload(stream, syllabus.FileName, "Syllabus");
                     var details = _moduleService.GetModuleLessonDetail(module.ModuleName, stream);
-                    module.NoOfSlot = GetNoOfSlot(details);
+
+                    if (details == null) errors.Add("Error on Syllabus: Invalid Format");
+                    else module.NoOfSlot = GetNoOfSlot(details);
                 }
                 else
                 {
