@@ -387,11 +387,11 @@ namespace kroniiapi.Services.Report
                 {
                     if (row.BonusAndPenaltyPoint > 0)
                     {
-                        traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint / 10;
+                        traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint;
                     }
                     else
                     {
-                        traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint / 10;
+                        traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint;
                     }
                 }
             }
@@ -405,16 +405,16 @@ namespace kroniiapi.Services.Report
                     traineeGPAById[traineeId].Penalty * (float)0.2;
                 switch (traineeGPAById[traineeId].GPA)
                 {
-                    case >= (float)0.93:
+                    case >= (float)9.3:
                         traineeGPAById[traineeId].Level = "A+";
                         break;
-                    case >= (float)0.86:
+                    case >= (float)8.6:
                         traineeGPAById[traineeId].Level = "A";
                         break;
-                    case >= (float)0.72:
+                    case >= (float)7.2:
                         traineeGPAById[traineeId].Level = "B";
                         break;
-                    case >= (float)0.6:
+                    case >= (float)6:
                         traineeGPAById[traineeId].Level = "C";
                         break;
                     default:
