@@ -16,5 +16,6 @@ namespace kroniiapi.DTO.TraineeDTO
         public string Address { get; set; }
         public string Gender { get; set; }
         public decimal Wage { get; set; }
+        public string Facebook { get; set; }
     }
 }
