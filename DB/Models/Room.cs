@@ -7,5 +7,6 @@ namespace kroniiapi.DB.Models
         public int RoomId { get; set; }
         public string RoomName { get; set; }
         public ICollection<ClassModule> ClassModules { get; set; }
+        public ICollection<Exam> Exams { get; set; }
     }
 }

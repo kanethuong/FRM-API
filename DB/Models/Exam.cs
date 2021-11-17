@@ -25,6 +25,10 @@ namespace kroniiapi.DB.Models
         // Many-Many trainee
         public ICollection<Trainee> Trainees { get; set; }
         public ICollection<TraineeExam> TraineeExams { get; set; }
+
+        // One-Many room
+        public int? RoomId { get; set; }
+        public Room Room { get; set; }
     }
 
     public class TraineeExam

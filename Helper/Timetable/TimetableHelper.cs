@@ -7,7 +7,7 @@ namespace kroniiapi.Helper.Timetable
 {
     public static class TimetableHelper
     {
-        static List<DateTime> holidayss = new List<DateTime> {
+        public static List<DateTime> holidayss = new List<DateTime> {
             // New Year
             new DateTime(1, 1, 1),
             //
