@@ -109,12 +109,18 @@ namespace kroniiapi.Services
             var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
             var startDay = GetStartDayforClassToInsertModule(classId);
             var slotNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
+            DateTime lastDay = startDay;
+            while (TimetableHelper.BusinessDaysUntil(startDay,lastDay,holidayss) < slotNeed)
+            {
+                lastDay = lastDay.AddDays(1);
+                if (lastDay == classGet.EndDay)
+                {
+                    return 0;
+                }
+            }
             for (int i = 1; i <= 10; i++)
             {
-                Room room = _datacontext.Rooms.Where(r => r.RoomId == i).FirstOrDefault();
-                int dayAlreadyHave = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= classGet.EndDay).Count() / 2;
-                int dayLeft = (classGet.EndDay - startDay).Days;
-                if ((dayLeft - dayAlreadyHave) >= slotNeed)
+                if(!_datacontext.Calendars.Any(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= lastDay))
                 {
                     return i;
                 }
