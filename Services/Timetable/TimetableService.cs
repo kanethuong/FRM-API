@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
+using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.TimetableDTO;
 using kroniiapi.Helper.Timetable;
 using kroniiapi.Services.Attendance;
@@ -104,29 +105,50 @@ namespace kroniiapi.Services
         /// <param name="endDay"></param>
         /// <param name="slotNeed"></param>
         /// <returns></returns>
-        public int GetRoomIdAvailableForModule(int classId , int moduleId)
+        public (int, DateTime) GetRoomIdAvailableForModule(DateTime startDay, DateTime endDay, int moduleId)
         {
-            var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
-            var startDay = GetStartDayforClassToInsertModule(classId);
             var slotNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
             DateTime lastDay = startDay;
             while (TimetableHelper.BusinessDaysUntil(startDay,lastDay,holidayss) < slotNeed)
             {
                 lastDay = lastDay.AddDays(1);
-                if (lastDay == classGet.EndDay)
+                if (lastDay == endDay)
                 {
-                    return 0;
+                    return (0, startDay);
                 }
             }
             for (int i = 1; i <= 10; i++)
             {
                 if(!_datacontext.Calendars.Any(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= lastDay))
                 {
-                    return i;
+                    return (i,lastDay.AddDays(1));
                 }
             }
-            return 0;
+            return (0,startDay);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="moduleIds"></param>
+        /// <param name="startDay"></param>
+        /// <param name="endDay"></param>
+        /// <returns></returns>
+        public (bool,string) CheckRoomsNewClass(List<int> moduleIds, DateTime startDay, DateTime endDay)
+        {
+            DateTime startAt = startDay;
+            string message = " ";
+            foreach (var item in moduleIds)
+            {
+                var (check, date) = GetRoomIdAvailableForModule(startAt, endDay, item);
+                if (check == 0)
+                {
+                    return (false, "There are no room for ModuleId: " + item);
+                }
+                startAt = date;
+                message += check + " ";
+            }
+            return (true,message);
+        }        
         /// <summary>
         /// Check Trainer Available 
         /// </summary>
@@ -135,24 +157,51 @@ namespace kroniiapi.Services
         /// <param name="trainerId"></param>
         /// <param name="daysNeed"></param>
         /// <returns></returns>
-        public bool CheckTrainerAvailableForModule(int classId, int trainerId, int moduleId)
+        public (bool, DateTime) CheckTrainerAvailableForModule(DateTime startDay, DateTime endDay, int trainerId, int moduleId)
         {
-            var classGet = _datacontext.Classes.Where(cl => cl.ClassId == classId).FirstOrDefault();
-            var startDay = GetStartDayforClassToInsertModule(classId);
-            var trainerDays = _datacontext.Calendars.Where(c => c.Class.ClassModules.Any(cm => cm.TrainerId == trainerId) && c.Date >= startDay && c.Date <= classGet.EndDay).Count() / 2;
-            var daysNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
-            if (TimetableHelper.BusinessDaysUntil(startDay,classGet.EndDay,holidayss) - trainerDays >= daysNeed)
+            var slotNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
+            DateTime lastDay = startDay;
+            while (TimetableHelper.BusinessDaysUntil(startDay,lastDay,holidayss) < slotNeed)
             {
-                return true;
+                lastDay = lastDay.AddDays(1);
+                if (lastDay == endDay)
+                {
+                    return (false,startDay);
+                }
             }
-            return false;
+            if (!_datacontext.Calendars.Any(cl => cl.Class.ClassModules.Any(cm => cm.TrainerId == trainerId) && cl.Date >= startDay && cl.Date <= lastDay))
+            {
+                return (true, lastDay.AddDays(1));
+            }
+            return (false, startDay);
+        }
+        /// <summary>
+        /// Check Trainers List at new Class
+        /// </summary>
+        /// <param name="trainerANDmoduleID"></param>
+        /// <param name="startDay"></param>
+        /// <param name="endDay"></param>
+        /// <returns></returns>
+        public (bool,string) CheckTrainersNewClass(List<TrainerModule> trainerModules, DateTime startDay, DateTime endDay)
+        {
+            DateTime startAt = startDay;
+            foreach (var item in trainerModules)
+            {
+                var (check, date) = CheckTrainerAvailableForModule(startAt, endDay, item.TrainerId, item.ModuleId);
+                if (!check)
+                {
+                    return (false, "TrainerId: " + item.TrainerId + " is not Available");
+                };
+                startAt = date;
+            }
+            return (true,"Ok");
         }
         /// <summary>
         /// Lay ngay cuoi cung cua cai lop dang hoc
         /// </summary>
         /// <param name="classId"></param>
         /// <returns></returns>
-        private DateTime GetStartDayforClassToInsertModule(int classId)
+        public DateTime GetStartDayforClassToInsertModule(int classId)
         {
             if (!_datacontext.Calendars.Any(c => c.ClassId == classId))
             {
