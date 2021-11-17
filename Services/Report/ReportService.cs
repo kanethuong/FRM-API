@@ -387,11 +387,11 @@ namespace kroniiapi.Services.Report
                 {
                     if (row.BonusAndPenaltyPoint > 0)
                     {
-                        traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint/10;
+                        traineeGPAById[row.TraineeId].Bonus += row.BonusAndPenaltyPoint / 10;
                     }
                     else
                     {
-                        traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint/10;
+                        traineeGPAById[row.TraineeId].Penalty += row.BonusAndPenaltyPoint / 10;
                     }
                 }
             }
@@ -968,7 +968,7 @@ namespace kroniiapi.Services.Report
                 });
 
                 // Fill data to GPA sheet
-                var GPAList =await this.GetTraineeGPAs(classId);
+                var GPAList = await this.GetTraineeGPAs(classId);
                 var GPASheet = package.Workbook.Worksheets[4];
                 var GPAFill = GPASheet.Cells["E5:J23"];
                 GPAFill.FillDataToCells(GPAList, (GPA, cells) =>
@@ -980,6 +980,12 @@ namespace kroniiapi.Services.Report
                     cells[4].Value = GPA.GPA;
                     cells[5].Value = GPA.Level;
                 });
+
+                var GPALabel = GPASheet.Cells["A27:A31"];
+                var GPAValue = GPASheet.Cells["B27:B31"];
+                var pieChart = Helper.ExcelHelper.GeneratePieChart(GPASheet, "Tỉ lệ checkpoint", GPALabel, GPAValue);
+                pieChart.SetPosition(28,0,5,0);
+                pieChart.SetSize(500,350);
 
                 return await package.GetAsByteArrayAsync();
             }
