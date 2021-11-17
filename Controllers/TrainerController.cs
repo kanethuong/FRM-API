@@ -99,7 +99,11 @@ namespace kroniiapi.Controllers
                 foreach (var item in trainerTimeTables)
                 {
                     Room r = await _roomService.GetRoom(item.ClassId, item.ModuleId);
-                    item.RoomName = r.RoomName;
+                    if(r == null){
+                        item.RoomName = null;
+                    }else{
+                        item.RoomName = r.RoomName;
+                    }                    
                 }
             }
             return Ok(trainerTimeTables);
