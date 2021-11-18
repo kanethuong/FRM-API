@@ -235,7 +235,7 @@ namespace kroniiapi.Controllers
         /// <param name="listTraineeMarkInput">list of trainee,module and score</param>
         /// <returns>200: Updated / 400: failed</returns>
         [HttpPut("trainee")]
-        // [Authorize(Policy = "MarkPut")]
+        [Authorize(Policy = "MarkPut")]
         public async Task<ActionResult> ChangeClassScore([FromBody] ArrayBodyInput<TraineeMarkInput> listTraineeMarkInput)
         {
             var marks = _mapper.Map<IEnumerable<Mark>>(listTraineeMarkInput.arrayData);
