@@ -240,17 +240,16 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<TraineeAttendanceReport>> ViewAttendanceReport(int id)
         {
-
-            // if (await _traineeService.GetTraineeById(id) == null)
-            // {
-            //     return NotFound(new ResponseDTO(404, "id not found"));
-            // }
-            // TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
-            // if (attendanceReport == null)
-            // {
-            //     return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
-            // }
-            return Ok(await reportService.GetTraineeGPAs(id));
+            if (await _traineeService.GetTraineeById(id) == null)
+            {
+                return NotFound(new ResponseDTO(404, "id not found"));
+            }
+            TraineeAttendanceReport attendanceReport = await _attendanceService.GetTraineeAttendanceReport(id);
+            if (attendanceReport == null)
+            {
+                return NotFound(new ResponseDTO(404, "Attendance Report NotFound"));
+            }
+            return Ok(attendanceReport);
         }
 
         /// <summary>
@@ -265,8 +264,6 @@ namespace kroniiapi.Controllers
             TimeSpan oneday = new TimeSpan(23, 59, 59);
             var startDate = new DateTime(date.Year, date.Month, 1);
             var endDate = new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-            startDate = startDate.AddMonths(-1);
-            endDate = endDate.AddMonths(1);
             endDate = endDate.Add(oneday);
 
             var checkTrainee = await _traineeService.GetTraineeById(id);
