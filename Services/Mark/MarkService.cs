@@ -35,7 +35,8 @@ namespace kroniiapi.Services
             return await _dataContext.Marks.Where(m => m.TraineeId == id && m.PublishedAt >= startDate && m.PublishedAt <= endDate).ToListAsync();
         }
 
-        public async Task<Mark> GetMarkByTraineeIdAndModuleId(int traineeId, int moduleId, DateTime? startDate = null, DateTime? endDate = null) {
+        public async Task<Mark> GetMarkByTraineeIdAndModuleId(int traineeId, int moduleId, DateTime? startDate = null, DateTime? endDate = null)
+        {
             if (startDate == null)
             {
                 startDate = DateTime.MinValue;
@@ -72,7 +73,8 @@ namespace kroniiapi.Services
         /// <param name="moduleId"></param>
         /// <param name="traineeId"></param>
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
-        public async Task<int> InsertNewMark(Mark mark){
+        public async Task<int> InsertNewMark(Mark mark)
+        {
             if (_dataContext.Marks.Any(m => m.ModuleId == mark.ModuleId && m.TraineeId == mark.TraineeId))
             {
                 return -1;
@@ -91,7 +93,8 @@ namespace kroniiapi.Services
         /// </summary>
         /// <param name="mark"></param>
         /// <returns>-1 if invalid input & 0 if failed to update & 1 if success</returns>
-        public async Task<int> UpdateMark(Mark mark){
+        public async Task<int> UpdateMark(Mark mark)
+        {
             var markUpdate = await _dataContext.Marks.Where(m => m.ModuleId == mark.ModuleId && m.TraineeId == mark.TraineeId).FirstOrDefaultAsync();
             if (markUpdate == null)
             {
@@ -99,6 +102,61 @@ namespace kroniiapi.Services
             }
             markUpdate.Score = mark.Score;
             return await _dataContext.SaveChangesAsync();
+        }
+
+
+        /// <summary>
+        /// Update list marks
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="listMarks"></param>
+        /// <returns>true: update success, false: fail at id(s)</returns>
+        public async Task<(bool status, string message)> UpdateMarks(IEnumerable<Mark> listMarks)
+        {
+            List<string> errorTraineeIds = new List<string>();
+            List<string> errorModuleIds = new List<string>();
+            foreach (var item in listMarks)
+            {
+                var existedTrainee = _dataContext.Trainees.FirstOrDefault(m => m.TraineeId == item.TraineeId && m.IsDeactivated == false);
+                if (existedTrainee == null)
+                {
+                    errorTraineeIds.Add(item.TraineeId.ToString());
+                }
+                else if (_dataContext.Modules.FirstOrDefault(m => m.ModuleId == item.ModuleId) == null)
+                {
+                    errorModuleIds.Add(item.ModuleId.ToString());
+                }
+                else if(_dataContext.ClassModules.FirstOrDefault(m => m.ClassId == existedTrainee.ClassId && m.ModuleId == item.ModuleId) == null){
+                    return(false, "Trainee with id " + existedTrainee.TraineeId + "does not studying module " + item.ModuleId);
+                }
+                else
+                {
+                    var existMark = await _dataContext.Marks.Where(m => m.TraineeId == item.TraineeId && m.ModuleId == item.ModuleId).FirstOrDefaultAsync();
+                    if (existMark == null)
+                    {
+                        await this.InsertNewMark(item);
+                    }
+                    else
+                    {
+                        existMark.Score = item.Score;
+                    }
+                }
+            }
+            if (errorTraineeIds.Count() != 0)
+            {
+                return (false, "There is(are) error(s) with trainee id: " + errorTraineeIds.Aggregate((i, j) => i + ", " + j));
+            }
+            else if (errorModuleIds.Count() != 0)
+            {
+                return (false, "This(these) module id(s) is(are) not exist: " + errorModuleIds.Aggregate((i, j) => i + ", " + j));
+            }
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+            // if(rowUpdated == 0)
+            // {
+            //     return(false, "Nothing updated");
+            // }
+            return (true, "");
+
         }
     }
 }

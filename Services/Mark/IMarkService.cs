@@ -13,6 +13,6 @@ namespace kroniiapi.Services
         Task<int> InsertNewMark(Mark mark);
         Task<int> UpdateMark(Mark mark);
         Task<Mark> GetMarkByTraineeIdAndModuleId(int traineeId, int moduleId, DateTime? startDate = null, DateTime? endDate = null);
-        
+        Task<(bool status, string message)> UpdateMarks(IEnumerable<Mark> listMarks);
     }
 }
