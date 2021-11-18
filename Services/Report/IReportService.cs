@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using kroniiapi.DB.Models;
@@ -22,5 +23,6 @@ namespace kroniiapi.Services.Report
         List<AttendanceReport> GetTotalAttendanceReports(int classId);
         Task<CheckpointReport> GetCheckpointReport(int classId);
         Dictionary<DateTime, ICollection<TraineeFeedback>> GetAllTraineeFeedbacks(int classId);
+        Task<byte[]> GenerateClassReport(int classId);
     }
 }

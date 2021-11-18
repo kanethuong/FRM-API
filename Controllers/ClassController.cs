@@ -14,6 +14,7 @@ using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Helper;
+using kroniiapi.Helper.Timetable;
 using kroniiapi.Services;
 using kroniiapi.Services.Attendance;
 using Microsoft.AspNetCore.Authorization;
@@ -295,6 +296,21 @@ namespace kroniiapi.Controllers
                     });
                 }
             }
+            int totalSlot = 0;
+            foreach (var module in newClassInput.TrainerModuleList)
+            {
+                var moduleToAssign = await _moduleService.GetModuleById(module.ModuleId);
+                if (moduleToAssign == null)
+                {
+                    return NotFound(new ResponseDTO(404, "Module is not exist"));
+                }
+                totalSlot += moduleToAssign.NoOfSlot;
+            }
+            (bool isTrainerAvailable, string message) = _timetableService.CheckTrainersNewClass(newClassInput.TrainerModuleList, newClassInput.StartDay, newClassInput.EndDay);
+            if (isTrainerAvailable is false)
+            {
+                return BadRequest(new ResponseDTO(400, message));
+            }
             var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
@@ -310,17 +326,15 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return BadRequest("Some error occur");
+                return BadRequest(new ResponseDTO(400, "Some error occur"));
             }
             var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
-            int a = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
-            // (int result, string message) = _timetableService.GenerateTimetable(classGet.ClassId).Result;
-            // if (result != 1)
-            // {
-            //     return BadRequest(new ResponseDTO(400, message));
-            // }
-
-            return Created("", new ResponseDTO(201, "Successfully inserted class without timetable"));
+            int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
+            if(attRs !=1)
+            {
+                return BadRequest(new ResponseDTO(400, "Some error occur"));
+            }
+            return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
 
         /// <summary>
