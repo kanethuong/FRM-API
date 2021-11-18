@@ -27,10 +27,11 @@ namespace kroniiapi.Controllers
         /// <param name="at">Choose time to export report</param>
         /// <returns></returns>
         [HttpGet("{classId:int}")]
-        [Authorize(Policy = "ReportGet")]
+        // [Authorize(Policy = "ReportGet")]
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTimeOffset? at = null)
         {
-            return null;
+            var stream = await _reportService.GenerateClassReport(classId);
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Report.xlsx");
         }
         [HttpGet("attendance/{classId:int}")]
         public async Task<ActionResult> GetAttReport(int classId, DateTime month = default(DateTime))
@@ -65,13 +66,13 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
         {
 
-            return Ok(_reportService.GetRewardAndPenaltyScore(classId,reportAt));
+            return Ok(_reportService.GetRewardAndPenaltyScore(classId, reportAt));
         }
         [HttpGet("GetTraineeGPAs/{classId:int}")]
         public async Task<ActionResult> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
         {
 
-            return Ok(await _reportService.GetTraineeGPAs(classId));
+            return Ok(await _reportService.GetTraineeGPAs(classId, reportAt));
         }
         [HttpGet("GetTopicGrades/{classId:int}")]
         public async Task<ActionResult> GetTopicGrades(int classId, DateTime reportAt = default(DateTime))
@@ -83,13 +84,19 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime))
         {
 
-            return Ok(_reportService.GetTraineeFeedbacks(classId,reportAt));
+            return Ok(_reportService.GetTraineeFeedbacks(classId, reportAt));
         }
         [HttpGet("GetAllTraineeFeedbacks/{classId:int}")]
         public async Task<ActionResult> GetAllTraineeFeedbacks(int classId)
         {
 
             return Ok(_reportService.GetAllTraineeFeedbacks(classId));
+        }
+        [HttpGet("GetFeedbackReport/{classId:int}")]
+        public async Task<ActionResult> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
+        {
+
+            return Ok(_reportService.GetFeedbackReport(classId, reportAt));
         }
     }
 }

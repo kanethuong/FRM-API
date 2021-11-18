@@ -14,6 +14,7 @@ using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.DTO.TrainerDTO;
 using kroniiapi.Helper;
+using kroniiapi.Helper.Timetable;
 using kroniiapi.Services;
 using kroniiapi.Services.Attendance;
 using Microsoft.AspNetCore.Authorization;
@@ -295,6 +296,21 @@ namespace kroniiapi.Controllers
                     });
                 }
             }
+            int totalSlot = 0;
+            foreach (var module in newClassInput.TrainerModuleList)
+            {
+                var moduleToAssign = await _moduleService.GetModuleById(module.ModuleId);
+                if (moduleToAssign == null)
+                {
+                    return NotFound(new ResponseDTO(404, "Module is not exist"));
+                }
+                totalSlot += moduleToAssign.NoOfSlot;
+            }
+            (bool isTrainerAvailable, string message) = _timetableService.CheckTrainersNewClass(newClassInput.TrainerModuleList, newClassInput.StartDay, newClassInput.EndDay);
+            if (isTrainerAvailable is false)
+            {
+                return BadRequest(new ResponseDTO(400, message));
+            }
             var rs = await _classService.InsertNewClass(newClassInput);
             if (rs == -1)
             {
@@ -310,17 +326,15 @@ namespace kroniiapi.Controllers
             }
             else if (rs == 0)
             {
-                return BadRequest("Some error occur");
+                return BadRequest(new ResponseDTO(400, "Some error occur"));
             }
             var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
-            int a = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
-            // (int result, string message) = _timetableService.GenerateTimetable(classGet.ClassId).Result;
-            // if (result != 1)
-            // {
-            //     return BadRequest(new ResponseDTO(400, message));
-            // }
-
-            return Created("", new ResponseDTO(201, "Successfully inserted class without timetable"));
+            int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
+            if(attRs !=1)
+            {
+                return BadRequest(new ResponseDTO(400, "Some error occur"));
+            }
+            return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
 
         /// <summary>
@@ -689,11 +703,19 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Trainer is not exist"));
             }
 
-            // var isTrainerAvailable = _timetableService.CheckTrainerAvailableForModule(assignModuleInput.ClassId, assignModuleInput.TrainerId, assignModuleInput.ModuleId);
-            // if (isTrainerAvailable == false)
-            // {
-            //     return Conflict(new ResponseDTO(409, "Trainer is not available for teaching this module"));
-            // }
+            bool isDayleftAvailable = _timetableService.DayLeftAvailableCheck(assignModuleInput.ModuleId, assignModuleInput.ClassId);
+            if (isDayleftAvailable == false)
+            {
+                return Conflict(new ResponseDTO(409, "Not enough day left to assign this module to class"));
+            }
+
+            Class classGet = await _classService.GetClassByClassID(assignModuleInput.ClassId);
+            var startDay = _timetableService.GetStartDayforClassToInsertModule(assignModuleInput.ClassId);
+            (bool isTrainerAvailable, DateTime date) = _timetableService.CheckTrainerAvailableForModule(startDay, classGet.EndDay, assignModuleInput.TrainerId, assignModuleInput.ModuleId);
+            if (isTrainerAvailable == false)
+            {
+                return Conflict(new ResponseDTO(409, "Trainer is not available for teaching this module"));
+            }
 
             var classModuleInfor = await _classService.GetClassModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
             if (classModuleInfor != null)
@@ -702,12 +724,9 @@ namespace kroniiapi.Controllers
             }
 
             ClassModule classModule = _mapper.Map<ClassModule>(assignModuleInput);
-            //classModule.RoomId = _timetableService.GetRoomIdAvailableForModule(assignModuleInput.ClassId, assignModuleInput.ModuleId);
+            (int roomId, DateTime date2) = _timetableService.GetRoomIdAvailableForModule(startDay, classGet.EndDay, assignModuleInput.ModuleId);
+            classModule.RoomId = roomId;
             int insertCalendar = await _timetableService.InsertCalendarsToClass(assignModuleInput.ClassId, assignModuleInput.ModuleId);
-            if (insertCalendar == 0)
-            {
-                return Conflict(new ResponseDTO(409, "Not enough day left to assign this module to class"));
-            }
             int rs = await _classService.AssignModuleToClass(classModule);
             if (rs == 0)
             {
