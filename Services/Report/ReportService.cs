@@ -853,6 +853,10 @@ namespace kroniiapi.Services.Report
                 PassingScore = averageScoreInfo.Select(m => m.PassingScore).Sum(),
                 WeightNumber = averageScoreInfo.Select(m => m.WeightNumber).Sum()
             };
+            foreach(var item in finalMarks)
+            {
+                item.Score = item.Score / finalMarksInfo.WeightNumber;
+            }
 
             TopicGrades topicGrades = new TopicGrades()
             {
