@@ -74,5 +74,16 @@ namespace kroniiapi.Services
             return (0, "There are no more room Available on Day:" + examDay.Day +"/"+examDay.Month+"/"+examDay.Year );
         }
 
+        /// <summary>
+        /// Get Room ID to Create new Exam
+        /// </summary>
+        /// <param name="examDay"></param>
+        /// <param name="traineesList"></param>
+        /// <returns></returns>
+        // public async Task<Room> GetRoomFreeToCreateNewExam(DateTime examDate, int duration){
+        //     //int interval = examDate.
+        //     //var calender = await _dataContext.Calendars.Where(c => c.Date   )
+        // }
+
     }
 }
