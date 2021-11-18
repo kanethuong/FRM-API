@@ -6,7 +6,9 @@ using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.CompanyDTO;
+using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -125,5 +127,9 @@ namespace kroniiapi.Controllers
             else return BadRequest(new ResponseDTO(400, "Fail to update"));
         }
 
+        
+        public async Task<ActionResult<PaginationCompanyResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationCompanyParameter paginationCompanyParameter){
+            return null;
+        }
     }
 }

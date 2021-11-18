@@ -98,14 +98,19 @@ namespace kroniiapi.Controllers
             }
             else if (classList == null || classList.Where(c => c.ClassId == classId).FirstOrDefault() == null)
             {
-                return BadRequest(new ResponseDTO(400, "Class id does not belong to admin id"));
+                return BadRequest(new ResponseDTO(400, "Cannot find class was studying in input time"));
             }
 
             // Check report time is in range from start to end date of class
             var clazz = classList.Where(c => c.ClassId == classId).FirstOrDefault();
-            if (!(reportAt >= clazz.StartDay && reportAt <= clazz.EndDay) && reportAt != default(DateTime))
+
+            // Re-format start day and end day of class to check yyyy-MM only
+            var classStartDay = new DateTime(clazz.StartDay.Year, clazz.StartDay.Month, 1);
+            var classEndDay = new DateTime(clazz.EndDay.Year, clazz.EndDay.Month, DateTime.DaysInMonth(clazz.EndDay.Year, clazz.EndDay.Month), 23, 59, 59);
+
+            if (reportAt != default(DateTime) && !(reportAt >= classStartDay && reportAt <= classEndDay))
             {
-                return BadRequest(new ResponseDTO(400, "Report time can be only from " + clazz.StartDay + " to " + clazz.EndDay));
+                return BadRequest(new ResponseDTO(400, "Report time can be only from " + clazz.StartDay.ToString("MMM-yyyy") + " to " + clazz.EndDay.ToString("MMM-yyyy")));
             }
 
             // Get dashboard value for chart
@@ -122,8 +127,8 @@ namespace kroniiapi.Controllers
             }
             var adminDashBoard = new AdminDashboard
             {
-                ClassStatus = classStatus,
-                Checkpoint = checkPoint,
+                ClassStatus = (classStatus == null) ? new ClassStatusReport() : classStatus,
+                Checkpoint = (checkPoint == null) ? new CheckpointReport() : checkPoint,
                 Feedback = (feedbackReports.Count > 1) ? feedbackReports.Where(f => f.IsSumary == true).FirstOrDefault() : feedbackReports.FirstOrDefault()
             };
             return Ok(adminDashBoard);
