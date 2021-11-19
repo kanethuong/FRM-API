@@ -40,7 +40,7 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(tr=>tr.Phone,s=>s.MapFrom(crd=>crd.Trainee.Phone))
                 .ForMember(tr=>tr.Wage,s=>s.MapFrom(crd=>crd.Wage));
             CreateMap<CompanyRequest,RequestTraineeDetailResponse>()
-                .ForMember(rt=>rt.Trainees,s=>s.MapFrom(cr=>cr.Trainees));
+                .ForMember(rt=>rt.Trainees,s=>s.MapFrom(cr=>cr.CompanyRequestDetails));
         }
     }
 }

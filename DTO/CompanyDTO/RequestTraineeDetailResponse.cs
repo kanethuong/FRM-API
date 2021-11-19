@@ -7,7 +7,7 @@ namespace kroniiapi.DTO.CompanyDTO
 {
     public class RequestTraineeDetailResponse
     {
-        public IEnumerable<TraineeInResponse> Trainees { get; set; }
+        public ICollection<TraineeInResponse> Trainees { get; set; }
         public string Content { get; set; }
     }
 }

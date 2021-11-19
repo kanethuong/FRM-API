@@ -183,13 +183,27 @@ namespace kroniiapi.Controllers
         /// <summary>
         /// View detail of a request of company
         /// </summary>
-        /// <param name="companyId"></param>
-        /// <param name="requestId"></param>
+        /// <param name="companyId">Company id</param>
+        /// <param name="requestId">Company Request id</param>
         /// <returns> 200: Request detail / 404: ID not found </returns>
         [HttpGet("{companyId:int}/{requestId:int}")]
         public async Task<ActionResult<RequestTraineeDetailResponse>> ViewRequestDetail(int companyId, int requestId)
         {
-            return null;
+            if(await _companyService.GetCompanyById(companyId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found!"));
+            }
+            if(await _companyService.GetCompanyRequestById(requestId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Request not found!"));
+            }
+            var companyRequest = await _companyService.GetRequestDetailByCompanyIdAndRequestId(companyId,requestId);
+            if (companyRequest == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company request not found!"));
+            }
+            RequestTraineeDetailResponse requestDetail = _mapper.Map<RequestTraineeDetailResponse>(companyRequest);
+            return Ok(requestDetail);
         }
 
         /// <summary>
