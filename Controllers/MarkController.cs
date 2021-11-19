@@ -227,49 +227,24 @@ namespace kroniiapi.Controllers
             return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
         }
 
+           
+        
         /// <summary>
-        /// Change class sore
+        /// Change class score
         /// </summary>
-        /// <param name="traineeId">trainee id</param>
-        /// <param name="traineeMarkInput">Trainee Module and Mark</param>
-        /// <returns>200: Updated / 409: Conflict / 404: trainee not found</returns>
+        /// <param name="listTraineeMarkInput">list of trainee,module and score</param>
+        /// <returns>200: Updated / 400: failed</returns>
         [HttpPut("trainee")]
         [Authorize(Policy = "MarkPut")]
-        public async Task<ActionResult> ChangeClassScore([FromBody] TraineeMarkInput traineeMarkInput)
+        public async Task<ActionResult> ChangeClassScore([FromBody] ArrayBodyInput<TraineeMarkInput> listTraineeMarkInput)
         {
-            Mark mark = _mapper.Map<Mark>(traineeMarkInput);
-            Trainee trainee = await _traineeService.GetTraineeById(mark.TraineeId);
-            if (trainee == null)
+            var marks = _mapper.Map<IEnumerable<Mark>>(listTraineeMarkInput.arrayData);
+            (bool status, string message) = await _markService.UpdateMarks(marks);
+            if (status == false)
             {
-                return NotFound(new ResponseDTO(404, "Trainee not found"));
+                return BadRequest(new ResponseDTO(400, message));
             }
-            Module module = await _moduleService.GetModuleById(mark.ModuleId);
-            if (module == null)
-            {
-                return NotFound(new ResponseDTO(404, "Module not found"));
-            }
-            var checkExist = await _markService.GetMarkByTraineeIdAndModuleId(mark.TraineeId, mark.ModuleId);
-            if (checkExist == null)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee does not study this module"));
-            }
-            if (checkExist.ModuleId == mark.ModuleId && checkExist.TraineeId == mark.TraineeId && checkExist.Score == mark.Score)
-            {
-                return Ok(new ResponseDTO(200, "Update trainee's score success"));
-            }
-            if (mark.Score < 0)
-            {
-                return BadRequest(new ResponseDTO(400, "Score cannot be negative"));
-            }
-            if (await _markService.UpdateMark(mark) == 1)
-            {
-                return Ok(new ResponseDTO(200, "Update trainee's score success"));
-            }
-            else
-            {
-                return Conflict(new ResponseDTO(409, "Fail to update trainee score"));
-            }
-
+            return Ok(new ResponseDTO(200, "Update class score success"));
         }
 
         /// <summary>

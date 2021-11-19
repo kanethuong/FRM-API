@@ -8,6 +8,7 @@ using kroniiapi.DTO;
 using kroniiapi.DTO.CompanyDTO;
 using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
+using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
