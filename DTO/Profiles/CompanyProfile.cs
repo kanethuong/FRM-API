@@ -33,8 +33,12 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<CompanyRequest,RequestTraineeResponse>()
                 .ForMember(rt=>rt.Id,s=>s.MapFrom(cr=>cr.CompanyRequestId))
                 .ForMember(rt=>rt.NumberOfTrainee,s=>s.MapFrom(cr=>cr.CompanyRequestDetails.Count()));
-            CreateMap<Trainee,TraineeInResponse>()
-                .ForMember(tr=>tr.Wage,s=>s.MapFrom(t=>t.CompanyRequestDetails.Select(c=>c.Wage)));
+            CreateMap<CompanyRequestDetail,TraineeInResponse>()
+                .ForMember(tr=>tr.AvatarURL,s=>s.MapFrom(crd=>crd.Trainee.AvatarURL))
+                .ForMember(tr=>tr.Fullname,s=>s.MapFrom(crd=>crd.Trainee.Fullname))
+                .ForMember(tr=>tr.Email,s=>s.MapFrom(crd=>crd.Trainee.Email))
+                .ForMember(tr=>tr.Phone,s=>s.MapFrom(crd=>crd.Trainee.Phone))
+                .ForMember(tr=>tr.Wage,s=>s.MapFrom(crd=>crd.Wage));
             CreateMap<CompanyRequest,RequestTraineeDetailResponse>()
                 .ForMember(rt=>rt.Trainees,s=>s.MapFrom(cr=>cr.Trainees));
         }
