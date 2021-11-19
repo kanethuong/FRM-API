@@ -44,7 +44,7 @@ namespace kroniiapi.DTO.FeedbackDTO
         [Required]
         [Range(1, 5, ErrorMessage = "Feedback score can only from 1 to 5")]
         public int AdminSupport { get; set; }
-        [Required]
+
         [StringLength(300, ErrorMessage = "Comment must be less than 300 characters")]
         public string OtherComment { get; set; }
         [Required]

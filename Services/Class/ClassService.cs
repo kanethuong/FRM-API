@@ -18,14 +18,17 @@ namespace kroniiapi.Services
         private DataContext _dataContext;
         private readonly IMapper _mapper;
         private readonly ITraineeService _traineeService;
+        private readonly ITimetableService _timetableService;
         public ClassService(DataContext dataContext,
                             IMapper mapper,
-                            ITraineeService traineeService
+                            ITraineeService traineeService,
+                            ITimetableService timetableService
         )
         {
             _dataContext = dataContext;
             _mapper = mapper;
             _traineeService = traineeService;
+            _timetableService = timetableService;
         }
         /// <summary>
         /// Get Class List
@@ -334,8 +337,11 @@ namespace kroniiapi.Services
         /// <param name="moduleIdList"></param>
         public async Task AddDataToClassModule(int classId, ICollection<TrainerModule> trainerModuleList)
         {
+            var classGet = await this.GetClassByClassID(classId);
             foreach (var trainerModule in trainerModuleList)
             {
+                var startDay = _timetableService.GetStartDayforClassToInsertModule(classId);
+                (int roomId, DateTime date) = _timetableService.GetRoomIdAvailableForModule(startDay, classGet.EndDay, trainerModule.ModuleId);
                 ClassModule classModule = await _dataContext.ClassModules.Where(cm => cm.ClassId == classId
                                                                                       && cm.ModuleId == trainerModule.ModuleId).FirstOrDefaultAsync();
                 if (classModule is not null) continue;
@@ -344,9 +350,12 @@ namespace kroniiapi.Services
                     ClassId = classId,
                     ModuleId = trainerModule.ModuleId,
                     TrainerId = trainerModule.TrainerId,
-                    WeightNumber = trainerModule.WeightNumber
+                    WeightNumber = trainerModule.WeightNumber,
+                    RoomId=roomId
                 };
                 _dataContext.ClassModules.Add(classModule);
+                _dataContext.SaveChanges();
+                int status = await _timetableService.InsertCalendarsToClass(classId,trainerModule.ModuleId);
             }
         }
 
@@ -554,7 +563,8 @@ namespace kroniiapi.Services
             .GetCount(out var totalRecords)
             .OrderBy(c => c.CreatedAt)
             .GetPage(paginationParameter)
-            .Select(c => new Class {
+            .Select(c => new Class
+            {
                 ClassName = c.ClassName,
                 ClassId = c.ClassId,
                 Description = c.Description,
