@@ -321,5 +321,38 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-    }
+        /// <summary>
+        /// GetRequestDetailByCompanyIdAndRequestId
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <param name="requestId">Company Request id</param>
+        /// <returns>CompanyRequest</returns>
+        public async Task<CompanyRequest> GetRequestDetailByCompanyIdAndRequestId(int companyId, int requestId)
+        {
+            var companyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId && comreq.CompanyId == companyId)
+            .Select(comreq => new CompanyRequest
+            {
+                Content = comreq.Content,
+                CompanyRequestDetails = comreq.CompanyRequestDetails
+                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && !c.Trainee.Status.ToLower().Contains("onboard"))
+                                            .Select(tr => new CompanyRequestDetail
+                                            {
+                                                TraineeId = tr.TraineeId,
+                                                Trainee = new Trainee
+                                                {
+                                                    TraineeId = tr.TraineeId,
+                                                    AvatarURL = tr.Trainee.AvatarURL,
+                                                    Email = tr.Trainee.Email,
+                                                    Fullname = tr.Trainee.Fullname,
+                                                    Phone = tr.Trainee.Phone,
+                                                },
+                                                Wage = tr.Wage
+                                            })
+                                            .ToList()
+        }).FirstOrDefaultAsync();
+
+            return companyRequest;
+        }
+
+}
 }
