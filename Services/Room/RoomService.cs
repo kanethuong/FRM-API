@@ -21,15 +21,6 @@ namespace kroniiapi.Services
         {
             return await _dataContext.Rooms.Where(r => r.RoomId == id).FirstOrDefaultAsync();
         }
-        public async Task<Room> GetRoomByTraineeId(int traineeId)
-        {
-             //var classId = await _dataContext.Trainees.Where(e => e.TraineeId == traineeId).Select(e => e.ClassId).FirstOrDefaultAsync();
-             //var roomId = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(r => r.RoomId).FirstOrDefaultAsync();
-            // var room = await _dataContext.Rooms.Where(c => c.RoomId == roomId).FirstOrDefaultAsync();
-
-            // return room;
-            return null;
-        }
         public async Task<Room> GetRoom(int classId,int moduleId){
             var room = await _dataContext.ClassModules.Where(e => e.ClassId == classId && e.ModuleId == moduleId ).Select(r => r.Room).FirstOrDefaultAsync();
             return room;
@@ -74,16 +65,6 @@ namespace kroniiapi.Services
             return (0, "There are no more room Available on Day:" + examDay.Day +"/"+examDay.Month+"/"+examDay.Year );
         }
 
-        /// <summary>
-        /// Get Room ID to Create new Exam
-        /// </summary>
-        /// <param name="examDay"></param>
-        /// <param name="traineesList"></param>
-        /// <returns></returns>
-        // public async Task<Room> GetRoomFreeToCreateNewExam(DateTime examDate, int duration){
-        //     //int interval = examDate.
-        //     //var calender = await _dataContext.Calendars.Where(c => c.Date   )
-        // }
-
+        
     }
 }

@@ -23,12 +23,15 @@ namespace kroniiapi.Controllers
     {
 
         private readonly ICompanyService _companyService;
+        private readonly ITraineeService _traineeService;
         private readonly IMapper _mapper;
         public CompanyController(IMapper mapper,
-                                ICompanyService companyService)
+                                ICompanyService companyService,
+                                ITraineeService traineeService)
         {
             _mapper = mapper;
             _companyService = companyService;
+            _traineeService = traineeService;
         }
         /// <summary>
         /// View all company request with pagination
@@ -147,7 +150,11 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{traineeId:int}/skill")]
         public async Task<ActionResult<IEnumerable<TraineeSkillResponse>>> ViewTraineeSkill(int traineeId)
         {
-            return null;
+            if(await _traineeService.GetTraineeById(traineeId) == null){
+                return NotFound(new ResponseDTO(404,"Trainee not found"));
+            }
+            var tSRList = await _traineeService.GetTraineeSkillByTraineeId(traineeId);
+            return Ok(tSRList);
         }
 
         /// <summary>
