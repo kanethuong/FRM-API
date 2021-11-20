@@ -37,7 +37,16 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false);
+            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class{
+                ClassId = c.ClassId,
+                ClassName = c.ClassName,
+                Admin = new Admin{
+                    Fullname = c.Admin.Fullname
+                },
+                CreatedAt = c.CreatedAt,
+                Description = c.Description,
+                ClassModules = c.ClassModules
+            });
             if (paginationParameter.SearchName != "")
             {
                 classList = classList.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.ClassName.ToLower()))

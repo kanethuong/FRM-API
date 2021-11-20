@@ -73,15 +73,10 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter">Pagination parameters from client</param>
         /// <returns>200: List with pagination / 404: class name not found</returns>
         [HttpGet("page")]
-        [Authorize(Policy = "ClassGet")]
+        //[Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<ClassResponse>>>> GetClassList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecord, IEnumerable<Class> classList) = await _classService.GetClassList(paginationParameter);
-
-            foreach (Class c in classList)
-            {
-                c.Admin = await _adminService.GetAdminById(c.AdminId);
-            }
             IEnumerable<ClassResponse> classListDto = _mapper.Map<IEnumerable<ClassResponse>>(classList);
             if (totalRecord == 0)
             {
