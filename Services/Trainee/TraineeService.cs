@@ -6,6 +6,7 @@ using AutoMapper;
 using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ApplicationDTO;
+using kroniiapi.DTO.CompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
@@ -394,5 +395,24 @@ namespace kroniiapi.Services
                 .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
+
+        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId){
+            var cers = await _dataContext.Certificates.Where(c => c.TraineeId == traineeId).Select(c => new Certificate{
+                CreatedAt = c.CreatedAt,
+                Module = new Module{
+                    ModuleName = c.Module.ModuleName
+                }
+            }).ToListAsync();
+            List<TraineeSkillResponse> tsr = new List<TraineeSkillResponse>();
+            foreach (var item in cers)
+            {
+                TraineeSkillResponse temp = new();
+                temp.ModuleName = item.Module.ModuleName;
+                temp.FinishDate = item.CreatedAt;
+                tsr.Add(temp);
+            }
+            return tsr;
+        }
+        
     }
 }

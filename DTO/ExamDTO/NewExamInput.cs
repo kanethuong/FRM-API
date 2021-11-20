@@ -12,6 +12,6 @@ namespace kroniiapi.DTO.ExamDTO
         public int AdminId { get; set; }
         public IEnumerable<int> TraineeIdList { get; set; }
         public int ModuleId { get; set; }
-        public int? classId { get; set; }
+        public int classId { get; set; }
     }
 }

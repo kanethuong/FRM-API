@@ -16,5 +16,7 @@ namespace kroniiapi.Services
         Task<IEnumerable<Exam>> GetExamListByModuleId(List<Calendar> calendars, DateTime startDate, DateTime endDate);
         Task<IEnumerable<Exam>> GetExamListByTraineeId(int traineeId, DateTime startDate, DateTime endDate);
         Task<(bool? status, string message)> CancelExam(int id);
+        Task<bool> CheckDateExam(int classId,int moduleId,DateTime time,int lastSlot);
+        
     }
 }

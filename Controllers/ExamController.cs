@@ -23,9 +23,11 @@ namespace kroniiapi.Controllers
         private readonly IAdminService _adminService;
         private readonly IModuleService _moduleService;
         private readonly IClassService _classService;
+        private readonly IRoomService _roomService;
+
         private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService)
+        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService,IRoomService roomService)
         {
             _examService = examService;
             _mapper = mapper;
@@ -33,6 +35,7 @@ namespace kroniiapi.Controllers
             _adminService = adminService;
             _moduleService = moduleService;
             _classService = classService;
+            _roomService = roomService;
         }
 
         /// <summary>
@@ -51,19 +54,19 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(400, "Exam time can't be smaller than current time"));
             }
             //Gắn traineeID trong newExamInput.class vào newExamInput.TraineeIdList và loại bỏ những trainee trùng
-            if (newExamInput.classId != null)
+            // if (newExamInput.classId != null)
+            // {
+            List<int> traineeIdList = new List<int>();
+            var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId);
+            foreach (Trainee item in traineeList)
             {
-                List<int> traineeIdList = new List<int>();
-                var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId.GetValueOrDefault());
-                foreach (Trainee item in traineeList)
-                {
-                    traineeIdList.Add(item.TraineeId);
-                }
-                newExamInput.TraineeIdList = newExamInput.TraineeIdList.Concat(traineeIdList);
-                newExamInput.TraineeIdList = newExamInput.TraineeIdList.Distinct();
+                traineeIdList.Add(item.TraineeId);
             }
+            newExamInput.TraineeIdList = newExamInput.TraineeIdList.Concat(traineeIdList);
+            newExamInput.TraineeIdList = newExamInput.TraineeIdList.Distinct();
+            //}
             //Check Class deactivated
-            var classCheck = await _classService.GetClassByClassID(newExamInput.classId.GetValueOrDefault());
+            var classCheck = await _classService.GetClassByClassID(newExamInput.classId);
             if (newExamInput.classId != 0 && classCheck == null)
             {
                 //errorNotfound.Add("Class not found");
@@ -121,7 +124,7 @@ namespace kroniiapi.Controllers
                             rp += ", ";
                         }
                     }
-                    rp+="\n";
+                    rp += "\n";
                 }
                 if (errorNotModule.Count() != 0)
                 {
@@ -149,6 +152,35 @@ namespace kroniiapi.Controllers
             int status = await _examService.InsertNewExam(exam);
 
             return Ok(new ResponseDTO(200, "Success"));
+        }
+
+        /// <summary>
+        /// create new exam last
+        /// </summary>
+        /// <param name="newExamInput">new exam input, include trainee list id< to take exam/param>
+        /// <param name="classId">classId to take exam (optional), if user send classId, get all trainee in the class</param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<ActionResult> CreateNewExamLast(NewExamInput newExamInput)
+        {
+            if (await _examService.CheckDateExam(newExamInput.classId, newExamInput.ModuleId, newExamInput.ExamDay, 3) == false)
+            {
+                return BadRequest(new ResponseDTO(400, "Datetime not right"));
+            }
+            var classCheck = await _classService.GetClassByClassID(newExamInput.classId);
+            var traineeList = await _traineeService.GetTraineeByClassId(newExamInput.classId);
+            List<int> traineeIdList = new List<int>();
+            foreach (var item in traineeList)
+            {
+                traineeIdList.Add(item.TraineeId);
+            }
+            newExamInput.TraineeIdList = traineeIdList;
+            Exam exam = _mapper.Map<Exam>(newExamInput);
+            var Room = await _roomService.GetRoom(newExamInput.classId,newExamInput.ModuleId);
+            exam.RoomId = Room.RoomId;
+            exam.Trainees = traineeList;
+            var rs = await _examService.InsertNewExam(exam);
+            return Ok(new ResponseDTO(200, "Input success"));
         }
 
         /// <summary>

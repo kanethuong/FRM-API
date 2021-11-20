@@ -6,11 +6,13 @@ using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.CompanyDTO;
+using kroniiapi.DTO.PaginationCompanyDTO;
 //using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
@@ -22,12 +24,15 @@ namespace kroniiapi.Controllers
     {
 
         private readonly ICompanyService _companyService;
+        private readonly ITraineeService _traineeService;
         private readonly IMapper _mapper;
         public CompanyController(IMapper mapper,
-                                ICompanyService companyService)
+                                ICompanyService companyService,
+                                ITraineeService traineeService)
         {
             _mapper = mapper;
             _companyService = companyService;
+            _traineeService = traineeService;
         }
         /// <summary>
         /// View all company request with pagination
@@ -127,9 +132,92 @@ namespace kroniiapi.Controllers
             else return BadRequest(new ResponseDTO(400, "Fail to update"));
         }
 
-        
-        // public async Task<ActionResult<PaginationCompanyResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery]PaginationCompanyParameter paginationCompanyParameter){
-        //     return null;
-        // }
+        /// <summary>
+        /// Search and show trainee list (show all trainees by default)
+        /// </summary>
+        /// <param name="paginationCompanyParameter">Pagination has 3 search fields</param>
+        /// <returns> 200: Total record, list results / 404: Not found </returns>
+        [HttpGet("trainee")]
+        public async Task<ActionResult<PaginationCompanyResponse<IEnumerable<TraineeSearchResponse>>>> SearchTraineeList([FromQuery] PaginationCompanyParameter paginationCompanyParameter)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// List all skills (module) of trainee and the finish date of modules
+        /// </summary>
+        /// <param name="traineeId"></param>
+        /// <returns> 200: List of skills / 404: Trainee not found </returns>
+        [HttpGet("trainee/{traineeId:int}/skill")]
+        public async Task<ActionResult<IEnumerable<TraineeSkillResponse>>> ViewTraineeSkill(int traineeId)
+        {
+            if(await _traineeService.GetTraineeById(traineeId) == null){
+                return NotFound(new ResponseDTO(404,"Trainee not found"));
+            }
+            var tSRList = await _traineeService.GetTraineeSkillByTraineeId(traineeId);
+            return Ok(tSRList);
+        }
+
+        /// <summary>
+        /// Send request a list of trainees
+        /// </summary>
+        /// <param name="requestTraineeInput"></param>
+        /// <returns> 200: Send success / 409: Fail to send request</returns>
+        [HttpPost("request")]
+        public async Task<ActionResult> SendTraineeRequest(RequestTraineeInput requestTraineeInput)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// View list of trainee request by company id
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="paginationParameter"></param>
+        /// <returns> 200: Total record,list of request / 404: Company not found</returns>
+        [HttpGet("{companyId:int}/request")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<RequestTraineeResponse>>>> ViewTraineeRequestList(int companyId, [FromQuery] PaginationParameter paginationParameter)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// View detail of a request of company
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <param name="requestId">Company Request id</param>
+        /// <returns> 200: Request detail / 404: ID not found </returns>
+        [HttpGet("{companyId:int}/{requestId:int}")]
+        public async Task<ActionResult<RequestTraineeDetailResponse>> ViewRequestDetail(int companyId, int requestId)
+        {
+            if(await _companyService.GetCompanyById(companyId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found!"));
+            }
+            if(await _companyService.GetCompanyRequestById(requestId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Request not found!"));
+            }
+            var companyRequest = await _companyService.GetRequestDetailByCompanyIdAndRequestId(companyId,requestId);
+            if (companyRequest == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company request not found!"));
+            }
+            RequestTraineeDetailResponse requestDetail = _mapper.Map<RequestTraineeDetailResponse>(companyRequest);
+            return Ok(requestDetail);
+        }
+
+        /// <summary>
+        /// Upload report of a request
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="requestId"></param>
+        /// <param name="file"></param>
+        /// <returns> 200: Upload success / 404: ID not found / 409: Fail to upload </returns>
+        [HttpPost("{companyId:int}/{requestId:int}/report")]
+        public async Task<ActionResult> UploadReport(int companyId, int requestId, [FromForm] IFormFile file)
+        {
+            return null;
+        }
     }
 }
