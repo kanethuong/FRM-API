@@ -59,5 +59,18 @@ namespace kroniiapi.Controllers
 
         }
 
+        /// <summary>
+        /// Get Bonus and punish list by classId
+        /// </summary>
+        /// <param name="paginationParameter"></param>
+        /// <returns>00: Total record, list of B&P / 404: Searched trainee name cannot be found</returns>
+        [HttpGet("{classId:int}")]
+        public async Task<ActionResult<PaginationResponse<IEnumerable<BonusAndPunishResponse>>>> ViewBonusAndPunish(int classId)
+        {
+            IEnumerable<BonusAndPunish> bNpList = await _bonusAndPunishService.GetBonusAndPunishListByClassId(classId);
+            IEnumerable<BonusAndPunishResponse> bNpListDto = _mapper.Map<IEnumerable<BonusAndPunishResponse>>(bNpList);
+            return Ok(bNpListDto);
+        }
+
     }
 }
