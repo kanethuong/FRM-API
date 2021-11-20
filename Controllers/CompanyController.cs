@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    [Authorize(Policy = "Company")]
+    //[Authorize(Policy = "Company")]
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
@@ -166,7 +166,13 @@ namespace kroniiapi.Controllers
         [HttpPost("request")]
         public async Task<ActionResult> SendTraineeRequest(RequestTraineeInput requestTraineeInput)
         {
-            return null;
+            CompanyRequest companyRequest = _mapper.Map<CompanyRequest>(requestTraineeInput);
+            
+            var rs = await _companyService.InsertNewCompanyRequestIncludeTrainee(companyRequest);
+            if (rs == 0) {
+                return BadRequest(new ResponseDTO(409, "Failed to send request"));
+            }
+            return Ok(new ResponseDTO(200, "Send Success"));
         }
 
         /// <summary>
@@ -178,7 +184,13 @@ namespace kroniiapi.Controllers
         [HttpGet("{companyId:int}/request")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<RequestTraineeResponse>>>> ViewTraineeRequestList(int companyId, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecord, IEnumerable<CompanyRequest> companyRequests) = await _companyService.GetTraineeListInRequestByCompanyId(companyId, paginationParameter);
+            IEnumerable<RequestTraineeResponse> requestTraineeResponses = _mapper.Map<IEnumerable<RequestTraineeResponse>>(companyRequests);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<RequestTraineeResponse>>(totalRecord, requestTraineeResponses));
         }
 
         /// <summary>
