@@ -995,5 +995,29 @@ namespace kroniiapi.Services.Report
             }
 
         }
+
+        public async Task<bool> AutoUpdateTraineesStatus(int classId){
+            var clazz = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => new Class{
+                ClassId = c.ClassId,
+                EndDay = c.EndDay
+            }).FirstOrDefaultAsync();
+            if(clazz.EndDay > DateTime.Now){
+                return false;
+            }
+            DateTime tempTime = DateTime.Now;
+            var traineeGPAs = await GetTraineeGPAs(classId,tempTime);
+            foreach (var item in traineeGPAs)
+            {
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
+                if(item.Level == "D"){
+                    trainee.Status = "Failed";
+                }else{
+                    trainee.Status = "Passed";
+                }
+                await _dataContext.SaveChangesAsync();
+            }
+            return true;
+        } 
+
     }
 }

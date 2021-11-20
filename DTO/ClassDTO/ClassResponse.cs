@@ -11,5 +11,6 @@ namespace kroniiapi.DTO.ClassDTO
         public string Creator { get; set; }//admin fullname
         public DateTime CreatedAt { get; set; }
         public string Description { get; set; }
+        public int NoOfModule { get; set; }
     }
 }
