@@ -115,7 +115,7 @@ namespace kroniiapi.Controllers
         /// <param name="id">Trainer id</param>
         /// <returns>200 :trainee module (two day) / 404: Trainee not found or Class has been deactivated</returns>
         [HttpGet("{id:int}/dashboard")]
-        //[Authorize(Policy = "TrainerGet")]
+        [Authorize(Policy = "TrainerGet")]
         public async Task<ActionResult<IEnumerable<TrainerDashboard>>> ViewTrainerDashboard(int id)
         {
             if (id == 0 || _trainerService.CheckTrainerExist(id) == false)
