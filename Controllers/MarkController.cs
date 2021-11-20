@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using kroniiapi.Helper;
 using Microsoft.AspNetCore.Authorization;
+using kroniiapi.Services.Report;
 
 namespace kroniiapi.Controllers
 {
@@ -32,6 +33,7 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IMarkService _markService;
         private readonly ITrainerService _trainerService;
+        private readonly IReportService _reportService;
         public MarkController(ITraineeService traineeService,
                             ICertificateService certificateService,
                             IMegaHelper megaHelper,
@@ -227,22 +229,31 @@ namespace kroniiapi.Controllers
             return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
         }
 
-           
-        
+
+
         /// <summary>
         /// Change class score
         /// </summary>
         /// <param name="listTraineeMarkInput">list of trainee,module and score</param>
-        /// <returns>200: Updated / 400: failed</returns>
+        /// <returns>200: Updated / 400: failed / 404: Trainee(s) has/have no class</returns>
         [HttpPut("trainee")]
         [Authorize(Policy = "MarkPut")]
         public async Task<ActionResult> ChangeClassScore([FromBody] ArrayBodyInput<TraineeMarkInput> listTraineeMarkInput)
         {
-            var marks = _mapper.Map<IEnumerable<Mark>>(listTraineeMarkInput.arrayData);
-            (bool status, string message) = await _markService.UpdateMarks(marks);
-            if (status == false)
+            var (classId, Message) = await _traineeService.GetClassIdByTraineeId(listTraineeMarkInput.arrayData.Select(m => m.TraineeId).FirstOrDefault());
+            if (classId == 0)
             {
-                return BadRequest(new ResponseDTO(400, message));
+                return NotFound(new ResponseDTO(404, Message));
+            }
+            else
+            {
+                var marks = _mapper.Map<IEnumerable<Mark>>(listTraineeMarkInput.arrayData);
+                (bool status, string message) = await _markService.UpdateMarks(marks);
+                if (status == false)
+                {
+                    return BadRequest(new ResponseDTO(400, message));
+                }
+                await _reportService.AutoUpdateTraineesStatus(classId);
             }
             return Ok(new ResponseDTO(200, "Update class score success"));
         }
