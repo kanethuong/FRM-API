@@ -41,7 +41,8 @@ namespace kroniiapi.Controllers
                             IModuleService moduleService,
                             IMarkService markService,
                             IClassService classService,
-                            ITrainerService trainerService
+                            ITrainerService trainerService,
+                            IReportService reportService
                             )
         {
             _traineeService = traineeService;
@@ -52,6 +53,7 @@ namespace kroniiapi.Controllers
             _markService = markService;
             _classService = classService;
             _trainerService = trainerService;
+            _reportService = reportService;
         }
 
         /// <summary>
