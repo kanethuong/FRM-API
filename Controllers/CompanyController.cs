@@ -231,5 +231,29 @@ namespace kroniiapi.Controllers
         {
             return null;
         }
+
+        /// <summary>
+        /// Edit company profile
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="companyProfileDetailInput"></param>
+        /// <returns> 200: Edit success / 404: Company not found / 409: Edit fail</returns>
+        [HttpPut("{companyId:int}/profile")]
+        public async Task<ActionResult> EditProfile(int companyId, [FromBody]CompanyProfileDetailInput companyProfileDetailInput)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Update company avatar
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="image"></param>
+        /// <returns> 200: Update success / 404: Company not found / 409: Update fail </returns>
+        [HttpPut("{companyId:int}/avatar")]
+        public async Task<ActionResult> UpdateAvatar(int companyId, IFormFile image)
+        {
+            return null;
+        }
     }
 }
