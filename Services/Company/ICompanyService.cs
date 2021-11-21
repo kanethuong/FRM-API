@@ -23,5 +23,8 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter);
         Task<CompanyRequest> GetCompanyRequestDetail(int requestId);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter);
+        Task<CompanyRequest> GetRequestDetailByCompanyIdAndRequestId(int companyId, int requestId);
+        Task<Tuple<int, IEnumerable<CompanyRequest>>> GetTraineeListInRequestByCompanyId(int companyId, PaginationParameter paginationParameter);
+        Task<int> InsertNewCompanyRequestIncludeTrainee(CompanyRequest companyRequest);
     }
 }

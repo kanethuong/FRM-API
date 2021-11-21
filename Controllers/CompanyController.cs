@@ -7,6 +7,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.CompanyDTO;
 using kroniiapi.DTO.PaginationCompanyDTO;
+//using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Services;
@@ -23,12 +24,15 @@ namespace kroniiapi.Controllers
     {
 
         private readonly ICompanyService _companyService;
+        private readonly ITraineeService _traineeService;
         private readonly IMapper _mapper;
         public CompanyController(IMapper mapper,
-                                ICompanyService companyService)
+                                ICompanyService companyService,
+                                ITraineeService traineeService)
         {
             _mapper = mapper;
             _companyService = companyService;
+            _traineeService = traineeService;
         }
         /// <summary>
         /// View all company request with pagination
@@ -147,7 +151,11 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{traineeId:int}/skill")]
         public async Task<ActionResult<IEnumerable<TraineeSkillResponse>>> ViewTraineeSkill(int traineeId)
         {
-            return null;
+            if(await _traineeService.GetTraineeById(traineeId) == null){
+                return NotFound(new ResponseDTO(404,"Trainee not found"));
+            }
+            var tSRList = await _traineeService.GetTraineeSkillByTraineeId(traineeId);
+            return Ok(tSRList);
         }
 
         /// <summary>
@@ -158,7 +166,13 @@ namespace kroniiapi.Controllers
         [HttpPost("request")]
         public async Task<ActionResult> SendTraineeRequest(RequestTraineeInput requestTraineeInput)
         {
-            return null;
+            CompanyRequest companyRequest = _mapper.Map<CompanyRequest>(requestTraineeInput);
+
+            var rs = await _companyService.InsertNewCompanyRequestIncludeTrainee(companyRequest);
+            if (rs == 0) {
+                return BadRequest(new ResponseDTO(409, "Failed to send request"));
+            }
+            return Ok(new ResponseDTO(200, "Send Success"));
         }
 
         /// <summary>
@@ -170,19 +184,39 @@ namespace kroniiapi.Controllers
         [HttpGet("{companyId:int}/request")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<RequestTraineeResponse>>>> ViewTraineeRequestList(int companyId, [FromQuery] PaginationParameter paginationParameter)
         {
-            return null;
+            (int totalRecord, IEnumerable<CompanyRequest> companyRequests) = await _companyService.GetTraineeListInRequestByCompanyId(companyId, paginationParameter);
+            IEnumerable<RequestTraineeResponse> requestTraineeResponses = _mapper.Map<IEnumerable<RequestTraineeResponse>>(companyRequests);
+            if (totalRecord == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found"));
+            }
+            return Ok(new PaginationResponse<IEnumerable<RequestTraineeResponse>>(totalRecord, requestTraineeResponses));
         }
 
         /// <summary>
         /// View detail of a request of company
         /// </summary>
-        /// <param name="companyId"></param>
-        /// <param name="requestId"></param>
+        /// <param name="companyId">Company id</param>
+        /// <param name="requestId">Company Request id</param>
         /// <returns> 200: Request detail / 404: ID not found </returns>
         [HttpGet("{companyId:int}/{requestId:int}")]
         public async Task<ActionResult<RequestTraineeDetailResponse>> ViewRequestDetail(int companyId, int requestId)
         {
-            return null;
+            if(await _companyService.GetCompanyById(companyId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company not found!"));
+            }
+            if(await _companyService.GetCompanyRequestById(requestId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Request not found!"));
+            }
+            var companyRequest = await _companyService.GetRequestDetailByCompanyIdAndRequestId(companyId,requestId);
+            if (companyRequest == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company request not found!"));
+            }
+            RequestTraineeDetailResponse requestDetail = _mapper.Map<RequestTraineeDetailResponse>(companyRequest);
+            return Ok(requestDetail);
         }
 
         /// <summary>

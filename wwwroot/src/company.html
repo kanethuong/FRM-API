@@ -301,5 +301,67 @@
             </div>
         </div>
     </div>
+    <!-- View request detail -->
+    <div id="viewRequestDetail">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Request Detail</h3>
+        </div>
+        <p>By DanhLPT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/{companyId}/{requestId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>companyId: Company ID</p>
+                <p>requestId: Company Request ID</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>{
+    "trainees": [
+        {
+            "avatarURL": "string",
+            "fullname": "string",
+            "email": "string",
+            "phone": "string",
+            "wage": 0
+        }
+    ],
+    "content": "string"
+}</code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
 
 </div>
