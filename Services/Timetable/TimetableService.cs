@@ -17,16 +17,14 @@ namespace kroniiapi.Services
         private DataContext _datacontext;
         private ICalendarService _calendarService;
         private IModuleService _moduleService;
-        private IClassService _classService;
         private IAttendanceService _attendaceService;
 
 
-        public TimetableService(DataContext dataContext, ICalendarService calendarService, IModuleService moduleService, IClassService classService, IAttendanceService attendanceService)
+        public TimetableService(DataContext dataContext, ICalendarService calendarService, IModuleService moduleService, IAttendanceService attendanceService)
         {
             _datacontext = dataContext;
             _calendarService = calendarService;
             _moduleService = moduleService;
-            _classService = classService;
             _attendaceService = attendanceService;
         }
 
@@ -60,6 +58,14 @@ namespace kroniiapi.Services
             foreach (var item in holidayss)
             {
                 if (date.Day == item.Day && date.Month == item.Month)
+                {
+                    return true;
+                }
+            }
+            var lunarHolidays = TimetableHelper.GetLunarHoliday(date.Year);
+            foreach (var item in lunarHolidays)
+            {
+                if (date.Day == item.Day && date.Month == item.Month && date.Year == item.Year)
                 {
                     return true;
                 }
@@ -182,7 +188,7 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        public (bool,string) CheckTrainersNewClass(List<TrainerModule> trainerModules, DateTime startDay, DateTime endDay)
+        public (bool,string) CheckTrainersNewClass(ICollection<TrainerModule> trainerModules, DateTime startDay, DateTime endDay)
         {
             DateTime startAt = startDay;
             foreach (var item in trainerModules)
@@ -242,7 +248,7 @@ namespace kroniiapi.Services
         /// <returns>status 1: Success / 0: Not enough Day</returns>
         public async Task<int> InsertCalendarsToClass( int classId, int moduleId)
         {
-            var classGet = await _classService.GetClassByClassID(classId);
+            var classGet = _datacontext.Classes.FirstOrDefault(c=>c.ClassId==classId);
             var noOfSlot = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
             DateTime dateCount = GetStartDayforClassToInsertModule(classId);
             if (dateCount == new DateTime(1,1,1))

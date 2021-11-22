@@ -97,7 +97,27 @@ namespace kroniiapi.Services
             existedTrainer.DOB = trainer.DOB;
             existedTrainer.Address = trainer.Address;
             existedTrainer.Gender = trainer.Gender;
-            // existedTrainer.Wage = trainer.Wage;
+            existedTrainer.Facebook = trainer.Facebook;
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+
+        /// <summary>
+        /// Update trainer's avatar method
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="avatarUrl"></param>
+        /// <returns>-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> UpdateAvatar(int id, string avatarUrl)
+        {
+            var existedTrainer = await _dataContext.Trainers.Where(t => t.TrainerId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
+            if (existedTrainer == null)
+            {
+                return -1;
+            }
+            existedTrainer.AvatarURL = avatarUrl;
+
             var rowUpdated = await _dataContext.SaveChangesAsync();
 
             return rowUpdated;
@@ -149,7 +169,7 @@ namespace kroniiapi.Services
         /// <returns></returns>
         public async Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter)
         {
-            IQueryable<Trainer> trainers = _dataContext.Trainers.Where(t=> t.IsDeactivated == false);
+            IQueryable<Trainer> trainers = _dataContext.Trainers.Where(t => t.IsDeactivated == false);
             if (paginationParameter.SearchName != "")
             {
                 trainers = trainers.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
@@ -171,20 +191,22 @@ namespace kroniiapi.Services
             return _dataContext.Trainers.Any(t => t.TrainerId == id &&
            t.IsDeactivated == false);
         }
-        public async Task<Trainer> GetTrainerByCalendarId(int id){
+        public async Task<Trainer> GetTrainerByCalendarId(int id)
+        {
             Calendar calendar = await _dataContext.Calendars.Where(c => c.CalendarId == id).FirstOrDefaultAsync();
-            var tId = await _dataContext.ClassModules.Where(m => m.ModuleId == calendar.ModuleId && m.ClassId == calendar.ClassId ).Select(t => t.TrainerId).FirstOrDefaultAsync();
+            var tId = await _dataContext.ClassModules.Where(m => m.ModuleId == calendar.ModuleId && m.ClassId == calendar.ClassId).Select(t => t.TrainerId).FirstOrDefaultAsync();
             Trainer t = await _dataContext.Trainers.Where(m => m.TrainerId == tId).FirstOrDefaultAsync();
             return t;
         }
-        public async Task<IEnumerable<Trainer>> GetTrainerListByClassId(int id){
+        public async Task<IEnumerable<Trainer>> GetTrainerListByClassId(int id)
+        {
             var trainerIdList = await _dataContext.ClassModules.Where(t => t.ClassId == id).Select(t => t.TrainerId).ToListAsync();
             //Delete duplicated trainerId
             trainerIdList = trainerIdList.Distinct().ToList();
             List<Trainer> trainers = new List<Trainer>();
             foreach (var item in trainerIdList)
             {
-                trainers.Add( await _dataContext.Trainers.Where(t => t.TrainerId == item).FirstOrDefaultAsync());
+                trainers.Add(await _dataContext.Trainers.Where(t => t.TrainerId == item).FirstOrDefaultAsync());
             }
             return trainers;
         }

@@ -321,5 +321,77 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
+        /// <summary>
+        /// GetRequestDetailByCompanyIdAndRequestId
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <param name="requestId">Company Request id</param>
+        /// <returns>CompanyRequest</returns>
+        public async Task<CompanyRequest> GetRequestDetailByCompanyIdAndRequestId(int companyId, int requestId)
+        {
+            var companyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId && comreq.CompanyId == companyId)
+            .Select(comreq => new CompanyRequest
+            {
+                Content = comreq.Content,
+                CompanyRequestDetails = comreq.CompanyRequestDetails
+                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && !c.Trainee.Status.ToLower().Contains("onboard"))
+                                            .Select(tr => new CompanyRequestDetail
+                                            {
+                                                TraineeId = tr.TraineeId,
+                                                Trainee = new Trainee
+                                                {
+                                                    TraineeId = tr.TraineeId,
+                                                    AvatarURL = tr.Trainee.AvatarURL,
+                                                    Email = tr.Trainee.Email,
+                                                    Fullname = tr.Trainee.Fullname,
+                                                    Phone = tr.Trainee.Phone,
+                                                },
+                                                Wage = tr.Wage
+                                            })
+                                            .ToList()
+            }).FirstOrDefaultAsync();
+
+            return companyRequest;
+        }
+        /// <summary>
+        /// Get Company request list include trainee
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <returns>CompanyRequest</returns>
+        public async Task<Tuple<int, IEnumerable<CompanyRequest>>> GetTraineeListInRequestByCompanyId(int companyId, PaginationParameter paginationParameter)
+        {
+            IQueryable<CompanyRequest> result = _dataContext.CompanyRequests.Where(c => c.CompanyId == companyId);
+            if (paginationParameter.SearchName != "")
+            {
+                result = result.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Content.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<CompanyRequest> rs = await result
+            .GetCount(out var totalRecords)
+            .OrderBy(c => c.CreatedAt)
+            .GetPage(paginationParameter)
+            .Select(c => new CompanyRequest
+            {
+                CompanyRequestId = c.CompanyRequestId,
+                CompanyRequestDetails = c.CompanyRequestDetails,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                IsAccepted = c.IsAccepted
+            })
+            .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
+        }
+        /// <summary>
+        /// Insert New Request 
+        /// </summary>
+        /// <param name="requestDeleteClassInput"></param>
+        /// <returns>  </returns>
+        public async Task<int> InsertNewCompanyRequestIncludeTrainee(CompanyRequest companyRequest)
+        {
+            int rowInserted = 0;
+            _dataContext.CompanyRequests.Add(companyRequest);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
     }
 }

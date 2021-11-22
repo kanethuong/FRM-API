@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using kroniiapi.Helper;
 using Microsoft.AspNetCore.Authorization;
+using kroniiapi.Services.Report;
 
 namespace kroniiapi.Controllers
 {
@@ -32,6 +33,7 @@ namespace kroniiapi.Controllers
         private readonly IClassService _classService;
         private readonly IMarkService _markService;
         private readonly ITrainerService _trainerService;
+        private readonly IReportService _reportService;
         public MarkController(ITraineeService traineeService,
                             ICertificateService certificateService,
                             IMegaHelper megaHelper,
@@ -39,7 +41,8 @@ namespace kroniiapi.Controllers
                             IModuleService moduleService,
                             IMarkService markService,
                             IClassService classService,
-                            ITrainerService trainerService
+                            ITrainerService trainerService,
+                            IReportService reportService
                             )
         {
             _traineeService = traineeService;
@@ -50,6 +53,7 @@ namespace kroniiapi.Controllers
             _markService = markService;
             _classService = classService;
             _trainerService = trainerService;
+            _reportService = reportService;
         }
 
         /// <summary>
@@ -227,49 +231,33 @@ namespace kroniiapi.Controllers
             return Ok(new PaginationResponse<IEnumerable<MarkResponse>>(totalRecords, markResponses));
         }
 
+
+
         /// <summary>
-        /// Change class sore
+        /// Change class score
         /// </summary>
-        /// <param name="traineeId">trainee id</param>
-        /// <param name="traineeMarkInput">Trainee Module and Mark</param>
-        /// <returns>200: Updated / 409: Conflict / 404: trainee not found</returns>
+        /// <param name="listTraineeMarkInput">list of trainee,module and score</param>
+        /// <returns>200: Updated / 400: failed / 404: Trainee(s) has/have no class</returns>
         [HttpPut("trainee")]
         [Authorize(Policy = "MarkPut")]
-        public async Task<ActionResult> ChangeClassScore([FromBody] TraineeMarkInput traineeMarkInput)
+        public async Task<ActionResult> ChangeClassScore([FromBody] ArrayBodyInput<TraineeMarkInput> listTraineeMarkInput)
         {
-            Mark mark = _mapper.Map<Mark>(traineeMarkInput);
-            Trainee trainee = await _traineeService.GetTraineeById(mark.TraineeId);
-            if (trainee == null)
+            var (classId, Message) = await _traineeService.GetClassIdByTraineeId(listTraineeMarkInput.arrayData.Select(m => m.TraineeId).FirstOrDefault());
+            if (classId == 0)
             {
-                return NotFound(new ResponseDTO(404, "Trainee not found"));
-            }
-            Module module = await _moduleService.GetModuleById(mark.ModuleId);
-            if (module == null)
-            {
-                return NotFound(new ResponseDTO(404, "Module not found"));
-            }
-            var checkExist = await _markService.GetMarkByTraineeIdAndModuleId(mark.TraineeId, mark.ModuleId);
-            if (checkExist == null)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee does not study this module"));
-            }
-            if (checkExist.ModuleId == mark.ModuleId && checkExist.TraineeId == mark.TraineeId && checkExist.Score == mark.Score)
-            {
-                return Ok(new ResponseDTO(200, "Update trainee's score success"));
-            }
-            if (mark.Score < 0)
-            {
-                return BadRequest(new ResponseDTO(400, "Score cannot be negative"));
-            }
-            if (await _markService.UpdateMark(mark) == 1)
-            {
-                return Ok(new ResponseDTO(200, "Update trainee's score success"));
+                return NotFound(new ResponseDTO(404, Message));
             }
             else
             {
-                return Conflict(new ResponseDTO(409, "Fail to update trainee score"));
+                var marks = _mapper.Map<IEnumerable<Mark>>(listTraineeMarkInput.arrayData);
+                (bool status, string message) = await _markService.UpdateMarks(marks);
+                if (status == false)
+                {
+                    return BadRequest(new ResponseDTO(400, message));
+                }
+                await _reportService.AutoUpdateTraineesStatus(classId);
             }
-
+            return Ok(new ResponseDTO(200, "Update class score success"));
         }
 
         /// <summary>
