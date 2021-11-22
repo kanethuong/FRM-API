@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using AutoMapper;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TrainerDTO;
+using kroniiapi.Helper;
+using kroniiapi.Helper.UploadDownloadFile;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace kroniiapi.Controllers
@@ -22,13 +27,15 @@ namespace kroniiapi.Controllers
         private readonly ICalendarService _calendarService;
         private readonly IRoomService _roomService;
         private readonly IMapper _mapper;
-        public TrainerController(IMapper mapper, ITrainerService trainerService, IFeedbackService feedbackService, ICalendarService calendarService, IRoomService roomService)
+        private readonly IImgHelper _imgHelper;
+        public TrainerController(IMapper mapper, ITrainerService trainerService, IFeedbackService feedbackService, ICalendarService calendarService, IRoomService roomService, IImgHelper imgHelper)
         {
             _mapper = mapper;
             _trainerService = trainerService;
             _feedbackService = feedbackService;
             _calendarService = calendarService;
             _roomService = roomService;
+            _imgHelper = imgHelper;
         }
 
         /// <summary>
@@ -99,11 +106,14 @@ namespace kroniiapi.Controllers
                 foreach (var item in trainerTimeTables)
                 {
                     Room r = await _roomService.GetRoom(item.ClassId, item.ModuleId);
-                    if(r == null){
+                    if (r == null)
+                    {
                         item.RoomName = null;
-                    }else{
+                    }
+                    else
+                    {
                         item.RoomName = r.RoomName;
-                    }                    
+                    }
                 }
             }
             return Ok(trainerTimeTables);
@@ -168,6 +178,42 @@ namespace kroniiapi.Controllers
             else
             {
                 return Ok(new ResponseDTO(200, "Update profile success"));
+            }
+        }
+
+        /// <summary>
+        /// Update trainee avatar
+        /// </summary>
+        /// <param name="id">Trainee id</param>
+        /// <param name="image">The avatar to update</param>
+        /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Conflict</returns>
+        [HttpPut("{id:int}/avatar")]
+        [Authorize(Policy = "TrainerPut")]
+        public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
+        {
+            (bool isImage, string errorMsg) = FileHelper.CheckImageExtension(image);
+            if (isImage == false)
+            {
+                return Conflict(new ResponseDTO(409, errorMsg));
+            }
+            string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
+            Stream stream = image.OpenReadStream();
+            long fileLength = image.Length;
+            string fileType = image.ContentType;
+
+            string avatarUrl = await _imgHelper.Upload(stream, fileName, fileLength, fileType);
+            int rs = await _trainerService.UpdateAvatar(id, avatarUrl);
+            if (rs == -1)
+            {
+                return NotFound(new ResponseDTO(404, "Trainer profile cannot be found"));
+            }
+            else if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update trainer avatar"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Update avatar success"));
             }
         }
     }

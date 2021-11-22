@@ -1183,32 +1183,67 @@ namespace kroniiapi.Services.Report
 
                 // }
 
-                // var attSheet = package.Workbook.Worksheets[1];
-                // var attFill = attSheet.Cells["D2:D5"];
+                var attSheet = package.Workbook.Worksheets[1];
+                var attFill = attSheet.Cells["E2:F5"];
 
-                // var attList = await this.GetAttendanceInfo(classId);
-                // foreach (var item in attList)
-                // {
-                //     attFill = attFill.CreateNewColumns(1);
-                //     var date = attFill.SelectSubRange(3, attFill.Columns, 3, attFill.Columns);
-                //     date.Value = item.Key;
-                //     attFill.FillDataToCells(item.Value, (att, cell) =>
-                //     {
-                //         cell[2].Value = att.Status;
-                //     });
-                // }
-                var topicGradeList = this.GetTopicGrades(classId);
-                var topicGradeSheet = package.Workbook.Worksheets[2];
-                var gradeFill = topicGradeSheet.Cells[$"E1:E{7 + 2}"];
-                foreach (var item in topicGradeList.TopicInfos)
+                var attList = await this.GetAttendanceInfo(classId,new DateTime(2022,1,1));
+                foreach (var item in attList)
                 {
-                    
+
+                    var date = attFill.SelectSubRange(3, attFill.Columns, 3, attFill.Columns);
+                    date.Value = item.Key;
+                    attFill.FillDataToCellsColumn(item.Value, (att, cell) =>
+                    {
+                        cell[0].Value = att.Status;
+                        // cell[3].Value = att.Status;
+                    });
+                    var attNext = attFill.CreateNewColumns(1);
+                    attFill.Copy(attNext);
+                    attFill = attNext;
                 }
-                var newGrade = gradeFill.CreateNewColumns(1);
-                gradeFill.Copy(newGrade);
+
+                // var topicGradeList = this.GetTopicGrades(classId);
+                // var topicGradeSheet = package.Workbook.Worksheets[2];
+                // var gradeFill = topicGradeSheet.Cells[$"E1:E{7 + 2}"];
+                // foreach (var item in topicGradeList.TopicInfos)
+                // {
+
+                // }
+                // var newGrade = gradeFill.CreateNewColumns(1);
+                // gradeFill.Copy(newGrade);
                 return await package.GetAsByteArrayAsync();
             }
 
         }
+
+        public async Task<bool> AutoUpdateTraineesStatus(int classId)
+        {
+            var clazz = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => new Class
+            {
+                ClassId = c.ClassId,
+                EndDay = c.EndDay
+            }).FirstOrDefaultAsync();
+            if (clazz.EndDay > DateTime.Now)
+            {
+                return false;
+            }
+            DateTime tempTime = DateTime.Now;
+            var traineeGPAs = await GetTraineeGPAs(classId, tempTime);
+            foreach (var item in traineeGPAs)
+            {
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
+                if (item.Level == "D")
+                {
+                    trainee.Status = "Failed";
+                }
+                else
+                {
+                    trainee.Status = "Passed";
+                }
+                await _dataContext.SaveChangesAsync();
+            }
+            return true;
+        }
+
     }
 }

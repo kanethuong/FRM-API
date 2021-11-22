@@ -13,8 +13,8 @@ namespace kroniiapi.DTO.Profiles
         public ClassProfile()
         {
             CreateMap<Class, ClassResponse>()
-                .ForMember(cs => cs.Creator, m => m.MapFrom(a => a.Admin.Fullname)); //map fullname of admin in class model to fullname of classresponse
-
+                .ForMember(cs => cs.Creator, m => m.MapFrom(a => a.Admin.Fullname)) //map fullname of admin in class model to fullname of classresponse
+                .ForMember(cm => cm.NoOfModule,m => m.MapFrom(a => a.ClassModules.Count()));
             CreateMap<Trainer, TrainerInClassResponse>();
             CreateMap<Class, DeleteClassResponse>();
             CreateMap<Admin, CreatorDTO>();
