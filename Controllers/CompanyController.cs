@@ -9,7 +9,6 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.CompanyDTO;
 using kroniiapi.DTO.PaginationCompanyDTO;
-//using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
@@ -146,7 +145,13 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee")]
         public async Task<ActionResult<PaginationCompanyResponse<IEnumerable<TraineeSearchResponse>>>> SearchTraineeList([FromQuery] PaginationCompanyParameter paginationCompanyParameter)
         {
-            return null;
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _traineeService.GetAllTrainee(paginationCompanyParameter);
+            if (totalRecords == 0)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found"));
+            }
+            IEnumerable<TraineeSearchResponse> traineeDTO = _mapper.Map<IEnumerable<TraineeSearchResponse>>(trainees);
+            return Ok(new PaginationCompanyResponse<IEnumerable<TraineeSearchResponse>>(totalRecords, traineeDTO));
         }
 
         /// <summary>

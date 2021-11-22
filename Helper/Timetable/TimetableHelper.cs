@@ -22,6 +22,19 @@ namespace kroniiapi.Helper.Timetable
             new DateTime(1, 9, 3),
             //
         };
+        
+        public static List<DateTime> GetLunarHoliday(int year)
+        {
+            var holidayList = new List<DateTime>();
+            var startLunar = VietnameseLunarDateConverter.LunarDate(1, 1, year);
+            var startDay = startLunar.AddDays(-8);
+            for (var i = 0; i <= 14; i++)
+            {
+                holidayList.Add(startDay.AddDays(i));
+            }
+            holidayList.Add(VietnameseLunarDateConverter.LunarDate(10, 3, year));
+            return holidayList;
+        }
         /// <summary>
         /// Calculates number of business days, taking into account:
         ///  - weekends (Saturdays and Sundays)
@@ -60,11 +73,31 @@ namespace kroniiapi.Helper.Timetable
             // subtract the weekends during the full weeks in the interval
             businessDays -= fullWeekCount + fullWeekCount;
             // subtract the number of bank holidays during the time interval
-            foreach (DateTime bankHoliday in Holidays)
+            foreach (DateTime bankHoliday in holidayss)
             {
                 DateTime bh = bankHoliday.Date;
                 if (firstDay <= bh && bh <= lastDay)
                     --businessDays;
+            }
+            if (firstDay.Year == lastDay.Year)
+            {
+                var lundarHoliday = GetLunarHoliday(firstDay.Year);
+                foreach (var item in lundarHoliday)
+                {
+                    DateTime bh = item.Date;
+                    if (firstDay <= bh && bh <= lastDay)
+                    --businessDays;
+                }
+            } else
+            {
+                var lundarHoliday = GetLunarHoliday(firstDay.Year);
+                lundarHoliday.AddRange(GetLunarHoliday(lastDay.Year));
+                foreach (var item in lundarHoliday)
+                {
+                    DateTime bh = item.Date;
+                    if (firstDay <= bh && bh <= lastDay)
+                    --businessDays;
+                }
             }
             return businessDays;
         }
