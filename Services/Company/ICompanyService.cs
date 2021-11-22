@@ -17,11 +17,16 @@ namespace kroniiapi.Services
         Task<int> InsertNewCompany(Company company);
         bool InsertNewCompanyNoSaveChange(Company company);
         Task<int> UpdateCompany(int id, Company company);
+        Task<int> UpdateAvatar(int id, string avatarUrl);
         Task<int> DeleteCompany(int id);
         Task<CompanyRequest> GetCompanyRequestById(int id);
         Task<(int, List<string>)> ConfirmCompanyRequest(int id, bool isAccepted);
         Task<Tuple<int, IEnumerable<CompanyRequestResponse>>> GetCompanyRequestList(PaginationParameter paginationParameter);
         Task<CompanyRequest> GetCompanyRequestDetail(int requestId);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter);
+        Task<CompanyRequest> GetRequestDetailByCompanyIdAndRequestId(int companyId, int requestId);
+        Task<Tuple<int, IEnumerable<CompanyRequest>>> GetTraineeListInRequestByCompanyId(int companyId, PaginationParameter paginationParameter);
+        Task<int> InsertNewCompanyRequestIncludeTrainee(CompanyRequest companyRequest);
+        Task<List<int>> GetAcceptedTraineeIdList();
     }
 }

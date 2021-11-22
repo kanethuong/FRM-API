@@ -162,6 +162,26 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Update company's avatar method
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="avatarUrl"></param>
+        /// <returns>-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> UpdateAvatar(int id, string avatarUrl)
+        {
+            var existedCompany = await _dataContext.Companies.Where(t => t.CompanyId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
+            if (existedCompany == null)
+            {
+                return -1;
+            }
+            existedCompany.AvatarURL = avatarUrl;
+
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+
+        /// <summary>
         /// Delete a company in database
         /// </summary>
         /// <param name="id">ID of company to delete</param>
@@ -321,5 +341,86 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
+        /// <summary>
+        /// GetRequestDetailByCompanyIdAndRequestId
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <param name="requestId">Company Request id</param>
+        /// <returns>CompanyRequest</returns>
+        public async Task<CompanyRequest> GetRequestDetailByCompanyIdAndRequestId(int companyId, int requestId)
+        {
+            var companyRequest = await _dataContext.CompanyRequests.Where(comreq => comreq.CompanyRequestId == requestId && comreq.CompanyId == companyId)
+            .Select(comreq => new CompanyRequest
+            {
+                Content = comreq.Content,
+                CompanyRequestDetails = comreq.CompanyRequestDetails
+                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && !c.Trainee.Status.ToLower().Contains("onboard"))
+                                            .Select(tr => new CompanyRequestDetail
+                                            {
+                                                TraineeId = tr.TraineeId,
+                                                Trainee = new Trainee
+                                                {
+                                                    TraineeId = tr.TraineeId,
+                                                    AvatarURL = tr.Trainee.AvatarURL,
+                                                    Email = tr.Trainee.Email,
+                                                    Fullname = tr.Trainee.Fullname,
+                                                    Phone = tr.Trainee.Phone,
+                                                },
+                                                Wage = tr.Wage
+                                            })
+                                            .ToList()
+            }).FirstOrDefaultAsync();
+
+            return companyRequest;
+        }
+        /// <summary>
+        /// Get Company request list include trainee
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <returns>CompanyRequest</returns>
+        public async Task<Tuple<int, IEnumerable<CompanyRequest>>> GetTraineeListInRequestByCompanyId(int companyId, PaginationParameter paginationParameter)
+        {
+            IQueryable<CompanyRequest> result = _dataContext.CompanyRequests.Where(c => c.CompanyId == companyId);
+            if (paginationParameter.SearchName != "")
+            {
+                result = result.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Content.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<CompanyRequest> rs = await result
+            .GetCount(out var totalRecords)
+            .OrderBy(c => c.CreatedAt)
+            .GetPage(paginationParameter)
+            .Select(c => new CompanyRequest
+            {
+                CompanyRequestId = c.CompanyRequestId,
+                CompanyRequestDetails = c.CompanyRequestDetails,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                IsAccepted = c.IsAccepted
+            })
+            .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
+        }
+        /// <summary>
+        /// Insert New Request include trainee
+        /// </summary>
+        /// <param name="companyRequest"></param>
+        /// <returns>  </returns>
+        public async Task<int> InsertNewCompanyRequestIncludeTrainee(CompanyRequest companyRequest)
+        {
+            int rowInserted = 0;
+            _dataContext.CompanyRequests.Add(companyRequest);
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
+        }
+        /// <summary>
+        /// Get accepted traineeId list of any company without duplicated traineeId
+        /// </summary>
+        /// <returns>Accepted Trainee Id List</returns>
+        public async Task<List<int>> GetAcceptedTraineeIdList()
+        {
+            List<int> acceptedTraineeId = (List<int>)await _dataContext.CompanyRequestDetails.Where(c => c.CompanyRequest.IsAccepted == true).Select(c => c.TraineeId).Distinct().ToListAsync();
+            return acceptedTraineeId;
+        }
     }
 }

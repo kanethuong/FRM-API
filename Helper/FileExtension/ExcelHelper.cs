@@ -261,6 +261,93 @@ namespace kroniiapi.Helper
         }
 
         /// <summary>
+        /// Fill the entity to the cells in the worksheet (column)
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="worksheet">the worksheet</param>
+        /// <param name="list">the entities</param>
+        /// <param name="action">the action to fill the entity to the cells</param>
+        /// <param name="startRow">the row to start the action</param>
+        /// <param name="startCol">the column to start the action</param>
+        /// <param name="range">how many cells per row to be selected to be filled</param>
+        /// <returns>the inserted range</returns>
+        public static ExcelRangeBase FillDataToCellsColumn<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, IList<ExcelRangeBase>> action, int startRow, int startCol, int range)
+        {
+            int endRow = startRow + (range - 1);
+            int endCol = startCol + (list.Count() - 1);
+            var excelRange = worksheet.Cells[startRow, startCol, endRow, endCol];
+            return FillDataToCellsColumn(excelRange, list, action);
+        }
+
+        /// <summary>
+        /// Fill the entity to the cells in the cell range (column)
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="range">the cell range</param>
+        /// <param name="list">the entities</param>
+        /// <param name="action">the action to fill the entity to the cells</param>
+        /// <returns>the range for continuous methods</returns>
+        public static ExcelRangeBase FillDataToCellsColumn<TEntity>(this ExcelRangeBase range, IEnumerable<TEntity> list, Action<TEntity, IList<ExcelRangeBase>> action)
+        {
+            var worksheet = range.Worksheet;
+            return FillDataToRangeColumn(range, list, (entity, colRange) =>
+            {
+                List<ExcelRangeBase> cellsList = new();
+                int col = colRange.Start.Column;
+                int startRow = colRange.Start.Row;
+                int endRow = colRange.End.Row;
+                for (int row = startRow; col <= endRow; col++)
+                    cellsList.Add(worksheet.Cells[row, col]);
+                action.Invoke(entity, cellsList);
+            });
+        }
+
+        /// <summary>
+        /// Fill the entity to the cell range in the worksheet (column)
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="worksheet">the worksheet</param>
+        /// <param name="list">the entities</param>
+        /// <param name="action">the action to fill the entity to the cell range</param>
+        /// <param name="startRow">the row to start the action</param>
+        /// <param name="startCol">the column to start the action</param>
+        /// <param name="range">how many cells per column to be selected to be filled</param>
+        /// <returns>the inserted range</returns>
+        public static ExcelRangeBase FillDataToRangeColumn<TEntity>(this ExcelWorksheet worksheet, IEnumerable<TEntity> list, Action<TEntity, ExcelRangeBase> action, int startRow, int startCol, int range)
+        {
+            int endRow = startRow + (range - 1);
+            int endCol = startCol + (list.Count() - 1);
+            var excelRange = worksheet.Cells[startRow, startCol, endRow, endCol];
+            return FillDataToRangeColumn(excelRange, list, action);
+        }
+
+        /// <summary>
+        /// Fill the entity to the cell range (column)
+        /// </summary>
+        /// <typeparam name="TEntity">the type of the entity</typeparam>
+        /// <param name="range">the cell range</param>
+        /// <param name="list">the entities</param>
+        /// <param name="action">the action to fill the entity to the cell range</param>
+        /// <returns>the range for continuous methods</returns>
+        public static ExcelRangeBase FillDataToRangeColumn<TEntity>(this ExcelRangeBase range, IEnumerable<TEntity> list, Action<TEntity, ExcelRangeBase> action)
+        {
+            var worksheet = range.Worksheet;
+            int startRow = range.Start.Row;
+            int startCol = range.Start.Column;
+            int endRow = range.End.Row;
+            int endCol = range.End.Column;
+            var enumerator = list.GetEnumerator();
+            for (int col = startCol; col <= endCol; col++)
+            {
+                if (!enumerator.MoveNext()) break;
+                var item = enumerator.Current;
+                var rowRange = worksheet.Cells[startRow, col, endRow, col];
+                action.Invoke(item, rowRange);
+            }
+            return range;
+        }
+
+        /// <summary>
         /// Create new rows and select the created cell range
         /// </summary>
         /// <param name="rowRange">the initial row range</param>

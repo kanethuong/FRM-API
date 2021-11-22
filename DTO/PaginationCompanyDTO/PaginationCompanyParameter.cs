@@ -19,7 +19,7 @@ namespace kroniiapi.DTO.PaginationCompanyDTO
             {
                 if (value != null)
                 {
-                    value.Trim();
+                    value = value.Trim();
                     _searchName = value.Replace(" ", ":*|") + ":*";
                 }
                 else _searchName = "";
@@ -33,7 +33,7 @@ namespace kroniiapi.DTO.PaginationCompanyDTO
             {
                 if (value != null)
                 {
-                    value.Trim();
+                    value = value.Trim();
                     _searchSkill = value.Replace(" ", ":*|") + ":*";
                 }
                 else _searchSkill = "";
@@ -47,7 +47,7 @@ namespace kroniiapi.DTO.PaginationCompanyDTO
             {
                 if (value != null)
                 {
-                    value.Trim();
+                    value = value.Trim();
                     _searchLocation = value.Replace(" ", ":*|") + ":*";
                 }
                 else _searchLocation = "";
