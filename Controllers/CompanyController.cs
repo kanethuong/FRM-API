@@ -151,8 +151,9 @@ namespace kroniiapi.Controllers
         [HttpGet("trainee/{traineeId:int}/skill")]
         public async Task<ActionResult<IEnumerable<TraineeSkillResponse>>> ViewTraineeSkill(int traineeId)
         {
-            if(await _traineeService.GetTraineeById(traineeId) == null){
-                return NotFound(new ResponseDTO(404,"Trainee not found"));
+            if (await _traineeService.GetTraineeById(traineeId) == null)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee not found"));
             }
             var tSRList = await _traineeService.GetTraineeSkillByTraineeId(traineeId);
             return Ok(tSRList);
@@ -169,7 +170,8 @@ namespace kroniiapi.Controllers
             CompanyRequest companyRequest = _mapper.Map<CompanyRequest>(requestTraineeInput);
 
             var rs = await _companyService.InsertNewCompanyRequestIncludeTrainee(companyRequest);
-            if (rs == 0) {
+            if (rs == 0)
+            {
                 return BadRequest(new ResponseDTO(409, "Failed to send request"));
             }
             return Ok(new ResponseDTO(200, "Send Success"));
@@ -202,15 +204,15 @@ namespace kroniiapi.Controllers
         [HttpGet("{companyId:int}/{requestId:int}")]
         public async Task<ActionResult<RequestTraineeDetailResponse>> ViewRequestDetail(int companyId, int requestId)
         {
-            if(await _companyService.GetCompanyById(companyId) == null)
+            if (await _companyService.GetCompanyById(companyId) == null)
             {
                 return NotFound(new ResponseDTO(404, "Company not found!"));
             }
-            if(await _companyService.GetCompanyRequestById(requestId) == null)
+            if (await _companyService.GetCompanyRequestById(requestId) == null)
             {
                 return NotFound(new ResponseDTO(404, "Request not found!"));
             }
-            var companyRequest = await _companyService.GetRequestDetailByCompanyIdAndRequestId(companyId,requestId);
+            var companyRequest = await _companyService.GetRequestDetailByCompanyIdAndRequestId(companyId, requestId);
             if (companyRequest == null)
             {
                 return NotFound(new ResponseDTO(404, "Company request not found!"));
@@ -228,6 +230,30 @@ namespace kroniiapi.Controllers
         /// <returns> 200: Upload success / 404: ID not found / 409: Fail to upload </returns>
         [HttpPost("{companyId:int}/{requestId:int}/report")]
         public async Task<ActionResult> UploadReport(int companyId, int requestId, [FromForm] IFormFile file)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Edit company profile
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="companyProfileDetailInput"></param>
+        /// <returns> 200: Edit success / 404: Company not found / 409: Edit fail</returns>
+        [HttpPut("{companyId:int}/profile")]
+        public async Task<ActionResult> EditProfile(int companyId, [FromBody] CompanyProfileDetailInput companyProfileDetailInput)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Update company avatar
+        /// </summary>
+        /// <param name="companyId"></param>
+        /// <param name="image"></param>
+        /// <returns> 200: Update success / 404: Company not found / 409: Update fail </returns>
+        [HttpPut("{companyId:int}/avatar")]
+        public async Task<ActionResult> UpdateAvatar(int companyId, IFormFile image)
         {
             return null;
         }
