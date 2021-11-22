@@ -296,7 +296,7 @@ namespace kroniiapi.Helper
                 int col = colRange.Start.Column;
                 int startRow = colRange.Start.Row;
                 int endRow = colRange.End.Row;
-                for (int row = startRow; col <= endRow; col++)
+                for (int row = startRow; row <= endRow; row++)
                     cellsList.Add(worksheet.Cells[row, col]);
                 action.Invoke(entity, cellsList);
             });
@@ -341,8 +341,8 @@ namespace kroniiapi.Helper
             {
                 if (!enumerator.MoveNext()) break;
                 var item = enumerator.Current;
-                var rowRange = worksheet.Cells[startRow, col, endRow, col];
-                action.Invoke(item, rowRange);
+                var colRange = worksheet.Cells[startRow, col, endRow, col];
+                action.Invoke(item, colRange);
             }
             return range;
         }
