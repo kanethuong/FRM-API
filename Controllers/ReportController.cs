@@ -30,7 +30,7 @@ namespace kroniiapi.Controllers
         // [Authorize(Policy = "ReportGet")]
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTimeOffset? at = null)
         {
-            var stream = await _reportService.GenerateClassReport(classId);
+            var stream = await _reportService.GenerateTotalClassReport(classId);
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Report.xlsx");
         }
         [HttpGet("attendance/{classId:int}")]

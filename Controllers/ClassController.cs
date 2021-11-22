@@ -419,7 +419,7 @@ namespace kroniiapi.Controllers
                     Trainer trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
                     if (trainer is null)
                     {
-                        errors.Add("Invalid module: " + module);
+                        errors.Add("Invalid trainer: " + trainerEmail);
                         continue;
                     }
                     int trainerId = trainer.TrainerId;
@@ -608,7 +608,11 @@ namespace kroniiapi.Controllers
                     var clazz = await _classService.GetClassByClassName(modulePair.Key);
                     if (clazz is not null)
                     {
-                        await _classService.AddDataToClassModule(clazz.ClassId, modulePair.Value);
+                        var trainerModules = modulePair.Value;
+                        (bool isAvailable, string errorMessage) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
+
+                        if (isAvailable) await _classService.AddDataToClassModule(clazz.ClassId, trainerModules);
+                        else errors.Add(errorMessage);
                     }
                 }
 
@@ -630,6 +634,11 @@ namespace kroniiapi.Controllers
                     if (clazz is not null)
                     {
                         await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
+                        
+                        int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
+                        if (attRs == -2) errors.Add($"Class {clazz.ClassName} already have attendance");
+                        else if (attRs == -1) errors.Add($"Class {clazz.ClassName} did not exist");
+                        else if (attRs == 0) errors.Add($"Class {clazz.ClassName} failed to init attendance");
                     }
                 }
 

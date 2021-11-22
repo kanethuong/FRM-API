@@ -68,6 +68,36 @@ namespace kroniiapi.Services
 
             return Tuple.Create(totalRecords, rs);
         }
-        
+
+        public async Task<IEnumerable<BonusAndPunish>> GetBonusAndPunishListByClassId(int classId)
+        {
+            var trainees = await _dataContext.Trainees.Where(t => t.ClassId == classId).Select(t => t.TraineeId).ToListAsync();
+            var bNpList = new List<BonusAndPunish>();
+            foreach (var traineeId in trainees)
+            {
+                var temp = await _dataContext.BonusAndPunishes.Where(b => b.TraineeId == traineeId).Select(b => new BonusAndPunish
+                {
+                    BonusAndPunishId = b.BonusAndPunishId,
+                    CreatedAt = b.CreatedAt,
+                    Reason = b.Reason,
+                    Score = b.Score,
+                    TraineeId = b.TraineeId,
+                    Trainee = new Trainee
+                    {
+                        TraineeId = b.Trainee.TraineeId,
+                        Fullname = b.Trainee.Fullname,
+                        AvatarURL = b.Trainee.AvatarURL,
+                        ClassId = b.Trainee.ClassId,
+                        Email = b.Trainee.Email,
+                        Class = new Class
+                        {
+                            ClassName = b.Trainee.Class.ClassName
+                        }
+                    }
+                }).ToListAsync();
+                bNpList.AddRange(temp);
+            }
+            return bNpList;
+        }
     }
 }

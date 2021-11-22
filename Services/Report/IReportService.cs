@@ -23,6 +23,6 @@ namespace kroniiapi.Services.Report
         List<AttendanceReport> GetTotalAttendanceReports(int classId);
         Task<CheckpointReport> GetCheckpointReport(int classId);
         Dictionary<DateTime, ICollection<TraineeFeedback>> GetAllTraineeFeedbacks(int classId);
-        Task<byte[]> GenerateClassReport(int classId);
+        Task<byte[]> GenerateTotalClassReport(int classId);
     }
 }
