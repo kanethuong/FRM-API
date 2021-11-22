@@ -276,7 +276,7 @@
 <div id="changeClassScore">
     <!-- Function Title -->
     <div class="w-75 border-bottom mb-3">
-        <h3>Change Class Score (Each of trainee)</h3>
+        <h3>Change Class Score</h3>
     </div>
     <p>By DanhLPT</p>
     <div>
@@ -296,7 +296,7 @@
         </div>
         <div class="col-4">
             <h5>Status</h5>
-            <p>200 404 400 409</p>
+            <p>200 400 404</p>
         </div>
     </div>
 
@@ -314,9 +314,13 @@
             <h5>Request Body</h5>
             <p>
             <pre><code>{
-    "moduleId": int,
-    "traineeId": int,
-    "score": float
+    "arrayData": [
+        {
+            "moduleId": int,
+            "traineeId": int,
+            "score": float
+        }
+    ]
 }
         </code></pre>
             </p>

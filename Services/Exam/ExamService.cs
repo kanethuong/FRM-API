@@ -195,5 +195,31 @@ namespace kroniiapi.Services
 
             return (true, "Cancel an exam successfully");
         }
+
+        /// <summary>
+        /// Get last n slot an exam with exam id
+        /// </summary>
+        /// <param name="id">Exam id</param>
+        /// <returns>false: Id not found, Exam was cancelled, Error / true: Cancelled</returns>
+        public async Task<bool> CheckDateExam(int classId,int moduleId,DateTime time,int lastSlot){
+            var module = await _dataContext.Modules.Where(m => m.ModuleId == moduleId).FirstOrDefaultAsync();
+            List<int> lastSlotList  = new List<int>();
+            for (int i = module.NoOfSlot; i > module.NoOfSlot - lastSlot; i--)
+            {
+                lastSlotList.Add(i);
+            }
+            var calendars = await _dataContext.Calendars.Where(c => c.ClassId == classId 
+                                                              && c.ModuleId == moduleId
+                                                              && c.SyllabusSlot >= (module.NoOfSlot - lastSlot)
+                                                              && module.NoOfSlot >= c.SyllabusSlot).ToListAsync();
+            foreach (var item in calendars)
+            {
+                if(time == item.Date){
+                    return true;
+                }
+            }
+            return false;
+        }
+        
     }
 }

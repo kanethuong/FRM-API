@@ -15,6 +15,7 @@ namespace kroniiapi.Services
         Task<int> InsertNewTrainer(Trainer trainer);
         bool InsertNewTrainerNoSaveChange(Trainer trainer);
         Task<int> UpdateTrainer(int id, Trainer trainer);
+        Task<int> UpdateAvatar(int id, string avatarUrl);
         Task<int> DeleteTrainer(int id);
         Task<Tuple<int, IEnumerable<Trainer>>> GetAllTrainer(PaginationParameter paginationParameter);
         bool CheckTrainerExist(int id);
