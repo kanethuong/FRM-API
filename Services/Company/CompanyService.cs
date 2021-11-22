@@ -162,6 +162,26 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Update company's avatar method
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="avatarUrl"></param>
+        /// <returns>-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> UpdateAvatar(int id, string avatarUrl)
+        {
+            var existedCompany = await _dataContext.Companies.Where(t => t.CompanyId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
+            if (existedCompany == null)
+            {
+                return -1;
+            }
+            existedCompany.AvatarURL = avatarUrl;
+
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+
+        /// <summary>
         /// Delete a company in database
         /// </summary>
         /// <param name="id">ID of company to delete</param>
@@ -382,9 +402,9 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
         /// <summary>
-        /// Insert New Request 
+        /// Insert New Request include trainee
         /// </summary>
-        /// <param name="requestDeleteClassInput"></param>
+        /// <param name="companyRequest"></param>
         /// <returns>  </returns>
         public async Task<int> InsertNewCompanyRequestIncludeTrainee(CompanyRequest companyRequest)
         {
@@ -392,6 +412,15 @@ namespace kroniiapi.Services
             _dataContext.CompanyRequests.Add(companyRequest);
             rowInserted = await _dataContext.SaveChangesAsync();
             return rowInserted;
+        }
+        /// <summary>
+        /// Get accepted traineeId list of any company without duplicated traineeId
+        /// </summary>
+        /// <returns>Accepted Trainee Id List</returns>
+        public async Task<List<int>> GetAcceptedTraineeIdList()
+        {
+            List<int> acceptedTraineeId = (List<int>)await _dataContext.CompanyRequestDetails.Where(c => c.CompanyRequest.IsAccepted == true).Select(c => c.TraineeId).Distinct().ToListAsync();
+            return acceptedTraineeId;
         }
     }
 }
