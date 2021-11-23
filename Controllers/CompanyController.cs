@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    //[Authorize(Policy = "Company")]
+    [Authorize(Policy = "Company")]
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
