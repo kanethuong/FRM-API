@@ -28,7 +28,7 @@ namespace kroniiapi.Controllers
 
         private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService,IRoomService roomService,TimetableService timeTableService)
+        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService, IRoomService roomService, ITimetableService timeTableService)
         {
             _examService = examService;
             _mapper = mapper;
@@ -49,8 +49,9 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
-            if(_timeTableService.DayOffCheck(newExamInput.ExamDay)){
-                return BadRequest(new ResponseDTO(400,"Exam time can't be in day off"));
+            if (_timeTableService.DayOffCheck(newExamInput.ExamDay))
+            {
+                return BadRequest(new ResponseDTO(400, "Exam time can't be in day off"));
             }
             var errorNotfound = new List<String>();
             var errorNotModule = new List<String>();
@@ -181,7 +182,7 @@ namespace kroniiapi.Controllers
             }
             newExamInput.TraineeIdList = traineeIdList;
             Exam exam = _mapper.Map<Exam>(newExamInput);
-            var Room = await _roomService.GetRoom(newExamInput.classId,newExamInput.ModuleId);
+            var Room = await _roomService.GetRoom(newExamInput.classId, newExamInput.ModuleId);
             exam.RoomId = Room.RoomId;
             exam.Trainees = traineeList;
             var rs = await _examService.InsertNewExam(exam);
