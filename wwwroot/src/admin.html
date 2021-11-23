@@ -7,55 +7,56 @@
     <div id="getAdminList">
 
         <div id="adminDashboard">
-        <!-- Function Title -->
-        <div class="w-75 border-bottom mb-3">
-            <h3>Admin dasbhoard</h3>
-        </div>
-        <p>By PhuTT</p>
-        <div>
-            <h5>Endpoint</h5>
-            <p>/api/admin/dashboard/{adminId}</p>
-        </div>
+            <!-- Function Title -->
+            <div class="w-75 border-bottom mb-3">
+                <h3>Admin dasbhoard</h3>
+            </div>
+            <p>By PhuTT</p>
+            <div>
+                <h5>Endpoint</h5>
+                <p>/api/admin/dashboard/{adminId}</p>
+            </div>
 
-        <!-- Role, Method and Status code -->
-        <div class="row mb-3">
-            <div class="col-4 border-end">
-                <h5>Allow</h5>
-                <p>Admin</p>
+            <!-- Role, Method and Status code -->
+            <div class="row mb-3">
+                <div class="col-4 border-end">
+                    <h5>Allow</h5>
+                    <p>Admin</p>
+                </div>
+                <div class="col-4 border-end">
+                    <h5>Method</h5>
+                    <p>GET</p>
+                </div>
+                <div class="col-4">
+                    <h5>Status</h5>
+                    <p>200 400</p>
+                </div>
             </div>
-            <div class="col-4 border-end">
-                <h5>Method</h5>
-                <p>GET</p>
-            </div>
-            <div class="col-4">
-                <h5>Status</h5>
-                <p>200 400</p>
-            </div>
-        </div>
 
-        <!-- Parameter & file -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Parameter</h5>
-                <p>adminId: Id of admin (required)</p>
-                <p>classId: Id of class (required)</p>
-                <p>reportAt: DateTime to export report (export final report when no input)</p>
+            <!-- Parameter & file -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Parameter</h5>
+                    <p>adminId: Id of admin (required)</p>
+                    <p>classId: Id of class (required)</p>
+                    <p>reportAt: DateTime to export report (export final report when no input)</p>
+                </div>
+                <div class="col-6">
+                    <h5>Note</h5>
+                    <p>Call <a href="#getAdminClass">get admin class by year</a> to get admin class by year</p>
+                </div>
             </div>
-            <div class="col-6">
-                <h5>Note</h5>
-                <p>Call <a href="#getAdminClass">get admin class by year</a> to get admin class by year</p>
-            </div>
-        </div>
 
-        <!-- Request body and Response body  -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Request Body</h5>
-                <p>None</p>
-            </div>
-            <div class="col-6">
-                <h5>Response Body</h5>
-                <p><pre><code>
+            <!-- Request body and Response body  -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Request Body</h5>
+                    <p>None</p>
+                </div>
+                <div class="col-6">
+                    <h5>Response Body</h5>
+                    <p>
+                    <pre><code>
 {
     "classStatus": {
         "learning": float,
@@ -96,10 +97,11 @@
         "reportAt": "DateTime",
         "isSumary": bool
     }
-}</code></pre></p>
+}</code></pre>
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
@@ -145,7 +147,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-            <p><pre><code>{
+                <p>
+                <pre><code>{
     "totalRecords": int,
     "payload": [
         {
@@ -156,7 +159,8 @@
         "wage": int
         }
     ]
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
@@ -204,7 +208,8 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-            <p><pre><code>{
+                <p>
+                <pre><code>{
     "fullname": "string",
     "avatarURL": "string",
     "email": "string",
@@ -213,10 +218,125 @@
     "address": "string",
     "gender": "string",
     "wage": int
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
+
+    <!-- Edit admin profile -->
+    <div id="editAdminProfile">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Edit Admin Profile</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Admin/{id}/profile</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of admin</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>
+    {
+        "fullname": "string",
+        "phone": "string",
+        "dob": DateTime,
+        "address": "string",
+        "gender": "string",
+        "facebook": "string"
+    }
+                    </code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error response</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit admin avatar -->
+    <div id="editAdminAvatar">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Edit Admin Avatar</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Admin/{id}/avatar</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: id of admin</p>
+            </div>
+            <div class="col-6">
+                <h5>Form file</h5>
+                <p>File: .jpeg / .png / .jpg</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Get Admin Feedback -->
     <div id="getAdminFeedback">
         <!-- Function Title -->
@@ -261,12 +381,14 @@
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-            <p><pre><code>{
+                <p>
+                <pre><code>{
     "rate": int,
     "content": "string"
-}</code></pre></p>
+}</code></pre>
+                </p>
             </div>
         </div>
     </div>
-   
+
 </div>
