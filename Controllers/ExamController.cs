@@ -28,7 +28,7 @@ namespace kroniiapi.Controllers
 
         private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService,IRoomService roomService,TimetableService timeTableService)
+        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService,IRoomService roomService,ITimetableService timeTableService)
         {
             _examService = examService;
             _mapper = mapper;
