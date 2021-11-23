@@ -24,10 +24,11 @@ namespace kroniiapi.Controllers
         private readonly IModuleService _moduleService;
         private readonly IClassService _classService;
         private readonly IRoomService _roomService;
+        private readonly ITimetableService _timeTableService;
 
         private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService,IRoomService roomService)
+        public ExamController(IExamService examService, IMapper mapper, ITraineeService traineeService, IAdminService adminService, IModuleService moduleService, IClassService classService,IRoomService roomService,TimetableService timeTableService)
         {
             _examService = examService;
             _mapper = mapper;
@@ -36,6 +37,7 @@ namespace kroniiapi.Controllers
             _moduleService = moduleService;
             _classService = classService;
             _roomService = roomService;
+            _timeTableService = timeTableService;
         }
 
         /// <summary>
@@ -47,6 +49,9 @@ namespace kroniiapi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateNewExam(NewExamInput newExamInput)
         {
+            if(_timeTableService.DayOffCheck(newExamInput.ExamDay)){
+                return BadRequest(new ResponseDTO(400,"Exam time can't be in day off"));
+            }
             var errorNotfound = new List<String>();
             var errorNotModule = new List<String>();
             if (newExamInput.ExamDay <= DateTime.Now)

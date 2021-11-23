@@ -860,7 +860,7 @@ namespace kroniiapi.Services.Report
                 PassingScore = averageScoreInfo.Select(m => m.PassingScore).Sum(),
                 WeightNumber = averageScoreInfo.Select(m => m.WeightNumber).Sum()
             };
-            foreach(var item in finalMarks)
+            foreach (var item in finalMarks)
             {
                 item.Score = item.Score / finalMarksInfo.WeightNumber;
             }
@@ -993,36 +993,12 @@ namespace kroniiapi.Services.Report
                 var GPALabel = GPASheet.Cells["A27:A31"];
                 var GPAValue = GPASheet.Cells["B27:B31"];
                 var pieChart = Helper.ExcelHelper.GeneratePieChart(GPASheet, "Tỉ lệ checkpoint", GPALabel, GPAValue);
-                pieChart.SetPosition(28,0,5,0);
-                pieChart.SetSize(500,350);
+                pieChart.SetPosition(28, 0, 5, 0);
+                pieChart.SetSize(500, 350);
 
                 return await package.GetAsByteArrayAsync();
             }
 
         }
-
-        public async Task<bool> AutoUpdateTraineesStatus(int classId){
-            var clazz = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => new Class{
-                ClassId = c.ClassId,
-                EndDay = c.EndDay
-            }).FirstOrDefaultAsync();
-            if(clazz.EndDay > DateTime.Now){
-                return false;
-            }
-            DateTime tempTime = DateTime.Now;
-            var traineeGPAs = await GetTraineeGPAs(classId,tempTime);
-            foreach (var item in traineeGPAs)
-            {
-                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
-                if(item.Level == "D"){
-                    trainee.Status = "Failed";
-                }else{
-                    trainee.Status = "Passed";
-                }
-                await _dataContext.SaveChangesAsync();
-            }
-            return true;
-        } 
-
     }
 }

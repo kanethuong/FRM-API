@@ -11,6 +11,7 @@ using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
+using kroniiapi.Services.Report;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -19,6 +20,7 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
+        private readonly IReportService _reportService;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -397,10 +399,13 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId){
-            var cers = await _dataContext.Certificates.Where(c => c.TraineeId == traineeId).Select(c => new Certificate{
+        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId)
+        {
+            var cers = await _dataContext.Certificates.Where(c => c.TraineeId == traineeId).Select(c => new Certificate
+            {
                 CreatedAt = c.CreatedAt,
-                Module = new Module{
+                Module = new Module
+                {
                     ModuleName = c.Module.ModuleName
                 }
             }).ToListAsync();
@@ -414,6 +419,35 @@ namespace kroniiapi.Services
             }
             return tsr;
         }
+        public async Task<bool> AutoUpdateTraineesStatus(int classId)
+        {
+            var clazz = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => new Class
+            {
+                ClassId = c.ClassId,
+                EndDay = c.EndDay
+            }).FirstOrDefaultAsync();
+            if (clazz.EndDay > DateTime.Now)
+            {
+                return false;
+            }
+            DateTime tempTime = DateTime.Now;
+            var traineeGPAs = await _reportService.GetTraineeGPAs(classId, tempTime);
+            foreach (var item in traineeGPAs)
+            {
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
+                if (item.Level == "D")
+                {
+                    trainee.Status = "Failed";
+                }
+                else
+                {
+                    trainee.Status = "Passed";
+                }
+                await _dataContext.SaveChangesAsync();
+            }
+            return true;
+        }
+
 
         /// <summary>
         /// Get Trainees for company request
@@ -426,6 +460,7 @@ namespace kroniiapi.Services
             IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false)
                 .Select(e => new Trainee
                 {
+                    TraineeId = e.TraineeId,
                     CreatedAt = e.CreatedAt,
                     Fullname = e.Fullname,
                     Username = e.Username,
