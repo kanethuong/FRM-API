@@ -14,6 +14,7 @@ namespace kroniiapi.DTO.Profiles
         {
             CreateMap<Admin,AdminResponse>();
             CreateMap<Admin,AdminProfileDetail>();
+            CreateMap<AdminProfileDetailInput,Admin>();
         }
     }
 }
