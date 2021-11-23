@@ -209,6 +209,11 @@ namespace kroniiapi.Controllers
             {
                 return Conflict(new ResponseDTO(409, errorMsg));
             }
+
+            if (_traineeService.CheckTraineeExist(id) == false)
+            {
+                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
+            }
             string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
             Stream stream = image.OpenReadStream();
             long fileLength = image.Length;
@@ -216,11 +221,7 @@ namespace kroniiapi.Controllers
 
             string avatarUrl = await _imgHelper.Upload(stream, fileName, fileLength, fileType);
             int rs = await _traineeService.UpdateAvatar(id, avatarUrl);
-            if (rs == -1)
-            {
-                return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
-            }
-            else if (rs == 0)
+            if (rs == 0)
             {
                 return Conflict(new ResponseDTO(409, "Fail to update trainee avatar"));
             }
