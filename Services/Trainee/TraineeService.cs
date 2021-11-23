@@ -460,6 +460,7 @@ namespace kroniiapi.Services
             IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false)
                 .Select(e => new Trainee
                 {
+                    TraineeId = e.TraineeId,
                     CreatedAt = e.CreatedAt,
                     Fullname = e.Fullname,
                     Username = e.Username,
