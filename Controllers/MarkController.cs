@@ -29,6 +29,7 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IMapper _mapper;
         private readonly IMegaHelper _megaHelper;
+        private readonly IImgHelper _imgHelper;
         private readonly IModuleService _moduleService;
         private readonly IClassService _classService;
         private readonly IMarkService _markService;
@@ -41,8 +42,9 @@ namespace kroniiapi.Controllers
                             IModuleService moduleService,
                             IMarkService markService,
                             IClassService classService,
-                            ITrainerService trainerService
-                            )
+                            ITrainerService trainerService,
+                            IReportService reportService,
+                            IImgHelper imgHelper)
         {
             _traineeService = traineeService;
             _certificateService = certificateService;
@@ -52,6 +54,8 @@ namespace kroniiapi.Controllers
             _markService = markService;
             _classService = classService;
             _trainerService = trainerService;
+            _reportService = reportService;
+            _imgHelper = imgHelper;
         }
 
         /// <summary>
@@ -93,7 +97,7 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(400, "Your submission file must be image"));
             }
             Stream stream = file.OpenReadStream();
-            string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
+            string Uri = await _imgHelper.Upload(stream, file.FileName, file.Length, file.ContentType);
             Certificate certificate = _mapper.Map<Certificate>(certificateInput);
             certificate.CertificateURL = Uri;
             int status = await _certificateService.InsertCertificate(certificate);

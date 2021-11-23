@@ -134,7 +134,7 @@ namespace kroniiapi
                     policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
 
                 options.AddPolicy("ModuleGet", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer", "company" })));
                 options.AddPolicy("ModulePost", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
                 options.AddPolicy("ModulePut", policy =>

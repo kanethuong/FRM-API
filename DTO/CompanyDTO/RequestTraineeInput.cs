@@ -12,7 +12,7 @@ namespace kroniiapi.DTO.CompanyDTO
         [Required]
         public int CompanyId { get; set; }
         [Required]
-        public IEnumerable<TraineeInRequestDetail> Trainees { get; set; }
+        public IEnumerable<TraineeInRequestDetail> CompanyRequestDetails { get; set; }
 
         public string Content { get; set; }
     }

@@ -10,6 +10,7 @@ using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.MarkDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
+using kroniiapi.Helper.Timetable;
 using kroniiapi.Services;
 using kroniiapi.Services.Attendance;
 using Microsoft.AspNetCore.Authorization;
@@ -37,10 +38,16 @@ namespace kroniiapi.Controllers
             _datacontext = dataContext;
         }
         [HttpPost("create")]
-        public async Task<ActionResult> CreateTimetableForClass(DateTime start,DateTime end, List<int> moduleIdList)
+        public async Task<ActionResult> CreateTimetableForClass(int year)
         {
-            var (check, message) = _timetableService.CheckRoomsNewClass(moduleIdList, start, end);
-            return Ok(message);
+            var startDay = new DateTime(year, 1, 1);
+            var endDay = new DateTime(year + 1, 12, 31);
+            var holiday = new List<DateTime>{
+                new DateTime(1,1,1)
+            };
+            var lunarholi = TimetableHelper.GetLunarHoliday(year);
+            lunarholi.AddRange(TimetableHelper.GetLunarHoliday(year + 1));
+            return Ok(lunarholi);
         }
 
     }
