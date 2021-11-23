@@ -932,7 +932,7 @@ namespace kroniiapi.Services.Report
         /// <returns>An excel report file</returns>
         public async Task<byte[]> GenerateTotalClassReport(int classId)
         {
-            string path = "\\ReportTemplate\\template.xlsx";
+            string path = "\\wwwroot\\ReportTemplate\\template.xlsx";
             string workingDirectory = Environment.CurrentDirectory;
             string pathToTest = workingDirectory + path;
 
@@ -1382,7 +1382,7 @@ namespace kroniiapi.Services.Report
 
         public async Task<byte[]> GenerateClassReportEachMonth(int classId, DateTime reportAt)
         {
-            string path = "\\ReportTemplate\\template.xlsx";
+            string path = "\\wwwroot\\ReportTemplate\\template.xlsx";
             string workingDirectory = Environment.CurrentDirectory;
             string pathToTest = workingDirectory + path;
 
