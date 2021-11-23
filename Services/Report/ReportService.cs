@@ -260,13 +260,12 @@ namespace kroniiapi.Services.Report
             return DisciplinaryPoint;
         }
         /// <summary>
-        /// Get total attendance report in all month
+        /// Get the months of class between start day and end day
         /// </summary>
         /// <param name="classId"></param>
-        /// <returns></returns>
-        public List<AttendanceReport> GetTotalAttendanceReports(int classId)
+        /// <returns>list of month</returns>
+        public IEnumerable<DateTime> GetMonthListOfClass(int classId)
         {
-            var attendanceReports = new List<AttendanceReport>();
             var classGet = _dataContext.Classes.FirstOrDefault(c => c.ClassId == classId);
             var start = classGet.StartDay;
             var end = classGet.EndDay;
@@ -277,6 +276,17 @@ namespace kroniiapi.Services.Report
                                 .Select(e => start.AddMonths(e))
                                 .TakeWhile(e => e <= end)
                                 .Select(e => e);
+            return listMonth;
+        }
+        /// <summary>
+        /// Get total attendance report in all month
+        /// </summary>
+        /// <param name="classId"></param>
+        /// <returns></returns>
+        public List<AttendanceReport> GetTotalAttendanceReports(int classId)
+        {
+            var attendanceReports = new List<AttendanceReport>();
+            var listMonth = this.GetMonthListOfClass(classId);
 
             var traineeList = _dataContext.Trainees.Where(t => t.ClassId == classId && t.IsDeactivated == false).ToList();
             foreach (var trainee in traineeList)
@@ -928,7 +938,7 @@ namespace kroniiapi.Services.Report
 
                 // //Fill data to trainee general Info sheet
                 // var generalInfoSheet = package.Workbook.Worksheets[0];
-                // var traineeList = this.GetTraineesInfo(classId);
+                var traineeList = this.GetTraineesInfo(classId);
                 // var traineeInfoFill = generalInfoSheet.Cells[$"A4:T{traineeList.Count() + 4}"];
                 // traineeInfoFill.FillDataToCells(traineeList, (trainee, cells) =>
                 // {
@@ -1183,34 +1193,131 @@ namespace kroniiapi.Services.Report
 
                 // }
 
-                var attSheet = package.Workbook.Worksheets[1];
-                var attFill = attSheet.Cells["E2:F5"];
-
-                var attList = await this.GetAttendanceInfo(classId,new DateTime(2022,1,1));
-                foreach (var item in attList)
-                {
-
-                    var date = attFill.SelectSubRange(3, attFill.Columns, 3, attFill.Columns);
-                    date.Value = item.Key;
-                    attFill.FillDataToCellsColumn(item.Value, (att, cell) =>
-                    {
-                        cell[0].Value = att.Status;
-                        // cell[3].Value = att.Status;
-                    });
-                    var attNext = attFill.CreateNewColumns(1);
-                    attFill.Copy(attNext);
-                    attFill = attNext;
-                }
-
-                // var topicGradeList = this.GetTopicGrades(classId);
-                // var topicGradeSheet = package.Workbook.Worksheets[2];
-                // var gradeFill = topicGradeSheet.Cells[$"E1:E{7 + 2}"];
-                // foreach (var item in topicGradeList.TopicInfos)
+                // // Fill data to trainees status of each day
+                // var attSheet = package.Workbook.Worksheets[1];
+                // var attFill = attSheet.Cells[$"E2:E{4 + traineeList.Count - 1}"];
+                // var attList = await this.GetAttendanceInfo(classId);
+                // foreach (var item in attList)
                 // {
+                //     var date = attFill.SelectSubRange(2, 1, 2, 1);
+                ////     var a = item.Key;
+                //     date.Value = item.Key;
+                //     attFill.FillDataToCellsColumn(item.Value, (att, cell) =>
+                //     {
+                //         cell.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
+                //         int i = 2;
+                //         foreach (var t in item.Value)
+                //         {
+                //             cell[i].Value = t.Status;
+                //             i++;
+                //         }
+                //     });
+                //     if (item.Equals(attList.Last()))
+                //     {
+                //         break;
+                //     }
+                //     var attNext = attFill.CreateNewColumns(1);
+                //     attFill.Copy(attNext);
+                //     attFill = attNext;
+                // }
+
+                // // Fill data to trainee info from A to D columnn
+                // var traineeInAttFill = attSheet.Cells[$"A4:D{4 + traineeList.Count - 1}"];
+                // List<int> traineePosition = new List<int>();
+                // for (int i = 4; i <= 4 + traineeList.Count - 1; i++)
+                // {
+                //     traineePosition.Add(i);
+                // }
+                // traineeInAttFill.FillDataToCells(traineePosition, (pos, cells) =>
+                // {
+                //     cells.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
+                //     cells[0].Formula = $"'Trainee general info'!A{pos}";
+                //     cells[1].Formula = $"'Trainee general info'!B{pos}";
+                //     cells[2].Formula = $"'Trainee general info'!C{pos}";
+                //     cells[3].Formula = $"'Trainee general info'!M{pos}";
+                // });
+                // // Fill data to attendance report each month (Fill one month and create new 4 column to fill next month)
+                // var monthAttRpRange = attSheet.Cells[2, 5 + attList.Count, 4 + traineeList.Count - 1, 5 + attList.Count + 3]; //position of month Att report part in template
+                // var listMonth = this.GetMonthListOfClass(classId);
+                // foreach (var month in listMonth)
+                // {
+                //     var monthAttRpFill = monthAttRpRange.SelectSubRange(3, 1, 3 + traineeList.Count - 1, 4);
+                //     var monthFill = monthAttRpRange.SelectSubRange(1, 1, 1, 4);
+                //     var monthRp = this.GetAttendanceReportEachMonth(classId, month);
+
+                //     monthAttRpFill.FillDataToCells(monthRp.First().Value, (rp, cells) =>
+                //      {
+                //          cells.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
+                //          cells[0].Value = rp.NumberOfAbsent;
+                //          cells[1].Value = rp.NumberOfLateInAndEarlyOut;
+                //          cells[2].Value = rp.NoPermissionRate;
+                //          cells[3].Value = rp.DisciplinaryPoint;
+                //      });
+                //     monthFill.Value = month;
+                //     if (month.Equals(listMonth.Last()))
+                //     {
+                //         break;
+                //     }
+                //     var nextMonthAttRange = monthAttRpRange.CreateNewColumns(4);
+                //     monthAttRpRange.Copy(nextMonthAttRange);
+                //     monthAttRpRange = nextMonthAttRange;
 
                 // }
-                // var newGrade = gradeFill.CreateNewColumns(1);
-                // gradeFill.Copy(newGrade);
+                // //Fill data to Attendance to total report
+                // var attRpTotal = this.GetTotalAttendanceReports(classId);
+                // var attRpTotalFill = attSheet.Cells[4, 5 + attList.Count + 4 * listMonth.Count(), 4 + traineeList.Count - 1, 5 + attList.Count + 4 * listMonth.Count()  + 3];
+                // attRpTotalFill.FillDataToCells(attRpTotal, (rp, cells) =>
+                // {
+                //     cells.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
+                //     cells[0].Value = rp.NumberOfAbsent;
+                //     cells[1].Value = rp.NumberOfLateInAndEarlyOut;
+                //     cells[2].Value = rp.NoPermissionRate;
+                //     cells[3].Value = rp.DisciplinaryPoint;
+                // });
+
+                var topicGradeList = this.GetTopicGrades(classId);
+                var topicGradeSheet = package.Workbook.Worksheets[2];
+                var topicInfoRange = topicGradeSheet.Cells[1, 5, 7 + traineeList.Count, 5];
+                var topicInfoList = topicGradeList.TopicInfos;
+                foreach (var item in topicInfoList)
+                {
+                    // var topicInfoFill = topicInfoRange.SelectSubRange(2, 1, 7+ traineeList.Count, 1);
+                    ICollection<TopicInfo> list = new List<TopicInfo>();
+                    list.Add(item);
+                    topicInfoRange.FillDataToCellsColumn(list, (topic, cells) =>
+                    {
+                        cells.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
+                        cells[2].Value = topic.Name;
+                        cells[4].Value = topic.MaxScore;
+                        cells[5].Value = topic.PassingScore;
+                        cells[6].Value = topic.WeightNumber;
+                    });
+                    if (item.Equals(topicInfoList.Last()))
+                    {
+                        break;
+                    }
+                    var nextTopicInfoRange = topicInfoRange.CreateNewColumns(1);
+                    topicInfoRange.Copy(nextTopicInfoRange);
+                    topicInfoRange = nextTopicInfoRange;
+                }
+
+                var traineeGradesFill = topicGradeSheet.Cells[1, 5, 7 + traineeList.Count, 5].SelectSubRange(8, 1, 7 + traineeList.Count, 1);
+
+                foreach (var dateScore in topicGradeList.TraineeTopicGrades)
+                {
+                    traineeGradesFill.FillDataToCellsColumn(dateScore.Value, (s, cells) =>
+                    {
+                        
+                        int i = 0;
+                        foreach (var score in dateScore.Value)
+                        {
+                            cells[i].Value = score.Score;
+                            i++;
+                        }
+                    });
+                    traineeGradesFill = traineeGradesFill.MoveRight(1);
+                }
+
                 return await package.GetAsByteArrayAsync();
             }
 

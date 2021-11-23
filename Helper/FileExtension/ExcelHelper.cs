@@ -483,5 +483,14 @@ namespace kroniiapi.Helper
             barSeries.DataLabel.Position = eLabelPosition.InEnd;
             return barChart;
         }
+        public static ExcelRange MoveRight(this ExcelRangeBase colRange, int colCount)
+        {
+            var worksheet = colRange.Worksheet;
+            int startRow = colRange.Start.Row;
+            int startCol = colRange.Start.Column;
+            int endRow = colRange.End.Row;
+            int endCol = colRange.End.Column;
+            return worksheet.Cells[startRow, endCol+1, endRow, endCol+colCount];
+        }
     }
 }
