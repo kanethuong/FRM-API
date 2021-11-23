@@ -147,7 +147,7 @@ namespace kroniiapi.Controllers
         /// Edit trainer profile
         /// </summary>
         /// <param name="id">trainer id</param>
-        /// <param name="traineeProfileDetail">detail trainer profile</param>
+        /// <param name="trainerProfileDetail">detail trainer profile</param>
         /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
         [HttpPut("{id:int}/profile")]
         [Authorize(Policy = "TrainerPut")]
@@ -182,11 +182,11 @@ namespace kroniiapi.Controllers
         }
 
         /// <summary>
-        /// Update trainee avatar
+        /// Update trainer avatar
         /// </summary>
-        /// <param name="id">Trainee id</param>
+        /// <param name="id">Trainer id</param>
         /// <param name="image">The avatar to update</param>
-        /// <returns>200: Update avatar success / 404: Trainee profile cannot be found / 409: Conflict</returns>
+        /// <returns>200: Update avatar success / 404: Trainer profile cannot be found / 409: Conflict</returns>
         [HttpPut("{id:int}/avatar")]
         [Authorize(Policy = "TrainerPut")]
         public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
@@ -196,6 +196,11 @@ namespace kroniiapi.Controllers
             {
                 return Conflict(new ResponseDTO(409, errorMsg));
             }
+
+            if (_trainerService.CheckTrainerExist(id) == false)
+            {
+                return NotFound(new ResponseDTO(404, "Trainer profile cannot be found"));
+            }
             string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
             Stream stream = image.OpenReadStream();
             long fileLength = image.Length;
@@ -203,11 +208,7 @@ namespace kroniiapi.Controllers
 
             string avatarUrl = await _imgHelper.Upload(stream, fileName, fileLength, fileType);
             int rs = await _trainerService.UpdateAvatar(id, avatarUrl);
-            if (rs == -1)
-            {
-                return NotFound(new ResponseDTO(404, "Trainer profile cannot be found"));
-            }
-            else if (rs == 0)
+            if (rs == 0)
             {
                 return Conflict(new ResponseDTO(409, "Fail to update trainer avatar"));
             }
