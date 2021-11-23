@@ -705,6 +705,9 @@ namespace kroniiapi.Services.Report
                                                             WeightNumber = c.WeightNumber
                                                         })
                                                         .ToList();
+            //Set startDate and endDate to check and set key for Dictionary
+            DateTime startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
+            DateTime endDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.EndDay).FirstOrDefault();
             //Add item to Topic Info
             List<TopicInfo> topicInfo = new List<TopicInfo>();
             foreach (var item in classModules)
@@ -713,17 +716,19 @@ namespace kroniiapi.Services.Report
                 {
                     TopicId = item.ModuleId,
                     Name = item.Module.ModuleName,
+                    Month = startDate,
                     MaxScore = item.Module.MaxScore,
                     PassingScore = item.Module.PassingScore,
                     WeightNumber = item.WeightNumber
                 };
+                //Move to the next month
+                startDate = startDate.AddMonths(1);
                 topicInfo.Add(itemToResponse);
             }
 
             List<AverageScoreInfo> averageScoreInfo = new List<AverageScoreInfo>();
-            //Set startDate and endDate to check and set key for Dictionary
-            DateTime startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
-            DateTime endDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.EndDay).FirstOrDefault();
+            //Set startDate again
+            startDate = _dataContext.Classes.Where(c => c.ClassId == classId).Select(d => d.StartDay).FirstOrDefault();
             foreach (var item in classModules)
             {
                 var itemToResponse = new AverageScoreInfo

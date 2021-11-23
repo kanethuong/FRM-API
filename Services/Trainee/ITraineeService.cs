@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.CompanyDTO;
+using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 
@@ -31,5 +32,6 @@ namespace kroniiapi.Services
         Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationParameter paginationParameter);
         Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId);
         Task<bool> AutoUpdateTraineesStatus(int classId);
+        Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationCompanyParameter paginationCompanyParameter);
     }
 }

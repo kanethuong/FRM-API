@@ -7,6 +7,7 @@ using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.CompanyDTO;
+using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
@@ -447,5 +448,67 @@ namespace kroniiapi.Services
             return true;
         }
 
+
+        /// <summary>
+        /// Get Trainees for company request
+        /// </summary>
+        /// <param name="paginationCompanyParameter">The pagination parameter</param>
+        /// <returns>total records and list of found trainees</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationCompanyParameter paginationCompanyParameter)
+        {
+            // Filter deactivated & Map relative properties
+            IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false)
+                .Select(e => new Trainee
+                {
+                    CreatedAt = e.CreatedAt,
+                    Fullname = e.Fullname,
+                    Username = e.Username,
+                    Email = e.Email,
+                    AvatarURL = e.AvatarURL,
+                    Address = e.Address,
+                    ModulesCertificate = e.ModulesCertificate,
+                    ClassId = e.ClassId,
+                    Class = e.Class,
+                    RoleId = e.RoleId,
+                    Role = e.Role,
+                });
+
+            // Filter name
+            if (paginationCompanyParameter.SearchName != "")
+            {
+                trainees = trainees.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Username.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchName.ToLower()))));
+            }
+
+            // Filter Skill (Module)
+            if (paginationCompanyParameter.SearchSkill != "")
+            {
+                trainees = trainees.Where(e => e.ModulesCertificate.Any(
+                    module => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(module.ModuleName.ToLower()))
+                        .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchSkill.ToLower())))
+                    )
+                );
+            }
+
+            // Filter address
+            if (paginationCompanyParameter.SearchLocation != "")
+            {
+                trainees = trainees.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Address.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchLocation.ToLower()))));
+            }
+
+            // Get total records & count
+            IEnumerable<Trainee> rs = await trainees
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationCompanyParameter.PageSize, paginationCompanyParameter.PageNumber)
+                .ToListAsync();
+
+            return Tuple.Create(totalRecords, rs);
+        }
     }
 }
