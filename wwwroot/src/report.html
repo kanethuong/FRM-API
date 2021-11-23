@@ -1,0 +1,57 @@
+<div class="mb-5">
+    <h2 class="fw-bold">Report</h2>
+    <p>
+        Export report of a class
+    </p>
+
+    <div id="exportReport">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Export Report</h3>
+        </div>
+        <p>By ToanTK</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/report/{classId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Admin</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 400</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>classId: Id of class (required)</p>
+                <p>reportAt: DateTime to export report (export final report when no input)</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>None</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>File Content or Error Response</p>
+            </div>
+        </div>
+    </div>
+
+    
+</div>

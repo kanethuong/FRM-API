@@ -24,8 +24,6 @@ namespace kroniiapi.Services.Report
         Task<CheckpointReport> GetCheckpointReport(int classId);
         Dictionary<DateTime, ICollection<TraineeFeedback>> GetAllTraineeFeedbacks(int classId);
         Task<byte[]> GenerateTotalClassReport(int classId);
-        // Task<byte[]> GenerateClassReport(int classId);
-        Task<bool> AutoUpdateTraineesStatus(int classId);
-        
+        Task<byte[]> GenerateClassReportEachMonth(int classId, DateTime reportAt);
     }
 }
