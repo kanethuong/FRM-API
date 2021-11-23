@@ -51,7 +51,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                <pre><code>{ 
+                    <pre><code>{ 
     "totalRecords": int,
     "payload": [
         {
@@ -115,7 +115,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                <pre><code>
+                    <pre><code>
 {
     "totalRecords": int,
     "payload": [
@@ -228,7 +228,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                <pre><code>{ 
+                    <pre><code>{ 
     "companyRequestId": int,
     "companyName": "string",
     "content": "string",
@@ -287,7 +287,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                <pre><code>{ 
+                    <pre><code>{ 
     "totalRecords": int,
     "payload": [
         {
@@ -301,6 +301,7 @@
             </div>
         </div>
     </div>
+
     <!-- View request detail -->
     <div id="viewRequestDetail">
         <!-- Function Title -->
@@ -347,7 +348,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                <pre><code>{
+                    <pre><code>{
     "trainees": [
         {
             "avatarURL": "string",
@@ -364,4 +365,298 @@
         </div>
     </div>
 
+    <!-- Search Trainee List -->
+    <div id="searchTraineeList">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Search Trainee List</h3>
+        </div>
+        <p>By TienHQ</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/trainee</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Trainee Fullname/Email/Username</p>
+                <p>searchSkill: Trainee Skill</p>
+                <p>searchLocation: Trainee Address</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                    <pre><code>{
+    "totalRecords": 0,
+    "payload": [
+        {
+            "traineeId": 0,
+            "fullname": "string",
+            "avatarURL": "string",
+            "moduleNames": [
+                "string"
+            ],
+            "roleName": "string"
+        }
+    ]
+}</code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="sendCompanyRequest">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Create New Company Request</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/request</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>POST</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>201 404 409</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>
+{
+    "companyId": int,
+    "companyRequestDetails": [
+        {
+        "traineeId": int,
+        "wage": int
+        }
+    ],
+    "content": "string"
+}</code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Repsonse</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Trainee List in Company Request by Company Id -->
+    <div id="viewTraineeInRequestListByCompanyId">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Trainee List in Company Request By Company Id</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/{companyId}/request</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>CompanyId: Company's ID</p>
+                <p>pageNumber: Position of page</p>
+                <p>pageSize: Number items per page</p>
+                <p>searchName: Content Field</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                    <pre><code>
+{
+    "totalRecords": int,
+    "payload": [
+        {
+        "id": int,
+        "numberOfTrainee": int,
+        "content": "string",
+        "createdAt": "string",
+        "isAccepted": bool
+        }
+    ]
+}</code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Company profile -->
+    <div id="editCompanyProfile">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Edit Company Profile</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/{companyId}/profile</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: id of company</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><pre><code>
+{
+    "fullname": "string",
+    "phone": "string",
+    "address": "string",
+    "facebook": "string"
+}
+                </code></pre></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit company avatar -->
+    <div id="editCompanyAvatar">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Edit Company Avatar</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/{companyId}/avatar</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>PUT</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: id of company</p>
+            </div>
+            <div class="col-6">
+                <h5>Form file</h5>
+                <p>File: .jpeg / .png / .jpg</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Response</p>
+            </div>
+        </div>
+    </div>
 </div>
