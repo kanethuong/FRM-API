@@ -401,23 +401,26 @@ namespace kroniiapi.Services
 
         public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId)
         {
-            var cers = await _dataContext.Certificates.Where(c => c.TraineeId == traineeId).Select(c => new Certificate
-            {
-                CreatedAt = c.CreatedAt,
-                Module = new Module
-                {
-                    ModuleName = c.Module.ModuleName
+            List<TraineeSkillResponse> list = new List<TraineeSkillResponse>();
+            var classId = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).Select(t => t.ClassId).FirstOrDefaultAsync();
+            var classModule = await _dataContext.ClassModules.Where(c => c.ClassId == classId).Select(cm => new ClassModule{
+                ClassId = cm.ClassId,
+                ModuleId = cm.ModuleId,
+                Module = new Module{
+                    ModuleId = cm.Module.ModuleId,
+                    ModuleName = cm.Module.ModuleName,
+                    NoOfSlot = cm.Module.NoOfSlot
                 }
             }).ToListAsync();
-            List<TraineeSkillResponse> tsr = new List<TraineeSkillResponse>();
-            foreach (var item in cers)
+            foreach (var item in classModule)
             {
-                TraineeSkillResponse temp = new();
+                TraineeSkillResponse temp = new TraineeSkillResponse();
                 temp.ModuleName = item.Module.ModuleName;
-                temp.FinishDate = item.CreatedAt;
-                tsr.Add(temp);
+                temp.FinishDate = await _dataContext.Calendars.Where(c => c.ClassId == classId && c.ModuleId == item.ModuleId && c.SyllabusSlot == item.Module.NoOfSlot)
+                .Select(c => c.Date).FirstOrDefaultAsync();
+                list.Add(temp);
             }
-            return tsr;
+            return list;
         }
         public async Task<bool> AutoUpdateTraineesStatus(int classId)
         {
