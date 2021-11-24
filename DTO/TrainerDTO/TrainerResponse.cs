@@ -12,5 +12,7 @@ namespace kroniiapi.DTO.TrainerDTO
         public string AvatarURL { get; set; }
         public string Email { get; set; }
         public string Facebook { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
     }
 }
