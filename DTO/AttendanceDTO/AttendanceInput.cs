@@ -54,7 +54,7 @@ namespace kroniiapi.DTO.AttendanceDTO
             get { return _date; }
             set
             {
-                if (value == null)
+                if (value == default(DateTime))
                 {
                     _date = DateTime.Now;
                 }

@@ -21,9 +21,10 @@ namespace kroniiapi.Services
     {
         private DataContext _dataContext;
         private readonly IReportService _reportService;
-        public TraineeService(DataContext dataContext)
+        public TraineeService(DataContext dataContext, IReportService reportService)
         {
             _dataContext = dataContext;
+            _reportService = reportService;
         }
 
         /// <summary>
@@ -403,10 +404,12 @@ namespace kroniiapi.Services
         {
             List<TraineeSkillResponse> list = new List<TraineeSkillResponse>();
             var classId = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).Select(t => t.ClassId).FirstOrDefaultAsync();
-            var classModule = await _dataContext.ClassModules.Where(c => c.ClassId == classId).Select(cm => new ClassModule{
+            var classModule = await _dataContext.ClassModules.Where(c => c.ClassId == classId).Select(cm => new ClassModule
+            {
                 ClassId = cm.ClassId,
                 ModuleId = cm.ModuleId,
-                Module = new Module{
+                Module = new Module
+                {
                     ModuleId = cm.Module.ModuleId,
                     ModuleName = cm.Module.ModuleName,
                     NoOfSlot = cm.Module.NoOfSlot
