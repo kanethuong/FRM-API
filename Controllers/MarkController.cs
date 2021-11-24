@@ -280,6 +280,7 @@ namespace kroniiapi.Controllers
 
             MarkResponse markResponse = new MarkResponse();
             markResponse.TraineeName = trainee.Fullname;
+            markResponse.TraineeId = trainee.TraineeId;
             var markList = new List<Mark>();
             foreach (var module in moduleList)
             {
