@@ -11,6 +11,7 @@ using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
+using kroniiapi.Services.Report;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -19,6 +20,7 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
+        private readonly IReportService _reportService;
         public TraineeService(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -397,23 +399,58 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId){
-            var cers = await _dataContext.Certificates.Where(c => c.TraineeId == traineeId).Select(c => new Certificate{
-                CreatedAt = c.CreatedAt,
+        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId)
+        {
+            List<TraineeSkillResponse> list = new List<TraineeSkillResponse>();
+            var classId = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).Select(t => t.ClassId).FirstOrDefaultAsync();
+            var classModule = await _dataContext.ClassModules.Where(c => c.ClassId == classId).Select(cm => new ClassModule{
+                ClassId = cm.ClassId,
+                ModuleId = cm.ModuleId,
                 Module = new Module{
-                    ModuleName = c.Module.ModuleName
+                    ModuleId = cm.Module.ModuleId,
+                    ModuleName = cm.Module.ModuleName,
+                    NoOfSlot = cm.Module.NoOfSlot
                 }
             }).ToListAsync();
-            List<TraineeSkillResponse> tsr = new List<TraineeSkillResponse>();
-            foreach (var item in cers)
+            foreach (var item in classModule)
             {
-                TraineeSkillResponse temp = new();
+                TraineeSkillResponse temp = new TraineeSkillResponse();
                 temp.ModuleName = item.Module.ModuleName;
-                temp.FinishDate = item.CreatedAt;
-                tsr.Add(temp);
+                temp.FinishDate = await _dataContext.Calendars.Where(c => c.ClassId == classId && c.ModuleId == item.ModuleId && c.SyllabusSlot == item.Module.NoOfSlot)
+                .Select(c => c.Date).FirstOrDefaultAsync();
+                list.Add(temp);
             }
-            return tsr;
+            return list;
         }
+        public async Task<bool> AutoUpdateTraineesStatus(int classId)
+        {
+            var clazz = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => new Class
+            {
+                ClassId = c.ClassId,
+                EndDay = c.EndDay
+            }).FirstOrDefaultAsync();
+            if (clazz.EndDay > DateTime.Now)
+            {
+                return false;
+            }
+            DateTime tempTime = DateTime.Now;
+            var traineeGPAs = await _reportService.GetTraineeGPAs(classId, tempTime);
+            foreach (var item in traineeGPAs)
+            {
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
+                if (item.Level == "D")
+                {
+                    trainee.Status = "Failed";
+                }
+                else
+                {
+                    trainee.Status = "Passed";
+                }
+                await _dataContext.SaveChangesAsync();
+            }
+            return true;
+        }
+
 
         /// <summary>
         /// Get Trainees for company request
@@ -426,6 +463,7 @@ namespace kroniiapi.Services
             IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false)
                 .Select(e => new Trainee
                 {
+                    TraineeId = e.TraineeId,
                     CreatedAt = e.CreatedAt,
                     Fullname = e.Fullname,
                     Username = e.Username,
