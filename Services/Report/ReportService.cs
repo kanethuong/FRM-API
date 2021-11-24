@@ -941,7 +941,7 @@ namespace kroniiapi.Services.Report
 
             // using var stream = File.OpenRead(pathToTest);
 
-            using var stream = await _megaHelper.Download(new Uri("https://mega.nz/file/xFIAERgB#AQelAxZvUbsoBa8cyIwLjSDMQJbkvLr_JIUceudDz6U"));
+            using var stream = await _megaHelper.Download(new Uri("https://mega.nz/file/gAxEiS5Q#0fghqJb5u17XOMgHE-MoorwG4_q6Q5MRK2uOE6p7eCw"));
             using (var package = new ExcelPackage())
             {
                 await package.LoadAsync(stream);
@@ -1391,7 +1391,8 @@ namespace kroniiapi.Services.Report
             string workingDirectory = Environment.CurrentDirectory;
             string pathToTest = workingDirectory + path;
 
-            using var stream = File.OpenRead(pathToTest);
+            // using var stream = File.OpenRead(pathToTest);
+            using var stream = await _megaHelper.Download(new Uri("https://mega.nz/file/gAxEiS5Q#0fghqJb5u17XOMgHE-MoorwG4_q6Q5MRK2uOE6p7eCw"));
             using (var package = new ExcelPackage())
             {
                 await package.LoadAsync(stream);
