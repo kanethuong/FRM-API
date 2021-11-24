@@ -66,7 +66,7 @@ namespace kroniiapi.Controllers
         /// </summary>
         /// <returns>200: Ok with the file stream / 404: The link is not found (Not Uploaded)</returns>
         [HttpGet]
-        [Authorize(Policy = "RuleGet")]
+        // [Authorize(Policy = "RuleGet")]
         public async Task<ActionResult> Get()
         {
             FileDTO fileDTO = await _cacheProvider.GetFromCache<FileDTO>("RulesURL");
