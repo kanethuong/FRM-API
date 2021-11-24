@@ -128,7 +128,7 @@ namespace kroniiapi.Services
                     errorModuleIds.Add(item.ModuleId.ToString());
                 }
                 else if(_dataContext.ClassModules.FirstOrDefault(m => m.ClassId == existedTrainee.ClassId && m.ModuleId == item.ModuleId) == null){
-                    return(false, "Trainee with id " + existedTrainee.TraineeId + "does not studying module " + item.ModuleId);
+                    return(false, "Trainee with id " + existedTrainee.TraineeId + " does not studying module " + item.ModuleId);
                 }
                 else
                 {
