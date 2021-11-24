@@ -4,6 +4,67 @@
         Manipulate company information, include company request, report
     </p>
 
+    <!-- View Company profile -->
+    <div id="viewCompanyProfile">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>View Company Profile</h3>
+        </div>
+        <p>By HoangNN</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/{companyId}/profile</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Company</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404</p>
+            </div>
+        </div>
+
+        <!-- Parameter -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>companyId: id of company</p>
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>No</p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                    <pre><code>
+{
+    "fullname": "string",
+    "avatarURL": "string",
+    "email": "string",
+    "phone": "string",
+    "address": "string",
+    "facebook": "string",
+    "createdAt": "string"
+}
+                    </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Get company request list -->
     <div id="viewCompanyRequestList">
         <!-- Function Title -->
@@ -51,7 +112,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>{ 
+                <pre><code>{ 
     "totalRecords": int,
     "payload": [
         {
@@ -115,7 +176,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>
+                <pre><code>
 {
     "totalRecords": int,
     "payload": [
@@ -228,7 +289,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>{ 
+                <pre><code>{ 
     "companyRequestId": int,
     "companyName": "string",
     "content": "string",
@@ -287,7 +348,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>{ 
+                <pre><code>{ 
     "totalRecords": int,
     "payload": [
         {
@@ -348,7 +409,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>{
+                <pre><code>{
     "trainees": [
         {
             "avatarURL": "string",
@@ -414,7 +475,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>{
+                <pre><code>{
     "totalRecords": 0,
     "payload": [
         {
@@ -533,7 +594,7 @@
             <div class="col-6">
                 <h5>Response Body</h5>
                 <p>
-                    <pre><code>
+                <pre><code>
 {
     "totalRecords": int,
     "payload": [
@@ -591,14 +652,16 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p><pre><code>
+                <p>
+                <pre><code>
 {
     "fullname": "string",
     "phone": "string",
     "address": "string",
     "facebook": "string"
 }
-                </code></pre></p>
+                </code></pre>
+                </p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
@@ -660,6 +723,58 @@
         </div>
     </div>
 
+    <!-- Upload company report -->
+    <div id="uploadCompanyReport">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Upload Company Report</h3>
+        </div>
+        <p>By KhangTD</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Company/request/{requestId}/report</p>
+
+            <!-- Role, Method and Status code -->
+            <div class="row mb-3">
+                <div class="col-4 border-end">
+                    <h5>Allow</h5>
+                    <p>Company</p>
+                </div>
+                <div class="col-4 border-end">
+                    <h5>Method</h5>
+                    <p>POST</p>
+                </div>
+                <div class="col-4">
+                    <h5>Status</h5>
+                    <p>200 404 409</p>
+                </div>
+            </div>
+
+            <!-- Parameter -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Parameter</h5>
+                    <p>requestId: ID of a company request</p>
+                </div>
+                <div class="col-6">
+                    <h5>Form file</h5>
+                    <p>File: .xlsx / .xls</p>
+                </div>
+            </div>
+
+            <!-- Request body and Response body  -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Request Body</h5>
+                    <p>No</p>
+                </div>
+                <div class="col-6">
+                    <h5>Response Body</h5>
+                    <p>Error Response</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- View Trainee Detail -->
     <div id="ViewTraineeDetail">
@@ -687,25 +802,25 @@
                 <h5>Status</h5>
                 <p>200 404</p>
             </div>
-        </div>
 
-        <!-- Parameter -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Parameter</h5>
-                <p>trainee id: trainee's id</p>
+            <!-- Parameter -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Parameter</h5>
+                    <p>trainee id: trainee's id</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Request body and Response body  -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Request Body</h5>
-                <p>No</p>
-            </div>
-            <div class="col-6">
-                <h5>Response Body</h5>
-                <p>Error Response</p>
+            <!-- Request body and Response body  -->
+            <div class="row mb-3">
+                <div class="col-6 border-end">
+                    <h5>Request Body</h5>
+                    <p>No</p>
+                </div>
+                <div class="col-6">
+                    <h5>Response Body</h5>
+                    <p>Error Response</p>
+                </div>
             </div>
         </div>
     </div>
