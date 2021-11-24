@@ -84,6 +84,7 @@ namespace kroniiapi.Services
                 ModuleId = mark.ModuleId,
                 TraineeId = mark.TraineeId,
                 Score = mark.Score,
+                PublishedAt = DateTime.Now,
             };
             _dataContext.Add(newMark);
             return await _dataContext.SaveChangesAsync();
@@ -139,6 +140,7 @@ namespace kroniiapi.Services
                     else
                     {
                         existMark.Score = item.Score;
+                        existMark.PublishedAt = DateTime.Now;
                     }
                 }
             }
