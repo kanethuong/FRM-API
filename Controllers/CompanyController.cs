@@ -12,6 +12,7 @@ using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
+using kroniiapi.Helper.Upload;
 using kroniiapi.Helper.UploadDownloadFile;
 using kroniiapi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -30,14 +31,18 @@ namespace kroniiapi.Controllers
         private readonly ITraineeService _traineeService;
         private readonly IMapper _mapper;
         private readonly IImgHelper _imgHelper;
+        private readonly IMegaHelper _megaHelper;
         public CompanyController(IMapper mapper,
-                                ICompanyService companyService,
-                                ITraineeService traineeService, IImgHelper imgHelper)
+                                 ICompanyService companyService,
+                                 ITraineeService traineeService,
+                                 IImgHelper imgHelper,
+                                 IMegaHelper megaHelper)
         {
             _mapper = mapper;
             _companyService = companyService;
             _traineeService = traineeService;
             _imgHelper = imgHelper;
+            _megaHelper = megaHelper;
         }
         /// <summary>
         /// View all company request with pagination
@@ -261,14 +266,40 @@ namespace kroniiapi.Controllers
         /// <summary>
         /// Upload report of a request
         /// </summary>
-        /// <param name="companyId"></param>
         /// <param name="requestId"></param>
         /// <param name="file"></param>
         /// <returns> 200: Upload success / 404: ID not found / 409: Fail to upload </returns>
-        [HttpPost("{companyId:int}/{requestId:int}/report")]
-        public async Task<ActionResult> UploadReport(int companyId, int requestId, [FromForm] IFormFile file)
+        [HttpPost("request/{requestId:int}/report")]
+        public async Task<ActionResult> UploadReport(int requestId, [FromForm] IFormFile file)
         {
-            return null;
+            CompanyRequest companyRequest = await _companyService.GetCompanyRequestById(requestId);
+            if (companyRequest == null)
+            {
+                return NotFound(new ResponseDTO(404, "Request is not exist"));
+            }
+
+            if (_companyService.IsCompanyRequestAccepted(requestId) != true)
+            {
+                return Conflict(new ResponseDTO(409, "Request has not been accepted or has been rejected"));
+            }
+
+            (bool isExcel, string errorMsg) = FileHelper.CheckExcelExtension(file);
+            if (isExcel == false)
+            {
+                return Conflict(new ResponseDTO(409, errorMsg));
+            }
+
+            Stream stream = file.OpenReadStream();
+            string reportUrl = await _megaHelper.Upload(stream, file.FileName, "Company Report");
+            int rs = await _companyService.UpdateCompanyReportUrl(requestId, reportUrl);
+            if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to upload report"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Upload report success"));
+            }
         }
 
         /// <summary>
