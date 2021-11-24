@@ -9,6 +9,7 @@ using kroniiapi.DB.Models;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.ReportDTO;
 using kroniiapi.Helper;
+using kroniiapi.Helper.Upload;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -20,11 +21,13 @@ namespace kroniiapi.Services.Report
     {
         private DataContext _dataContext;
         private readonly IMapper _mapper;
+        private readonly IMegaHelper _megaHelper;
 
-        public ReportService(DataContext dataContext, IMapper mapper)
+        public ReportService(DataContext dataContext, IMapper mapper, IMegaHelper megaHelper)
         {
             _dataContext = dataContext;
             _mapper = mapper;
+            _megaHelper = megaHelper;
         }
 
         /// <summary>
@@ -936,7 +939,9 @@ namespace kroniiapi.Services.Report
             string workingDirectory = Environment.CurrentDirectory;
             string pathToTest = workingDirectory + path;
 
-            using var stream = File.OpenRead(pathToTest);
+            // using var stream = File.OpenRead(pathToTest);
+
+            using var stream = await _megaHelper.Download(new Uri("https://mega.nz/file/xFIAERgB#AQelAxZvUbsoBa8cyIwLjSDMQJbkvLr_JIUceudDz6U"));
             using (var package = new ExcelPackage())
             {
                 await package.LoadAsync(stream);
@@ -1420,7 +1425,7 @@ namespace kroniiapi.Services.Report
                 });
 
                 //Fill data to reward and penalty sheet
-                var rewardPenaltyList = this.GetRewardAndPenaltyScore(classId,reportAt);
+                var rewardPenaltyList = this.GetRewardAndPenaltyScore(classId, reportAt);
                 var rewardPenaltySheet = package.Workbook.Worksheets[3];
                 var rewardPenaltyFill = rewardPenaltySheet.Cells[$"A3:F{traineeList.Count() + 3}"];
                 rewardPenaltyFill.FillDataToCells(rewardPenaltyList, (rewardPenalty, cells) =>
@@ -1642,7 +1647,7 @@ namespace kroniiapi.Services.Report
                      cells[3].Value = rp.DisciplinaryPoint;
                  });
                 monthFill.Value = reportAt;
-            
+
                 //Fill data to Attendance to total report
                 var attRpTotal = this.GetTotalAttendanceReports(classId);
                 var attRpTotalFill = attSheet.Cells[4, 5 + attList.Count + 4, 4 + traineeList.Count - 1, 5 + attList.Count + 4 + 3];
