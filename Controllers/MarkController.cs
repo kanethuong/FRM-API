@@ -257,7 +257,7 @@ namespace kroniiapi.Controllers
                 {
                     return BadRequest(new ResponseDTO(400, message));
                 }
-                await _reportService.AutoUpdateTraineesStatus(classId);
+                await _traineeService.AutoUpdateTraineesStatus(classId);
             }
             return Ok(new ResponseDTO(200, "Update class score success"));
         }
@@ -280,6 +280,7 @@ namespace kroniiapi.Controllers
 
             MarkResponse markResponse = new MarkResponse();
             markResponse.TraineeName = trainee.Fullname;
+            markResponse.TraineeId = trainee.TraineeId;
             var markList = new List<Mark>();
             foreach (var module in moduleList)
             {

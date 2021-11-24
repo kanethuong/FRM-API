@@ -326,19 +326,20 @@ namespace kroniiapi.Services
         /// <returns>Trainee list</returns>
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter)
         {
-            var traineeIds = await _dataContext.CompanyRequestDetails.Where(comreq => comreq.CompanyRequestId == requestId)
-            .Select(comreq => comreq.TraineeId).ToListAsync();
-            var traineeLists = new List<Trainee>();
-            foreach (var item in traineeIds)
+            IQueryable<Trainee> result = _dataContext.Trainees.Where(t => t.CompanyRequestDetails.Any(c => c.CompanyRequestId == requestId) && t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
             {
-                traineeLists.Add(await _dataContext.Trainees.Where(t => t.TraineeId == item).FirstOrDefaultAsync());
+                result = result.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
             }
-            var result = traineeLists.Where(t => t.IsDeactivated == false && (t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
-            int totalRecords = result.Count();
-            var rs = result.OrderBy(c => c.TraineeId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
-            return Tuple.Create(totalRecords, rs);
+            IEnumerable<Trainee> rs = await result
+            .GetCount(out var totalRecords)
+            .OrderBy(c => c.CreatedAt)
+            .GetPage(paginationParameter)
+            .ToListAsync();
+            return Tuple.Create(totalRecords, rs); 
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ using kroniiapi.Helper.UploadDownloadFile;
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    // [Authorize(Policy = "Admin")]
+    [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {

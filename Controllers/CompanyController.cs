@@ -351,7 +351,7 @@ namespace kroniiapi.Controllers
             {
                 return Conflict(new ResponseDTO(409, errorMsg));
             }
-            var check = _companyService.GetCompanyById(companyId);
+            var check = await _companyService.GetCompanyById(companyId);
             {
                 if (check == null)
                 {
