@@ -44,6 +44,23 @@ namespace kroniiapi.Controllers
             _imgHelper = imgHelper;
             _megaHelper = megaHelper;
         }
+
+        /// <summary>
+        /// View Company profile
+        /// </summary>
+        /// <param name="companyId">Company id</param>
+        /// <returns>Company profile / 404: Profile not found</returns>
+        [HttpGet("{companyId:int}/profile")]
+        public async Task<ActionResult<CompanyProfileDetail>> ViewCompanyProfile(int companyId)
+        {
+            Company company = await _companyService.GetCompanyById(companyId);
+            if (company == null)
+            {
+                return NotFound(new ResponseDTO(404, "Company profile cannot be found"));
+            }
+            return Ok(_mapper.Map<CompanyProfileDetail>(company));
+        }
+
         /// <summary>
         /// View all company request with pagination
         /// </summary>
@@ -183,8 +200,13 @@ namespace kroniiapi.Controllers
         [HttpPost("request")]
         public async Task<ActionResult> SendTraineeRequest(RequestTraineeInput requestTraineeInput)
         {
+            var checkInputList = requestTraineeInput.CompanyRequestDetails;
+            if (checkInputList == null || checkInputList.Count() == 0)
+            {
+                return Conflict(new ResponseDTO(409,"Trainee list cannot be empty!"));
+            }
             List<int> acceptedTraineeId = await _companyService.GetAcceptedTraineeIdList();
-            var error = "";
+            var error = "Trainee(s) has been approved to another company: ";
             var count = 0;
             foreach (var item in requestTraineeInput.CompanyRequestDetails)
             {
@@ -198,12 +220,13 @@ namespace kroniiapi.Controllers
                     if (item.TraineeId == traineeId)
                     {
                         var trainee = await _traineeService.GetTraineeById(traineeId);
-                        error += "Trainee " + trainee.Fullname + " has been approved to another company";
-                        error += "\n";
+                        error += trainee.Fullname ;
+                        error += ", ";
                         count++;
                     }
                 }
             }
+            error = error.Remove(error.Length-2);
             if (count != 0)
             {
                 return Conflict(new ResponseDTO(409, error));
