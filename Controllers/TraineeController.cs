@@ -345,7 +345,7 @@ namespace kroniiapi.Controllers
         /// <param name="paginationParameter"></param>
         /// <returns></returns>
         [HttpGet("page")]
-        [Authorize(Policy = "TraineeGet")]
+        //[Authorize(Policy = "TraineeGet")]
         public async Task<ActionResult<PaginationResponse<IEnumerable<TraineeResponse>>>> ViewTraineeList([FromQuery] PaginationParameter paginationParameter)
         {
             (int totalRecords, IEnumerable<Trainee> trainees) = await _traineeService.GetAllTrainee(paginationParameter);
