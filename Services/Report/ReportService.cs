@@ -665,7 +665,7 @@ namespace kroniiapi.Services.Report
                     + LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 12;
                 // Trainning Program
                 var TrainningProgram = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG) / 5;
-                var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG);
+                var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG) / 4;
                 var Organization = (LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 3;
                 var AverageScore = (TrainningProgram + Trainer + Organization) / 3;
                 var fbReportAdd = new FeedbackReport
