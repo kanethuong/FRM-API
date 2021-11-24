@@ -12,6 +12,7 @@ namespace kroniiapi.DTO.Profiles
     {
         public CompanyProfile()
         {
+            CreateMap<Company, CompanyProfileDetail>();
             CreateMap<CompanyRequest, CompanyRequestResponse>()
                 .ForMember(ti => ti.CompanyName, c => c.MapFrom(s => s.Company.Fullname));
             CreateMap<CompanyRequest, CompanyReport>()
@@ -31,7 +32,7 @@ namespace kroniiapi.DTO.Profiles
                 .ForMember(cr => cr.TraineeId, s => s.MapFrom(rt => rt.TraineeId))
                 .ForMember(cr => cr.Wage, s => s.MapFrom(rt => rt.Wage));
             CreateMap<RequestTraineeInput, CompanyRequest>()
-                .ForMember(cr => cr.CompanyRequestDetails, s => s.MapFrom(rt=> rt.Trainees));
+                .ForMember(cr => cr.CompanyRequestDetails, s => s.MapFrom(rt=> rt.CompanyRequestDetails));
             CreateMap<CompanyRequest,RequestTraineeResponse>()
                 .ForMember(rt=>rt.Id,s=>s.MapFrom(cr=>cr.CompanyRequestId))
                 .ForMember(rt=>rt.NumberOfTrainee,s=>s.MapFrom(cr=>cr.CompanyRequestDetails.Count()));
@@ -44,6 +45,7 @@ namespace kroniiapi.DTO.Profiles
             CreateMap<CompanyRequest,RequestTraineeDetailResponse>()
                 .ForMember(rt=>rt.Trainees,s=>s.MapFrom(cr=>cr.CompanyRequestDetails));
             CreateMap<CompanyProfileDetailInput,Company>();
+            
         }
     }
 }

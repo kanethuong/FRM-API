@@ -7,9 +7,11 @@ using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO.ApplicationDTO;
 using kroniiapi.DTO.CompanyDTO;
+using kroniiapi.DTO.PaginationCompanyDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.Helper;
+using kroniiapi.Services.Report;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -18,9 +20,11 @@ namespace kroniiapi.Services
     public class TraineeService : ITraineeService
     {
         private DataContext _dataContext;
-        public TraineeService(DataContext dataContext)
+        private readonly IReportService _reportService;
+        public TraineeService(DataContext dataContext, IReportService reportService)
         {
             _dataContext = dataContext;
+            _reportService = reportService;
         }
 
         /// <summary>
@@ -396,23 +400,125 @@ namespace kroniiapi.Services
             return Tuple.Create(totalRecords, rs);
         }
 
-        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId){
-            var cers = await _dataContext.Certificates.Where(c => c.TraineeId == traineeId).Select(c => new Certificate{
-                CreatedAt = c.CreatedAt,
-                Module = new Module{
-                    ModuleName = c.Module.ModuleName
+        public async Task<List<TraineeSkillResponse>> GetTraineeSkillByTraineeId(int traineeId)
+        {
+            List<TraineeSkillResponse> list = new List<TraineeSkillResponse>();
+            var classId = await _dataContext.Trainees.Where(t => t.TraineeId == traineeId).Select(t => t.ClassId).FirstOrDefaultAsync();
+            var classModule = await _dataContext.ClassModules.Where(c => c.ClassId == classId).Select(cm => new ClassModule
+            {
+                ClassId = cm.ClassId,
+                ModuleId = cm.ModuleId,
+                Module = new Module
+                {
+                    ModuleId = cm.Module.ModuleId,
+                    ModuleName = cm.Module.ModuleName,
+                    NoOfSlot = cm.Module.NoOfSlot
                 }
             }).ToListAsync();
-            List<TraineeSkillResponse> tsr = new List<TraineeSkillResponse>();
-            foreach (var item in cers)
+            foreach (var item in classModule)
             {
-                TraineeSkillResponse temp = new();
+                TraineeSkillResponse temp = new TraineeSkillResponse();
                 temp.ModuleName = item.Module.ModuleName;
-                temp.FinishDate = item.CreatedAt;
-                tsr.Add(temp);
+                temp.FinishDate = await _dataContext.Calendars.Where(c => c.ClassId == classId && c.ModuleId == item.ModuleId && c.SyllabusSlot == item.Module.NoOfSlot)
+                .Select(c => c.Date).FirstOrDefaultAsync();
+                list.Add(temp);
             }
-            return tsr;
+            return list;
         }
-        
+        public async Task<bool> AutoUpdateTraineesStatus(int classId)
+        {
+            var clazz = await _dataContext.Classes.Where(c => c.ClassId == classId).Select(c => new Class
+            {
+                ClassId = c.ClassId,
+                EndDay = c.EndDay
+            }).FirstOrDefaultAsync();
+            if (clazz.EndDay > DateTime.Now)
+            {
+                return false;
+            }
+            DateTime tempTime = DateTime.Now;
+            var traineeGPAs = await _reportService.GetTraineeGPAs(classId, tempTime);
+            foreach (var item in traineeGPAs)
+            {
+                var trainee = await _dataContext.Trainees.Where(t => t.TraineeId == item.TraineeId).FirstOrDefaultAsync();
+                if (item.Level == "D")
+                {
+                    trainee.Status = "Failed";
+                }
+                else
+                {
+                    trainee.Status = "Passed";
+                }
+                await _dataContext.SaveChangesAsync();
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// Get Trainees for company request
+        /// </summary>
+        /// <param name="paginationCompanyParameter">The pagination parameter</param>
+        /// <returns>total records and list of found trainees</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetAllTrainee(PaginationCompanyParameter paginationCompanyParameter)
+        {
+            // Filter deactivated & Map relative properties
+            IQueryable<Trainee> trainees = _dataContext.Trainees.Where(t => t.IsDeactivated == false)
+                .Select(e => new Trainee
+                {
+                    TraineeId = e.TraineeId,
+                    CreatedAt = e.CreatedAt,
+                    Fullname = e.Fullname,
+                    Username = e.Username,
+                    Email = e.Email,
+                    AvatarURL = e.AvatarURL,
+                    Address = e.Address,
+                    ClassId = e.ClassId,
+                    Class = new Class
+                    {
+                        Modules = e.Class.Modules,
+                        ClassModules = e.Class.ClassModules
+                    },
+                    RoleId = e.RoleId,
+                    Role = e.Role,
+                });
+
+            // Filter name
+            if (paginationCompanyParameter.SearchName != "")
+            {
+                trainees = trainees.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Username.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchName.ToLower()))));
+            }
+
+            // Filter Skill (Module)
+            if (paginationCompanyParameter.SearchSkill != "")
+            {
+                trainees = trainees.Where(e => e.Class.Modules.Any(
+                    module => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(module.ModuleName.ToLower()))
+                        .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchSkill.ToLower())))
+                    )
+                );
+            }
+
+            // Filter address
+            if (paginationCompanyParameter.SearchLocation != "")
+            {
+                trainees = trainees.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Address.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchLocation.ToLower()))));
+            }
+
+            // Get total records & count
+            IEnumerable<Trainee> rs = await trainees
+                .GetCount(out var totalRecords)
+                .OrderByDescending(e => e.CreatedAt)
+                .GetPage(paginationCompanyParameter.PageSize, paginationCompanyParameter.PageNumber)
+                .ToListAsync();
+
+            return Tuple.Create(totalRecords, rs);
+        }
     }
 }

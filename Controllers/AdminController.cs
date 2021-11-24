@@ -14,11 +14,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using kroniiapi.DTO.ReportDTO;
 using kroniiapi.Services.Attendance;
+using Microsoft.AspNetCore.Http;
+using kroniiapi.Helper;
+using System.Net.Http.Headers;
+using System.IO;
+using kroniiapi.Helper.UploadDownloadFile;
 
 namespace kroniiapi.Controllers
 {
     [ApiController]
-    // [Authorize(Policy = "Admin")]
+    [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {
@@ -27,13 +32,15 @@ namespace kroniiapi.Controllers
         private readonly IReportService _reportService;
         private readonly IClassService _classService;
         private readonly IMapper _mapper;
+        private readonly IImgHelper _imgHelper;
 
-        public AdminController(IAdminService adminService, IMapper mapper, IReportService reportService, IClassService classService)
+        public AdminController(IAdminService adminService, IMapper mapper, IReportService reportService, IClassService classService, IImgHelper imgHelper)
         {
             _adminService = adminService;
             _classService = classService;
             _mapper = mapper;
             _reportService = reportService;
+            _imgHelper = imgHelper;
         }
         /// <summary>
         /// Get all admin with pagination
@@ -67,6 +74,79 @@ namespace kroniiapi.Controllers
             }
             AdminProfileDetail adminResponse = _mapper.Map<AdminProfileDetail>(admin);
             return adminResponse;
+        }
+
+        /// <summary>
+        /// Edit admin profile
+        /// </summary>
+        /// <param name="id">admin id</param>
+        /// <param name="adminProfileDetail">detail admin profile</param>
+        /// <returns>200: Updated / 409: Conflict / 404: Profile not found</returns>
+        [HttpPut("{id:int}/profile")]
+        public async Task<ActionResult> EditProfile(int id, [FromBody] AdminProfileDetailInput adminProfileDetailInput)
+        {
+            Admin admin = _mapper.Map<Admin>(adminProfileDetailInput);
+            Admin existedAdmin = await _adminService.GetAdminById(id);
+            if (existedAdmin == null)
+            {
+                return NotFound(new ResponseDTO(404, "Admin profile cannot be found"));
+            }
+            else if (
+               existedAdmin.Fullname.ToLower().Equals(admin.Fullname.ToLower()) &&
+               existedAdmin.Phone.ToLower().Equals(admin.Phone.ToLower()) &&
+               existedAdmin.DOB.ToString().ToLower().Equals(admin.DOB.ToString().ToLower()) &&
+               existedAdmin.Address.ToLower().Equals(admin.Address.ToLower()) &&
+               existedAdmin.Gender.ToLower().Equals(admin.Gender.ToLower()) &&
+               existedAdmin.Facebook.ToLower().Equals(admin.Facebook.ToLower())
+            )
+            {
+                return Ok(new ResponseDTO(200, "Update profile success"));
+            }
+            int rs = await _adminService.UpdateAdmin(id, admin);
+            if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update admin profile"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Update profile success"));
+            }
+        }
+
+        /// <summary>
+        /// Update admin avatar
+        /// </summary>
+        /// <param name="id">admin id</param>
+        /// <param name="image">The avatar to update</param>
+        /// <returns>200: Update avatar success / 404: Admin profile cannot be found / 409: Conflict</returns>
+        [HttpPut("{id:int}/avatar")]
+        public async Task<ActionResult> UpdateAvatar(int id, [FromForm] IFormFile image)
+        {
+            (bool isImage, string errorMsg) = FileHelper.CheckImageExtension(image);
+            if (isImage == false)
+            {
+                return Conflict(new ResponseDTO(409, errorMsg));
+            }
+
+            if (_adminService.CheckAdminExist(id)==false)
+            {
+                return NotFound(new ResponseDTO(404, "Admin profile cannot be found"));
+            }
+            string fileName = ContentDispositionHeaderValue.Parse(image.ContentDisposition).FileName.Trim('"');
+            Stream stream = image.OpenReadStream();
+            long fileLength = image.Length;
+            string fileType = image.ContentType;
+
+            string avatarUrl = await _imgHelper.Upload(stream, fileName, fileLength, fileType);
+            int rs = await _adminService.UpdateAvatar(id, avatarUrl);
+            if (rs == 0)
+            {
+                return Conflict(new ResponseDTO(409, "Fail to update admin avatar"));
+            }
+            else
+            {
+                return Ok(new ResponseDTO(200, "Update avatar success"));
+            }
         }
 
         /// <summary>

@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.TraineeDTO
+namespace kroniiapi.DTO.AdminDTO
 {
-    public class TraineeProfileDetailInput
+    public class AdminProfileDetailInput
     {
         [Required]
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Fullname must be from 6 to 100 characters")]

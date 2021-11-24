@@ -1,18 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace kroniiapi.DTO.TrainerDTO
+namespace kroniiapi.DTO.CompanyDTO
 {
-    public class TrainerResponse
+    public class CompanyProfileDetail
     {
-        public int TrainerId { get; set; }
         public string Fullname { get; set; }
         public string AvatarURL { get; set; }
         public string Email { get; set; }
-        public string Facebook { get; set; }
         public string Phone { get; set; }
         public string Address { get; set; }
+        public string Facebook { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

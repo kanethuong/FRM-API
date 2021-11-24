@@ -29,6 +29,7 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IMapper _mapper;
         private readonly IMegaHelper _megaHelper;
+        private readonly IImgHelper _imgHelper;
         private readonly IModuleService _moduleService;
         private readonly IClassService _classService;
         private readonly IMarkService _markService;
@@ -42,8 +43,8 @@ namespace kroniiapi.Controllers
                             IMarkService markService,
                             IClassService classService,
                             ITrainerService trainerService,
-                            IReportService reportService
-                            )
+                            IReportService reportService,
+                            IImgHelper imgHelper)
         {
             _traineeService = traineeService;
             _certificateService = certificateService;
@@ -54,6 +55,7 @@ namespace kroniiapi.Controllers
             _classService = classService;
             _trainerService = trainerService;
             _reportService = reportService;
+            _imgHelper = imgHelper;
         }
 
         /// <summary>
@@ -95,7 +97,7 @@ namespace kroniiapi.Controllers
                 return BadRequest(new ResponseDTO(400, "Your submission file must be image"));
             }
             Stream stream = file.OpenReadStream();
-            string Uri = await _megaHelper.Upload(stream, file.FileName, "Certificate");
+            string Uri = await _imgHelper.Upload(stream, file.FileName, file.Length, file.ContentType);
             Certificate certificate = _mapper.Map<Certificate>(certificateInput);
             certificate.CertificateURL = Uri;
             int status = await _certificateService.InsertCertificate(certificate);
@@ -242,6 +244,10 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "MarkPut")]
         public async Task<ActionResult> ChangeClassScore([FromBody] ArrayBodyInput<TraineeMarkInput> listTraineeMarkInput)
         {
+            if(listTraineeMarkInput.arrayData == null || listTraineeMarkInput.arrayData.Count() == 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Empty input score"));
+            }
             var (classId, Message) = await _traineeService.GetClassIdByTraineeId(listTraineeMarkInput.arrayData.Select(m => m.TraineeId).FirstOrDefault());
             if (classId == 0)
             {
@@ -255,7 +261,7 @@ namespace kroniiapi.Controllers
                 {
                     return BadRequest(new ResponseDTO(400, message));
                 }
-                await _reportService.AutoUpdateTraineesStatus(classId);
+                await _traineeService.AutoUpdateTraineesStatus(classId);
             }
             return Ok(new ResponseDTO(200, "Update class score success"));
         }
@@ -278,6 +284,7 @@ namespace kroniiapi.Controllers
 
             MarkResponse markResponse = new MarkResponse();
             markResponse.TraineeName = trainee.Fullname;
+            markResponse.TraineeId = trainee.TraineeId;
             var markList = new List<Mark>();
             foreach (var module in moduleList)
             {
