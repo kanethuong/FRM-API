@@ -244,6 +244,10 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "MarkPut")]
         public async Task<ActionResult> ChangeClassScore([FromBody] ArrayBodyInput<TraineeMarkInput> listTraineeMarkInput)
         {
+            if(listTraineeMarkInput.arrayData == null || listTraineeMarkInput.arrayData.Count() == 0)
+            {
+                return BadRequest(new ResponseDTO(400, "Empty input score"));
+            }
             var (classId, Message) = await _traineeService.GetClassIdByTraineeId(listTraineeMarkInput.arrayData.Select(m => m.TraineeId).FirstOrDefault());
             if (classId == 0)
             {
@@ -280,6 +284,7 @@ namespace kroniiapi.Controllers
 
             MarkResponse markResponse = new MarkResponse();
             markResponse.TraineeName = trainee.Fullname;
+            markResponse.TraineeId = trainee.TraineeId;
             var markList = new List<Mark>();
             foreach (var module in moduleList)
             {

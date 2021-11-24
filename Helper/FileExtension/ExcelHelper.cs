@@ -353,15 +353,15 @@ namespace kroniiapi.Helper
         /// <param name="rowRange">the initial row range</param>
         /// <param name="newRowCount">the new amount of rows</param>
         /// <returns>the created cell range</returns>
-        public static ExcelRangeBase CreateNewRows(this ExcelRangeBase rowRange, int newRowCount)
+        public static ExcelRange CreateNewRows(this ExcelRangeBase rowRange, int newRowCount)
         {
             var worksheet = rowRange.Worksheet;
             int startRow = rowRange.Start.Row;
             int startCol = rowRange.Start.Column;
-            int endRow = startRow + (newRowCount - 1);
+            int endRow = rowRange.End.Row;
             int endCol = rowRange.End.Column;
-            worksheet.InsertRow(startRow, newRowCount - 1);
-            return worksheet.Cells[startRow, startCol, endRow, endCol];
+            worksheet.InsertRow(endRow + 1, newRowCount);
+            return worksheet.Cells[endRow + 1, startCol, endRow + newRowCount, endCol];
         }
 
         /// <summary>
@@ -370,15 +370,15 @@ namespace kroniiapi.Helper
         /// <param name="colRange">the initial column range</param>
         /// <param name="newColCount">the new amount of columns</param>
         /// <returns>the created cell range</returns>
-        public static ExcelRangeBase CreateNewColumns(this ExcelRangeBase colRange, int newColCount)
+        public static ExcelRange CreateNewColumns(this ExcelRangeBase colRange, int newColCount)
         {
             var worksheet = colRange.Worksheet;
             int startRow = colRange.Start.Row;
             int startCol = colRange.Start.Column;
             int endRow = colRange.End.Row;
-            int endCol = startCol + (newColCount - 1);
-            worksheet.InsertColumn(startCol, newColCount - 1);
-            return worksheet.Cells[startRow, startCol, endRow, endCol];
+            int endCol = colRange.End.Column;
+            worksheet.InsertColumn(endCol + 1, newColCount);
+            return worksheet.Cells[startRow, endCol+1, endRow, endCol+newColCount];
         }
 
         /// <summary>
@@ -404,7 +404,7 @@ namespace kroniiapi.Helper
         /// <returns>the selected cell range</returns>
         public static ExcelRangeBase SelectRange(this ExcelWorksheet worksheet, int row, int col, int rowRange = 1, int colRange = 1)
         {
-            return worksheet.Cells[row, col, row + rowRange - 1, col + colRange - 1]; 
+            return worksheet.Cells[row, col, row + rowRange - 1, col + colRange - 1];
         }
 
         /// <summary>
@@ -446,23 +446,51 @@ namespace kroniiapi.Helper
         }
 
         /// <summary>
-        /// Generate the bar chart for the sheet
+        /// Generate the bar cluster chart for the sheet
         /// </summary>
         /// <param name="worksheet">the worksheet</param>
         /// <param name="chartName">the chartName</param>
         /// <param name="rangeLabel">the range labels</param>
         /// <param name="rangeValue">the range values</param>
-        /// <returns>the pie chart</returns>
-        public static ExcelChart GenerateBarChart(this ExcelWorksheet worksheet, string chartName, ExcelRangeBase rangeLabel, ExcelRangeBase rangeValue)
+        /// <returns>the bar cluster chart</returns>
+        public static ExcelChart GenerateBarClusterChart(this ExcelWorksheet worksheet, string chartName, ExcelRangeBase rangeLabel, ExcelRangeBase rangeValue)
         {
             var sheetCheck = worksheet.Drawings[chartName];
             if (sheetCheck != null) worksheet.Drawings.Remove(sheetCheck);
-            var barChart = worksheet.Drawings.AddChart(chartName,eChartType.BarClustered) ;
+            var barChart = worksheet.Drawings.AddChart(chartName, eChartType.BarClustered);
             var series = barChart.Series.Add(rangeValue, rangeLabel);
             var barSeries = (ExcelBarChartSerie)series;
             barSeries.DataLabel.ShowValue = true;
             barSeries.DataLabel.Position = eLabelPosition.InEnd;
             return barChart;
+        }
+        /// <summary>
+        /// Generate the column cluster chart for the sheet
+        /// </summary>
+        /// <param name="worksheet">the worksheet</param>
+        /// <param name="chartName">the chartName</param>
+        /// <param name="rangeLabel">the range labels</param>
+        /// <param name="rangeValue">the range values</param>
+        /// <returns>the column cluster chart</returns>
+        public static ExcelChart GenerateColumnClusterChart(this ExcelWorksheet worksheet, string chartName, ExcelRangeBase rangeLabel, ExcelRangeBase rangeValue)
+        {
+            var sheetCheck = worksheet.Drawings[chartName];
+            if (sheetCheck != null) worksheet.Drawings.Remove(sheetCheck);
+            var barChart = worksheet.Drawings.AddChart(chartName, eChartType.ColumnClustered);
+            var series = barChart.Series.Add(rangeValue, rangeLabel);
+            var barSeries = (ExcelBarChartSerie)series;
+            barSeries.DataLabel.ShowValue = true;
+            barSeries.DataLabel.Position = eLabelPosition.InEnd;
+            return barChart;
+        }
+        public static ExcelRange MoveRight(this ExcelRangeBase colRange, int colCount)
+        {
+            var worksheet = colRange.Worksheet;
+            int startRow = colRange.Start.Row;
+            int startCol = colRange.Start.Column;
+            int endRow = colRange.End.Row;
+            int endCol = colRange.End.Column;
+            return worksheet.Cells[startRow, endCol+1, endRow, endCol+colCount];
         }
     }
 }
