@@ -66,6 +66,7 @@ namespace kroniiapi.Services
             }
 
             IEnumerable<CompanyRequest> listRequestAccepted = await companyRequests
+                .Where(c => c.IsAccepted == true)
                 .Select(c => new CompanyRequest
                 {
                     CompanyRequestId = c.CompanyRequestId,
@@ -339,7 +340,7 @@ namespace kroniiapi.Services
             .OrderBy(c => c.CreatedAt)
             .GetPage(paginationParameter)
             .ToListAsync();
-            return Tuple.Create(totalRecords, rs); 
+            return Tuple.Create(totalRecords, rs);
         }
 
         /// <summary>

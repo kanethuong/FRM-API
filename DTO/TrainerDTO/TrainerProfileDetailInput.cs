@@ -9,8 +9,10 @@ namespace kroniiapi.DTO.TrainerDTO
     public class TrainerProfileDetailInput
     {
         [Required]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Fullname must be from 6 to 100 characters")]
         public string Fullname { get; set; }
         [Required]
+        [StringLength(11, MinimumLength = 10, ErrorMessage = "Phone must be from 10 to 11 numbers")]
         public string Phone { get; set; }
         [Required]
         public DateTime DOB { get; set; }
