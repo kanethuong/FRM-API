@@ -15,6 +15,8 @@ namespace kroniiapi.DTO.ClassDTO
         public ICollection<TrainerResponse> Trainer { get; set; }
         public AdminResponse Admin { get; set; }
         public ICollection<String> RoomName { get; set; }
+        public DateTime StartDay { get; set; }
+        public DateTime EndDay { get; set; }
 
     }
 }
