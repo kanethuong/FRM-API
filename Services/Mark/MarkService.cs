@@ -84,6 +84,7 @@ namespace kroniiapi.Services
                 ModuleId = mark.ModuleId,
                 TraineeId = mark.TraineeId,
                 Score = mark.Score,
+                PublishedAt = DateTime.Now,
             };
             _dataContext.Add(newMark);
             return await _dataContext.SaveChangesAsync();
@@ -127,7 +128,7 @@ namespace kroniiapi.Services
                     errorModuleIds.Add(item.ModuleId.ToString());
                 }
                 else if(_dataContext.ClassModules.FirstOrDefault(m => m.ClassId == existedTrainee.ClassId && m.ModuleId == item.ModuleId) == null){
-                    return(false, "Trainee with id " + existedTrainee.TraineeId + "does not studying module " + item.ModuleId);
+                    return(false, "Trainee with id " + existedTrainee.TraineeId + " does not studying module " + item.ModuleId);
                 }
                 else
                 {
@@ -139,6 +140,7 @@ namespace kroniiapi.Services
                     else
                     {
                         existMark.Score = item.Score;
+                        existMark.PublishedAt = DateTime.Now;
                     }
                 }
             }

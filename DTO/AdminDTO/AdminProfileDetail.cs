@@ -11,6 +11,6 @@ namespace kroniiapi.DTO.AdminDTO
         public DateTime DOB { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
-        public decimal Wage { get; set; }
+        public string Facebook { get; set; }
     }
 }

@@ -66,6 +66,7 @@ namespace kroniiapi.Services
             }
 
             IEnumerable<CompanyRequest> listRequestAccepted = await companyRequests
+                .Where(c => c.IsAccepted == true)
                 .Select(c => new CompanyRequest
                 {
                     CompanyRequestId = c.CompanyRequestId,
@@ -326,18 +327,19 @@ namespace kroniiapi.Services
         /// <returns>Trainee list</returns>
         public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByCompanyRequestId(int requestId, PaginationParameter paginationParameter)
         {
-            var traineeIds = await _dataContext.CompanyRequestDetails.Where(comreq => comreq.CompanyRequestId == requestId)
-            .Select(comreq => comreq.TraineeId).ToListAsync();
-            var traineeLists = new List<Trainee>();
-            foreach (var item in traineeIds)
+            IQueryable<Trainee> result = _dataContext.Trainees.Where(t => t.CompanyRequestDetails.Any(c => c.CompanyRequestId == requestId) && t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
             {
-                traineeLists.Add(await _dataContext.Trainees.Where(t => t.TraineeId == item).FirstOrDefaultAsync());
+                result = result.Where(e => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(e.Fullname.ToLower())
+                                                                    + " "
+                                                                    + EF.Functions.Unaccent(e.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
             }
-            var result = traineeLists.Where(t => t.IsDeactivated == false && (t.Fullname.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Email.ToUpper().Contains(paginationParameter.SearchName.ToUpper()) || t.Username.ToUpper().Contains(paginationParameter.SearchName.ToUpper())));
-            int totalRecords = result.Count();
-            var rs = result.OrderBy(c => c.TraineeId)
-                     .Skip((paginationParameter.PageNumber - 1) * paginationParameter.PageSize)
-                     .Take(paginationParameter.PageSize);
+            IEnumerable<Trainee> rs = await result
+            .GetCount(out var totalRecords)
+            .OrderBy(c => c.CreatedAt)
+            .GetPage(paginationParameter)
+            .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
 
@@ -421,6 +423,36 @@ namespace kroniiapi.Services
         {
             List<int> acceptedTraineeId = (List<int>)await _dataContext.CompanyRequestDetails.Where(c => c.CompanyRequest.IsAccepted == true).Select(c => c.TraineeId).Distinct().ToListAsync();
             return acceptedTraineeId;
+        }
+
+        /// <summary>
+        /// Check if a company request is accepted
+        /// </summary>
+        /// <param name="companyRequestId"></param>
+        /// <returns> True if request has been accepted / False if not </returns>
+        public bool? IsCompanyRequestAccepted(int companyRequestId)
+        {
+            return _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == companyRequestId).Select(c => c.IsAccepted).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Update a report url to a company request
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <param name="reportUrl"></param>
+        /// <returns></returns>
+        public async Task<int> UpdateCompanyReportUrl(int requestId, string reportUrl)
+        {
+            int rowInserted = 0;
+            CompanyRequest existedRequest = await _dataContext.CompanyRequests.Where(c => c.CompanyRequestId == requestId).FirstOrDefaultAsync();
+            if (existedRequest == null)
+            {
+                return -1;
+            }
+
+            existedRequest.ReportURL = reportUrl;
+            rowInserted = await _dataContext.SaveChangesAsync();
+            return rowInserted;
         }
     }
 }

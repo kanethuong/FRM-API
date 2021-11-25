@@ -105,15 +105,36 @@ namespace kroniiapi.Services
                 return -1;
             }
             existedAdmin.Fullname = admin.Fullname;
-            existedAdmin.AvatarURL = admin.AvatarURL;
             existedAdmin.Phone = admin.Phone;
             existedAdmin.DOB = admin.DOB;
             existedAdmin.Address = admin.Address;
             existedAdmin.Gender = admin.Gender;
+            existedAdmin.Facebook = admin.Facebook;
             var rowUpdated = 0;
             rowUpdated = await _dataContext.SaveChangesAsync();
             return rowUpdated;
         }
+
+        /// <summary>
+        /// Update admin's avatar method
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="avatarUrl"></param>
+        /// <returns>-1:not existed / 0:fail / 1:success</returns>
+        public async Task<int> UpdateAvatar(int id, string avatarUrl)
+        {
+            var existedAdmin = await _dataContext.Admins.Where(t => t.AdminId == id && t.IsDeactivated == false).FirstOrDefaultAsync();
+            if (existedAdmin == null)
+            {
+                return -1;
+            }
+            existedAdmin.AvatarURL = avatarUrl;
+
+            var rowUpdated = await _dataContext.SaveChangesAsync();
+
+            return rowUpdated;
+        }
+
         /// <summary>
         /// Delete admin in database by upadating isDeactivated to "true"
         /// </summary>
