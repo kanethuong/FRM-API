@@ -31,7 +31,7 @@ namespace kroniiapi.Controllers
         /// <param name="at">Choose time to export report</param>
         /// <returns></returns>
         [HttpGet("{classId:int}")]
-        // [Authorize(Policy = "ReportGet")]
+        [Authorize(Policy = "ReportGet")]
         public async Task<ActionResult> GenerateReport(int classId, [FromQuery] DateTime reportAt = default(DateTime))
         {
             var classGet = await _classService.GetClassByClassID(classId);
@@ -53,70 +53,6 @@ namespace kroniiapi.Controllers
             return File(stream1, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{classGet.ClassName}_Report {reportAt.Month}/{reportAt.Year}.xlsx");
 
         }
-        [HttpGet("attendance/{classId:int}")]
-        public async Task<ActionResult> GetAttReport(int classId, DateTime month = default(DateTime))
-        {
-            // var rs = new Dictionary<int, List<AttendanceReport>>();
-            if (month == default(DateTime))
-            {
-                return Ok(_reportService.GetTotalAttendanceReports(classId));
-            }
-            else
-                return Ok(_reportService.GetAttendanceReportEachMonth(classId, month));
-        }
-        [HttpGet("info/{classId:int}")]
-        public async Task<ActionResult> GetTraineesInfo(int classId)
-        {
-
-            return Ok(_reportService.GetTraineesInfo(classId));
-        }
-        [HttpGet("status/{classId:int}")]
-        public async Task<ActionResult> GetClassStatusReport(int classId)
-        {
-
-            return Ok(_reportService.GetClassStatusReport(classId));
-        }
-        [HttpGet("GetAttendanceInfo/{classId:int}")]
-        public async Task<ActionResult> GetAttendanceInfo(int classId, DateTime reportAt = default(DateTime))
-        {
-
-            return Ok(await _reportService.GetAttendanceInfo(classId, reportAt));
-        }
-        [HttpGet("GetRewardAndPenaltyScore/{classId:int}")]
-        public async Task<ActionResult> GetRewardAndPenaltyScore(int classId, DateTime reportAt = default(DateTime))
-        {
-
-            return Ok(_reportService.GetRewardAndPenaltyScore(classId, reportAt));
-        }
-        [HttpGet("GetTraineeGPAs/{classId:int}")]
-        public async Task<ActionResult> GetTraineeGPAs(int classId, DateTime reportAt = default(DateTime))
-        {
-
-            return Ok(await _reportService.GetTraineeGPAs(classId, reportAt));
-        }
-        [HttpGet("GetTopicGrades/{classId:int}")]
-        public async Task<ActionResult> GetTopicGrades(int classId, DateTime reportAt = default(DateTime))
-        {
-
-            return Ok(_reportService.GetTopicGrades(classId));
-        }
-        [HttpGet("GetTraineeFeedbacks/{classId:int}")]
-        public async Task<ActionResult> GetTraineeFeedbacks(int classId, DateTime reportAt = default(DateTime))
-        {
-
-            return Ok(_reportService.GetTraineeFeedbacks(classId, reportAt));
-        }
-        [HttpGet("GetAllTraineeFeedbacks/{classId:int}")]
-        public async Task<ActionResult> GetAllTraineeFeedbacks(int classId)
-        {
-
-            return Ok(_reportService.GetAllTraineeFeedbacks(classId));
-        }
-        [HttpGet("GetFeedbackReport/{classId:int}")]
-        public async Task<ActionResult> GetFeedbackReport(int classId, DateTime reportAt = default(DateTime))
-        {
-
-            return Ok(_reportService.GetFeedbackReport(classId, reportAt));
-        }
+        
     }
 }
