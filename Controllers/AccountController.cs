@@ -8,6 +8,7 @@ using AutoMapper;
 using kroniiapi.DTO;
 using kroniiapi.DTO.AccountDTO;
 using kroniiapi.DTO.Email;
+using kroniiapi.DTO.ExcelDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.Helper;
 using kroniiapi.Services;
@@ -25,7 +26,7 @@ namespace kroniiapi.Controllers
         private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
 
-        private IEmailService _emailService;
+        private readonly IEmailService _emailService;
 
         public AccountController(IAccountService accountService, IMapper mapper, IEmailService emailService)
         {
@@ -101,8 +102,9 @@ namespace kroniiapi.Controllers
         /// <param name="file">Excel file to store account data</param>
         /// <returns>201: Created / 400: File content inapproriate</returns>
         [HttpPost("excel")]
-        public async Task<ActionResult<ResponseDTO>> CreateNewAccountByExcel([FromForm] IFormFile file)
+        public async Task<ActionResult<ExcelResponseDTO>> CreateNewAccountByExcel([FromForm] IFormFile file)
         {
+            List<ExcelErrorDTO> excelErrorList = new();
             bool success;
             string message;
 
@@ -110,12 +112,15 @@ namespace kroniiapi.Controllers
             (success, message) = FileHelper.CheckExcelExtension(file);
             if (!success)
             {
-                return BadRequest(new ResponseDTO(400, message));
+                return BadRequest(new ExcelResponseDTO(400, message)
+                {
+                    Errors = excelErrorList
+                });
             }
 
             // Arrange the checker and the converter
-            Predicate<List<string>> checker = list => list.Contains("username") && list.Contains("fullname") && list.Contains("email") && list.Contains("role");
-            static AccountInput converter(Dictionary<string, object> dict) => new AccountInput()
+            static bool checker(List<string> list) => list.Contains("username") && list.Contains("fullname") && list.Contains("email") && list.Contains("role");
+            static AccountInput converter(Dictionary<string, object> dict) => new()
             {
                 Username = dict["username"]?.ToString().Trim(),
                 Fullname = dict["fullname"]?.ToString().Trim(),
@@ -134,33 +139,37 @@ namespace kroniiapi.Controllers
             // Return if the attempt is failed
             if (!success)
             {
-                return BadRequest(new ResponseDTO(400, message)
+                return BadRequest(new ExcelResponseDTO(400, message)
                 {
-                    Errors = new Dictionary<string, string>()
+                    Errors = excelErrorList
                 });
             }
 
 
             // Loop through each data and validate the model
-            Dictionary<int, List<ValidationResult>> validateErrorDict = new();
             for (int i = 0; i < list.Count; i++)
             {
                 int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
                 AccountInput accountInput = list[i];
 
                 // Validate the account
-                if (!accountInput.Validate(out List<ValidationResult> errors))
+                if (!accountInput.Validate(out List<ValidationResult> validationResults))
                 {
-                    validateErrorDict.Add(row, errors);
+                    excelErrorList.Add(new ExcelErrorDTO()
+                    {
+                        Row = row,
+                        Value = accountInput,
+                        Errors = validationResults.Select(x => x.ErrorMessage).ToList()
+                    });
                 }
             }
 
             // Return if there is validation error
-            if (validateErrorDict.Count > 0)
+            if (excelErrorList.Count > 0)
             {
-                return BadRequest(new ResponseDTO(400, "Failed to validate the accounts. Check Errors")
+                return BadRequest(new ExcelResponseDTO(400, "Failed to validate the accounts. Check Errors")
                 {
-                    Errors = validateErrorDict
+                    Errors = excelErrorList
                 });
             }
 
@@ -168,15 +177,25 @@ namespace kroniiapi.Controllers
             try
             {
                 var failIndexes = await _accountService.InsertNewAccount(list);
-                Dictionary<int, int> failRows = new();
                 foreach (var errorItem in failIndexes)
                 {
-                    var row = errorItem.Key + 2;
-                    failRows[row] = errorItem.Value;
+                    var row = errorItem.Key + 2; // row starts from 1, but we skip the first row as it's the column name
+                    excelErrorList.Add(new ExcelErrorDTO()
+                    {
+                        Row = row,
+                        Value = list[errorItem.Key],
+                        Error = errorItem.Value switch
+                        {
+                            0 => "Invalid Email",
+                            -1 => "Account Existed",
+                            1 => "Invalid Role",
+                            _ => "Unknown Error"
+                        }
+                    });
                 }
-                return CreatedAtAction(nameof(GetAccountList), new ResponseDTO(201, "Successfully inserted. Check Errors for details to failed accounts")
+                return CreatedAtAction(nameof(GetAccountList), new ExcelResponseDTO(201, "Successfully inserted. Check Errors for details to failed accounts")
                 {
-                    Errors = failRows
+                    Errors = excelErrorList
                 });
             }
             catch (Exception)
