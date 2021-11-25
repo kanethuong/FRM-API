@@ -355,7 +355,7 @@ namespace kroniiapi.Services
             {
                 Content = comreq.Content,
                 CompanyRequestDetails = comreq.CompanyRequestDetails
-                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && !c.Trainee.Status.ToLower().Contains("onboard"))
+                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && c.Trainee.OnBoard == false)
                                             .Select(tr => new CompanyRequestDetail
                                             {
                                                 TraineeId = tr.TraineeId,
