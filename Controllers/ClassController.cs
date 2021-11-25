@@ -159,7 +159,7 @@ namespace kroniiapi.Controllers
         /// <param name="id"> id of class</param>
         /// <returns> 200: Detail of class  / 404: class not found </returns>
         [HttpGet("{id:int}")]
-        //[Authorize(Policy = "ClassGet")]
+        [Authorize(Policy = "ClassGet")]
         public async Task<ActionResult<ClassDetailResponse>> ViewClassDetail(int id)
         {
             Class s = await _classService.GetClassDetail(id);
@@ -200,8 +200,14 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Class not found"));
             }
-
-            return Ok(_mapper.Map<ClassDetailResponse>(clazz));
+            ClassDetailResponse cdr = _mapper.Map<ClassDetailResponse>(clazz);
+            cdr.Trainer = _mapper.Map<List<TrainerResponse>>(await _trainerService.GetTrainerListByClassId(classId));
+            var rooms = await _roomService.GetRoomByClassId(classId);
+            foreach (var item in rooms)
+            {
+                cdr.RoomName.Add(item.RoomName);
+            }
+            return Ok(cdr);
 
         }
 
