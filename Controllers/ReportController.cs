@@ -44,7 +44,8 @@ namespace kroniiapi.Controllers
                 var stream = await _reportService.GenerateTotalClassReport(classId);
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{classGet.ClassName}_Report.xlsx");
             }
-            if (reportAt >= classGet.EndDay || reportAt <= classGet.StartDay)
+            if ((reportAt.Month > classGet.EndDay.Month && reportAt.Year > classGet.EndDay.Year)
+                || (reportAt.Month < classGet.StartDay.Month && reportAt.Year < classGet.StartDay.Year))
             {
                 return BadRequest(new ResponseDTO(400, "Time report at is out of range"));
             }
@@ -52,5 +53,6 @@ namespace kroniiapi.Controllers
             return File(stream1, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{classGet.ClassName}_Report {reportAt.Month}/{reportAt.Year}.xlsx");
 
         }
+        
     }
 }
