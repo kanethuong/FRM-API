@@ -204,13 +204,28 @@
         <div class="row mb-3">
             <div class="col-6 border-end">
                 <h5>Request Body</h5>
-                <p>No</p>
+                <p><pre><code>
+{
+  "status": 0,
+  "message": "string",
+  "errors": [
+    {
+      "sheet": "string",
+      "row": 0,
+      "column": 0,
+      "columnName": "string",
+      "value": object,
+      "errors": [
+        "string"
+      ]
+    }
+  ]
+}
+                    </code></pre></p>
             </div>
             <div class="col-6">
                 <h5>Response Body</h5>
-                <p>400: The Error Details are a dictionary contains the failed row, and the validation results of that row</p>
-                <p>201: The Error Details are a dictionary contains the failed row, and the error code of the row</p>
-                <p>Error Code: 0 (Invalid Email), -1 (Account Existed), 1 (Invalid Role)</p>
+                <p>Error Response</p>
             </div>
         </div>
     </div>
