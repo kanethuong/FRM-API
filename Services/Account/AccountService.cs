@@ -281,7 +281,7 @@ namespace kroniiapi.Services
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
             emailContent.ToEmail = email;
-            emailContent.Subject = "Your Password";
+            emailContent.Subject = "[Kronii] Your password";
             emailContent.Body = password;
             _emailService.SendEmailAsync(emailContent);
         }
@@ -633,7 +633,7 @@ namespace kroniiapi.Services
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
             emailContent.ToEmail = email;
-            emailContent.Subject = "Your New Password";
+            emailContent.Subject = "[Kronii] Your password was reset";
             emailContent.Body = password;
 
             await _emailService.SendEmailAsync(emailContent);
