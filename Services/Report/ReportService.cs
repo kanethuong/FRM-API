@@ -665,7 +665,7 @@ namespace kroniiapi.Services.Report
                     + LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 12;
                 // Trainning Program
                 var TrainningProgram = (TopicContentAVG + TopicObjectiveAVG + ApproriateTopicLevelAVG + TopicUsefulnessAVG + TrainingMaterialAVG) / 5;
-                var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG);
+                var Trainer = (TrainerKnowledgeAVG + SubjectCoverageAVG + InstructionAndCommunicateAVG + TrainerSupportAVG) / 4;
                 var Organization = (LogisticsAVG + InformationToTraineesAVG + AdminSupportAVG) / 3;
                 var AverageScore = (TrainningProgram + Trainer + Organization) / 3;
                 var fbReportAdd = new FeedbackReport
@@ -1118,8 +1118,9 @@ namespace kroniiapi.Services.Report
                 var fbMonthReport = feedbackReportGet.Where(f => f.IsSumary == false);
                 foreach (var monthFb in fbMonthReport)
                 {
-                    var fbMonthGet = this.GetTraineeFeedbacks(classId, monthFb.ReportAt);
-                    if (fbMonthGet.Contains(null))
+                    var fbMonthGet = this.GetTraineeFeedbacks(classId, monthFb.ReportAt).ToList();
+                    fbMonthGet.RemoveAll(fb => fb == null);
+                    if (fbMonthGet.Count == 0)
                     {
                         continue;
                     }
@@ -1533,62 +1534,65 @@ namespace kroniiapi.Services.Report
 
                 // Fill data to training Feedback each month
                 var fbMonthSheet = package.Workbook.Worksheets[5];
-                var fbMonthGet = this.GetTraineeFeedbacks(classId, reportAt);
-
+                var fbMonthGet = this.GetTraineeFeedbacks(classId, reportAt).ToList();
+                fbMonthGet.RemoveAll(fb => fb == null);
                 var fbFill = fbMonthSheet.Cells["B11:O11"];
-                foreach (var item in fbMonthGet)
+                if (fbMonthGet.Count != 0)
                 {
-                    fbFill = fbFill.CreateNewRows(1);
-                    ICollection<TraineeFeedback> list = new List<TraineeFeedback>();
-                    list.Add(item);
-                    fbFill.FillDataToCells(list, (fb, cell) =>
+                    foreach (var item in fbMonthGet)
                     {
-                        cell.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
-                        cell[0].Value = fb.Email;
-                        cell[1].Value = fb.TopicContent;
-                        cell[2].Value = fb.TopicObjective;
-                        cell[3].Value = fb.ApproriateTopicLevel;
-                        cell[4].Value = fb.TopicUsefulness;
-                        cell[5].Value = fb.TrainingMaterial;
-                        cell[6].Value = fb.TrainerKnowledge;
-                        cell[7].Value = fb.SubjectCoverage;
-                        cell[8].Value = fb.InstructionAndCommunicate;
-                        cell[9].Value = fb.TrainerSupport;
-                        cell[10].Value = fb.Logistics;
-                        cell[11].Value = fb.InformationToTrainees;
-                        cell[12].Value = fb.AdminSupport;
-                        cell[13].Value = fb.OtherComment;
+                        fbFill = fbFill.CreateNewRows(1);
+                        ICollection<TraineeFeedback> list = new List<TraineeFeedback>();
+                        list.Add(item);
+                        fbFill.FillDataToCells(list, (fb, cell) =>
+                        {
+                            cell.ToList().ForEach(c => c.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin));
+                            cell[0].Value = fb.Email;
+                            cell[1].Value = fb.TopicContent;
+                            cell[2].Value = fb.TopicObjective;
+                            cell[3].Value = fb.ApproriateTopicLevel;
+                            cell[4].Value = fb.TopicUsefulness;
+                            cell[5].Value = fb.TrainingMaterial;
+                            cell[6].Value = fb.TrainerKnowledge;
+                            cell[7].Value = fb.SubjectCoverage;
+                            cell[8].Value = fb.InstructionAndCommunicate;
+                            cell[9].Value = fb.TrainerSupport;
+                            cell[10].Value = fb.Logistics;
+                            cell[11].Value = fb.InformationToTrainees;
+                            cell[12].Value = fb.AdminSupport;
+                            cell[13].Value = fb.OtherComment;
 
-                    });
+                        });
+                    }
+                    // Add formula to calculate Average feedback point from C11 to N11
+                    fbMonthSheet.Cells["C11"].Formula = $"AVERAGE(C12:C{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["D11"].Formula = $"AVERAGE(D12:D{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["F11"].Formula = $"AVERAGE(F12:F{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["E11"].Formula = $"AVERAGE(E12:E{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["G11"].Formula = $"AVERAGE(G12:G{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["H11"].Formula = $"AVERAGE(H12:H{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["I11"].Formula = $"AVERAGE(I12:I{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["J11"].Formula = $"AVERAGE(J12:J{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["K11"].Formula = $"AVERAGE(K12:K{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["L11"].Formula = $"AVERAGE(L12:L{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["M11"].Formula = $"AVERAGE(M12:M{12 + fbMonthGet.Count - 1})";
+                    fbMonthSheet.Cells["N11"].Formula = $"AVERAGE(N12:N{12 + fbMonthGet.Count - 1})";
+
+                    //draw Bar Chart for training feedback of each month
+                    var monthChart1Label = fbMonthSheet.Cells[$"C{20 + fbMonthGet.Count}:N{21 + fbMonthGet.Count}"];
+                    var monthChart1Value = fbMonthSheet.Cells[$"C{23 + fbMonthGet.Count}:N{23 + fbMonthGet.Count}"];
+                    var monthChart1 = Helper.ExcelHelper.GenerateColumnClusterChart(fbMonthSheet, "Course Evaluation", monthChart1Label, monthChart1Value);
+                    monthChart1.Title.Text = "Course Evaluation";
+                    monthChart1.SetPosition(26 + fbMonthGet.Count, 0, 1, 0);
+                    monthChart1.SetSize(600, 500);
+
+                    var monthChart2Label = fbMonthSheet.Cells[$"C{20 + fbMonthGet.Count}:O{20 + fbMonthGet.Count}"];
+                    var monthChart2Value = fbMonthSheet.Cells[$"C{24 + fbMonthGet.Count}:O{24 + fbMonthGet.Count}"];
+                    var monthChart2 = Helper.ExcelHelper.GenerateBarClusterChart(fbMonthSheet, "Brief Course Evaluation", monthChart2Label, monthChart2Value);
+                    monthChart2.Title.Text = "Brief Course Evaluation";
+                    monthChart2.SetPosition(26 + fbMonthGet.Count, 0, 8, 0);
+                    monthChart2.SetSize(600, 500);
                 }
-                // Add formula to calculate Average feedback point from C11 to N11
-                fbMonthSheet.Cells["C11"].Formula = $"AVERAGE(C12:C{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["D11"].Formula = $"AVERAGE(D12:D{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["F11"].Formula = $"AVERAGE(F12:F{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["E11"].Formula = $"AVERAGE(E12:E{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["G11"].Formula = $"AVERAGE(G12:G{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["H11"].Formula = $"AVERAGE(H12:H{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["I11"].Formula = $"AVERAGE(I12:I{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["J11"].Formula = $"AVERAGE(J12:J{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["K11"].Formula = $"AVERAGE(K12:K{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["L11"].Formula = $"AVERAGE(L12:L{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["M11"].Formula = $"AVERAGE(M12:M{12 + fbMonthGet.Count - 1})";
-                fbMonthSheet.Cells["N11"].Formula = $"AVERAGE(N12:N{12 + fbMonthGet.Count - 1})";
-
-                //draw Bar Chart for training feedback of each month
-                var monthChart1Label = fbMonthSheet.Cells[$"C{20 + fbMonthGet.Count}:N{21 + fbMonthGet.Count}"];
-                var monthChart1Value = fbMonthSheet.Cells[$"C{23 + fbMonthGet.Count}:N{23 + fbMonthGet.Count}"];
-                var monthChart1 = Helper.ExcelHelper.GenerateColumnClusterChart(fbMonthSheet, "Course Evaluation", monthChart1Label, monthChart1Value);
-                monthChart1.Title.Text = "Course Evaluation";
-                monthChart1.SetPosition(26 + fbMonthGet.Count, 0, 1, 0);
-                monthChart1.SetSize(600, 500);
-
-                var monthChart2Label = fbMonthSheet.Cells[$"C{20 + fbMonthGet.Count}:O{20 + fbMonthGet.Count}"];
-                var monthChart2Value = fbMonthSheet.Cells[$"C{24 + fbMonthGet.Count}:O{24 + fbMonthGet.Count}"];
-                var monthChart2 = Helper.ExcelHelper.GenerateBarClusterChart(fbMonthSheet, "Brief Course Evaluation", monthChart2Label, monthChart2Value);
-                monthChart2.Title.Text = "Brief Course Evaluation";
-                monthChart2.SetPosition(26 + fbMonthGet.Count, 0, 8, 0);
-                monthChart2.SetSize(600, 500);
 
                 // Fill data to trainees status of each day
                 var attSheet = package.Workbook.Worksheets[1];
