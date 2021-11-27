@@ -394,18 +394,18 @@ namespace kroniiapi.Controllers
         /// <returns>200: Update status success / 404: Trainee cannot be found</returns>
         [HttpPut("{id:int}/status")]
         [Authorize(Policy = "TraineePutAdmin")]
-        public async Task<ActionResult> UpdateTraineeStatus(int id, [FromBody] int status)
+        public async Task<ActionResult> UpdateTraineeStatus(int id, [FromBody] UpdateTraineeStatus updateTraineeStatus)
         {
             Trainee trainee = await _traineeService.GetTraineeById(id);
             if (trainee is null)
             {
                 return NotFound(new ResponseDTO(404, "Trainee profile cannot be found"));
             }
-            if (status <= 0 || status >= 6)
+            if (updateTraineeStatus.status <= 2 || updateTraineeStatus.status >= 6)
             {
                 return BadRequest(new ResponseDTO(400, "Fail to update trainee status"));
             }
-            switch (status)
+            switch (updateTraineeStatus.status)
             {
                 case 1:
                     {
