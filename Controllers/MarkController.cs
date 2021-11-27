@@ -140,7 +140,7 @@ namespace kroniiapi.Controllers
                 var markList = new List<Mark>();
                 foreach (var module in moduleList)
                 {
-                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, class1.StartDay, class1.EndDay);
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, class1.StartDay);
                     if (traineeMark == null)
                     {
                         Mark mark_zero = new Mark();
@@ -204,7 +204,7 @@ namespace kroniiapi.Controllers
                 var markList = new List<Mark>();
                 foreach (var module in moduleList)
                 {
-                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, class1.StartDay, class1.EndDay);
+                    var traineeMark = await _markService.GetMarkByTraineeIdAndModuleId(trainee.TraineeId, module.ModuleId, class1.StartDay);
                     if (traineeMark == null)
                     {
                         Mark mark_zero = new Mark();
