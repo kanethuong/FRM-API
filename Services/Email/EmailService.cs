@@ -40,7 +40,7 @@ namespace kroniiapi.Services
                 mailTemplate = mailTemplate.Replace("[@mailcontent@]", emailContent.Body.Trim());
 
                 // Mail content config
-                mail.From = new MailAddress(_emailConfig.MailAddress);
+                mail.From = new MailAddress(_emailConfig.MailAddress,"Kronii");
                 mail.To.Add(emailContent.ToEmail);
                 mail.Subject = emailContent.Subject;
                 mail.IsBodyHtml = true;

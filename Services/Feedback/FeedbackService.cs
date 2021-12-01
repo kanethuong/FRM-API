@@ -109,6 +109,7 @@ namespace kroniiapi.Services
                 fbInMonthBefore.InformationToTrainees = feedback.InformationToTrainees;
                 fbInMonthBefore.AdminSupport = feedback.AdminSupport;
                 fbInMonthBefore.OtherComment = feedback.OtherComment;
+                fbInMonthBefore.CreatedAt = DateTime.Now;
             }
             else _dataContext.Feedbacks.Add(feedback);
             int row = await _dataContext.SaveChangesAsync();
@@ -118,7 +119,7 @@ namespace kroniiapi.Services
 
         public async Task<Feedback> GetFeedbackByTraineeId(int traineeId)
         {
-            return await _dataContext.Feedbacks.Where(fb => fb.TraineeId==traineeId).FirstOrDefaultAsync();
+            return await _dataContext.Feedbacks.Where(fb => fb.TraineeId == traineeId).FirstOrDefaultAsync();
         }
 
         /// <summary>
