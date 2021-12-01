@@ -112,12 +112,21 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
-        /// Get trainer feedback by trainer ID
+        /// Check Trainee has feedback this month
         /// </summary>
-        /// <param name="trainerId"></param>
-        /// <returns>List of feedback</returns>
-        // public async Task<ICollection<TrainerFeedback>> GetTrainerFeedbackByTrainerId(int trainerId){
-        //     return await _dataContext.TrainerFeedbacks.Where(t => t.TrainerId==trainerId).ToListAsync();
-        // }
+        /// <param name="traineeId"></param>
+        /// <returns>true: trainee had sent FB / false: trainee didn't</returns>
+        public bool CheckTraineeHasFeedbackThisMonth(int traineeId)
+        {
+            var fbInMonth = _dataContext.Feedbacks.Any(
+                        f => f.TraineeId == traineeId
+                             && f.CreatedAt.Month == DateTime.Now.Month
+                             && f.CreatedAt.Year == DateTime.Now.Year);
+            if (fbInMonth is true)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
