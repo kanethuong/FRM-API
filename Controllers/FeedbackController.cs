@@ -80,18 +80,36 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, "Class not found"));
             }
-            ICollection<FeedbackResponse> classFeedback=new Collection<FeedbackResponse>(); 
+            ICollection<FeedbackResponse> classFeedback = new Collection<FeedbackResponse>();
             ICollection<Trainee> traineeList = await _traineeService.GetTraineeByClassId(classId);
             foreach (Trainee trainee in traineeList)
             {
-                Feedback feedback=await _feedbackService.GetFeedbackByTraineeId(trainee.TraineeId);
-                if(feedback==null){
+                Feedback feedback = await _feedbackService.GetFeedbackByTraineeId(trainee.TraineeId);
+                if (feedback == null)
+                {
                     continue;
                 }
-                FeedbackResponse feedbackResponse=_mapper.Map<FeedbackResponse>(feedback);
+                FeedbackResponse feedbackResponse = _mapper.Map<FeedbackResponse>(feedback);
                 classFeedback.Add(feedbackResponse);
             }
             return Ok(classFeedback);
         }
+        /// <summary>
+        /// Check Trainee has feedback this month
+        /// </summary>
+        /// <param name="traineeId"></param>
+        /// <returns>true: trainee had sent FB / false: trainee didn't</returns>
+        [HttpGet("{traineeId}/check")]
+        public ActionResult CheckTraineeHasFeedback(int traineeId)
+        {
+            var checkFb = _feedbackService.CheckTraineeHasFeedbackThisMonth(traineeId);
+            if (checkFb is false)
+            {
+                return BadRequest(new ResponseDTO(400, "false"));
+            }
+            else
+                return Ok(new ResponseDTO(200, "true"));
+        }
+
     }
 }
