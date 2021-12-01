@@ -57,6 +57,10 @@ namespace kroniiapi.Controllers
             {
                 return NotFound(new ResponseDTO(404, feedbackMessage));
             }
+            if (rs == -2)
+            {
+                return BadRequest(new ResponseDTO(400, feedbackMessage));
+            }
             if (rs == 1)
             {
                 return Created("", new ResponseDTO(201, feedbackMessage));
