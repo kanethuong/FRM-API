@@ -110,7 +110,7 @@ namespace kroniiapi
                 options.AddPolicy("ClassPut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
                 options.AddPolicy("ClassModule", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
 
                 options.AddPolicy("Company", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "company" })));

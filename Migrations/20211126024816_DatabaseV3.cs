@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace kroniiapi.Migrations
 {
-    public partial class ReInitialV4 : Migration
+    public partial class DatabaseV3 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -184,6 +184,7 @@ namespace kroniiapi.Migrations
                     DOB = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
+                    Facebook = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     IsDeactivated = table.Column<bool>(type: "boolean", nullable: false),
                     DeactivatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -269,7 +270,8 @@ namespace kroniiapi.Migrations
                     IsCancelled = table.Column<bool>(type: "boolean", nullable: false),
                     CancalledAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ModuleId = table.Column<int>(type: "integer", nullable: false),
-                    AdminId = table.Column<int>(type: "integer", nullable: false)
+                    AdminId = table.Column<int>(type: "integer", nullable: false),
+                    RoomId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -285,6 +287,12 @@ namespace kroniiapi.Migrations
                         column: x => x.ModuleId,
                         principalTable: "Modules",
                         principalColumn: "ModuleId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Exams_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "RoomId",
                         onDelete: ReferentialAction.SetNull);
                 });
 
@@ -349,7 +357,7 @@ namespace kroniiapi.Migrations
                     AssignedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     WeightNumber = table.Column<float>(type: "real", nullable: false),
                     TrainerId = table.Column<int>(type: "integer", nullable: false),
-                    RoomId = table.Column<int>(type: "integer", nullable: false)
+                    RoomId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -837,6 +845,11 @@ namespace kroniiapi.Migrations
                 column: "ModuleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Exams_RoomId",
+                table: "Exams",
+                column: "RoomId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Feedbacks_TraineeId",
                 table: "Feedbacks",
                 column: "TraineeId");
@@ -912,9 +925,6 @@ namespace kroniiapi.Migrations
                 name: "ApplicationCategories");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
                 name: "Trainers");
 
             migrationBuilder.DropTable(
@@ -934,6 +944,9 @@ namespace kroniiapi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Modules");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "Classes");

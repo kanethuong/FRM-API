@@ -191,7 +191,7 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Cannot find that Trainer in this Class"));
             }
 
-            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassId(classId, paginationParameter);
+            (int totalRecords, IEnumerable<Trainee> trainees) = await _classService.GetTraineesByClassIdOfTrainer(classId, paginationParameter);
 
             List<MarkResponse> markResponses = new List<MarkResponse>();
             foreach (Trainee trainee in trainees)

@@ -223,6 +223,8 @@
                 <h5>Note</h5>
                 <p>To view trainee list in class please use <a href="#ViewTraineeListByClassId"
                         class="link-dark rounded">ViewTraineeListByClassId</a></p>
+                        <p>To view module list in class please use <a href="#ViewClassModuleForClassDetail"
+                            class="link-dark rounded">ViewModuleInClass</a></p>        
             </div>
         </div>
         <div class="row mb-3">
@@ -238,35 +240,28 @@
                 <h5>Response Body</h5>
                 <p>
                 <pre><code>
-                    "payload": [
-                    {
-                        "classId": int,
-                        "className": "string",
-                        "description": "string",
-                        "modules": [
-                          {
-                            "moduleName": "string",
-                            "iconURL": "string",
-                            "syllabusURL": "string"
-                          }
-                        ],
-                        "trainer": [
-                        {
-                            "trainerId": int,
-                            "fullname": "string",
-                            "avatarURL": "string",
-                            "email": "string",
-                            "facebook": "string"
-                        }
-                        ],
-                        "admin": {
-                          "fullname": "string",
-                          "avatarURL": "string",
-                          "email": "string"
-                        }
-                      }
-                    ]
-                }
+    "payload": [
+    {
+        "classId": int,
+        "className": "string",
+        "description": "string",
+        "trainer": [
+        {
+            "trainerId": int,
+            "fullname": "string",
+            "avatarURL": "string",
+            "email": "string",
+            "facebook": "string"
+        }
+        ],
+        "admin": {
+            "fullname": "string",
+            "avatarURL": "string",
+            "email": "string"
+        }
+        }
+    ]
+}
             </code></pre>
                 </p>
             </div>
@@ -520,91 +515,7 @@
         </div>
     </div>
 
-    <div id="ViewClassDetail">
-        <!-- Function Title -->
-        <div class="w-75 border-bottom mb-3">
-            <h3>ViewClassDetail</h3>
-        </div>
-        <p>By DatLT</p>
-        <div>
-            <h5>Endpoint</h5>
-            <p>/api/class/{id}</p>
-        </div>
-
-        <!-- Role, Method and Status code -->
-        <div class="row mb-3">
-            <div class="col-4 border-end">
-                <h5>Allow</h5>
-                <p>Administrator</p>
-            </div>
-            <div class="col-4 border-end">
-                <h5>Method</h5>
-                <p>GET</p>
-            </div>
-            <div class="col-4">
-                <h5>Status</h5>
-                <p>200 404 </p>
-            </div>
-        </div>
-        <!-- Parameter & file -->
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Parameter</h5>
-                <p>id: ID of class</p>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-6 border-end">
-                <h5>Request Body</h5>
-                <p>No</p>
-            </div>
-            <div class="col-6">
-                <h5>Response Body</h5>
-                <p>
-                <pre><code>
-                     
-{
-    "classId": int,
-    "className": "string",
-    "description": "string",
-    "modules": [
-        {
-        "moduleId": int,
-        "moduleName": "string",
-        "iconURL": "string",
-        "syllabusURL": "string",
-        "noOfSlot": 0,
-        "slotDuration": "00:00:00",
-        "description": "string"
-        }
-    ],
-    "trainer": [
-        {
-        "trainerId": int,
-        "fullname": "string",
-        "avatarURL": "string",
-        "email": "string",
-        "facebook": "string"
-        }
-    ],
-    "admin": {
-        "adminId": int,
-        "fullname": "string",
-        "avatarURL": "string",
-        "email": "string",
-        "wage": int
-    },
-    "roomName": [
-        "string"
-    ]
-    }
-
-            </code></pre>
-                </p>
-            </div>
-        </div>
-    </div>
-
+    
     <div id="createNewClass">
         <!-- Function Title -->
         <div class="w-75 border-bottom mb-3">
@@ -900,6 +811,137 @@
         "endDay": "DateTime"
     }
 ]</code></pre></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="ViewClassModuleForClassDetail">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>ViewClassModule</h3>
+        </div>
+        <p>By DatLT</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/Class/{id}/modules</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>Administrator</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>GET</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200</p>
+            </div>
+        </div>
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Parameter</h5>
+                <p>id: ID of class</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p>
+                <pre><code>{
+    "classId": int,
+}</code></pre>
+                </p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>
+                <pre><code>
+                    "payload": [
+                    [
+  {
+    "moduleId": 0,
+    "moduleName": "string",
+    "iconURL": "string",
+    "syllabusURL": "string",
+    "noOfSlot": 0,
+    "slotDuration": {
+      "ticks": 0,
+      "days": 0,
+      "hours": 0,
+      "milliseconds": 0,
+      "minutes": 0,
+      "seconds": 0,
+      "totalDays": 0,
+      "totalHours": 0,
+      "totalMilliseconds": 0,
+      "totalMinutes": 0,
+      "totalSeconds": 0
+    },
+    "description": "string"
+  }
+]
+                
+            </code></pre>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Remove Module -->
+    <div id="removeModule">
+        <!-- Function Title -->
+        <div class="w-75 border-bottom mb-3">
+            <h3>Remove Module(from class)</h3>
+        </div>
+        <p>ThoTA</p>
+        <div>
+            <h5>Endpoint</h5>
+            <p>/api/class/Module/{moduleId}</p>
+        </div>
+
+        <!-- Role, Method and Status code -->
+        <div class="row mb-3">
+            <div class="col-4 border-end">
+                <h5>Allow</h5>
+                <p>admin, trainer</p>
+            </div>
+            <div class="col-4 border-end">
+                <h5>Method</h5>
+                <p>Delete</p>
+            </div>
+            <div class="col-4">
+                <h5>Status</h5>
+                <p>200 404 409</p>
+            </div>
+        </div>
+
+        <!-- Parameter & file -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                
+            </div>
+        </div>
+
+        <!-- Request body and Response body  -->
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <h5>Request Body</h5>
+                <p><code><pre>
+                    {
+                        "ClassId": int,
+                        "ModuleId": int,
+                        "TrainerId": int
+                    }
+                </pre></code></p>
+            </div>
+            <div class="col-6">
+                <h5>Response Body</h5>
+                <p>Error Reponse</p>
             </div>
         </div>
     </div>
