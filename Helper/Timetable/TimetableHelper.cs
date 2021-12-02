@@ -154,6 +154,14 @@ namespace kroniiapi.Helper.Timetable
                     return true;
                 }
             }
+            var lunarHolidays = TimetableHelper.GetLunarHoliday(date.Year);
+            foreach (var item in lunarHolidays)
+            {
+                if (date.Day == item.Day && date.Month == item.Month && date.Year == item.Year)
+                {
+                    return true;
+                }
+            }
             return false;
         }
     }
