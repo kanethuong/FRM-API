@@ -11,6 +11,7 @@ using kroniiapi.DTO.ClassDTO;
 using kroniiapi.DTO.ExcelDTO;
 using kroniiapi.DTO.FeedbackDTO;
 using kroniiapi.DTO.MarkDTO;
+using kroniiapi.DTO.ModuleDTO;
 using kroniiapi.DTO.PaginationDTO;
 using kroniiapi.DTO.TraineeDTO;
 using kroniiapi.DTO.TrainerDTO;
@@ -127,10 +128,10 @@ namespace kroniiapi.Controllers
             {
                 return Conflict(new ResponseDTO(409, "Class or request deactivated"));
             }
-            if (status == 2)
-            {
-                return BadRequest(new ResponseDTO(400, "Request is rejected"));
-            }
+            // if (status == 2)
+            // {
+            //     return BadRequest(new ResponseDTO(400, "Request is rejected"));
+            // }
             int rejectAllStatus = await _classService.RejectAllOtherDeleteRequest(deleteClassRequestId);
             int deleteTraineeClass = await _classService.DeleteTraineeClass(confirmDeleteClassInput.ClassId);
             return Ok(new ResponseDTO(200, "Update done"));
@@ -153,7 +154,19 @@ namespace kroniiapi.Controllers
             }
             return Ok(new PaginationResponse<IEnumerable<DeleteClassResponse>>(totalRecord, deletedClassDTO));
         }
-
+        /// <summary>
+        /// Get the module information of a class 
+        /// </summary>
+        /// <param name="id"> id of class</param>
+        /// <returns> 200: Detail of class  / 404: class not found </returns>
+        [HttpGet("{id:int}/modules")]
+        [Authorize(Policy = "ClassGet")]
+        public async Task<ActionResult<ICollection<ModuleResponse>>> ViewClassModule(int id)
+        {
+            var modules = await _moduleService.GetModulesByClassId(id);
+            var moduleDto = _mapper.Map<ICollection<ModuleResponse>>(modules);
+            return moduleDto.ToList();
+        }
         /// <summary>
         /// Get the detail information of a class and student list with pagination
         /// </summary>
