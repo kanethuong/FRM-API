@@ -209,7 +209,7 @@ namespace kroniiapi.Services
 
             return Tuple.Create(totalRecords, rs);
         }
-
+    
         /// <summary>
         /// Get detail of a class 
         /// </summary>
@@ -251,8 +251,8 @@ namespace kroniiapi.Services
                 //     RoomName = c.Room.RoomName,
                 //     Classes = c.Room.Classes,
                 // },
-                ClassModules = c.ClassModules,
-                Modules = c.Modules,
+                //ClassModules = c.ClassModules,
+                //Modules = c.Modules,
                 DeleteClassRequests = c.DeleteClassRequests,
                 Calendars = c.Calendars,
             })
