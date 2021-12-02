@@ -18,6 +18,7 @@ namespace kroniiapi.Services
         Task<Class> GetClassByClassName(string className);
         Task<Class> GetClassDetail(int id);
         Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassId(int id, PaginationParameter paginationParameter);
+        Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassIdOfTrainer(int id, PaginationParameter paginationParameter);
         Task<int> InsertNewRequestDeleteClass(DeleteClassRequest deleteClassRequest);
         Task AddClassIdToTrainee(int classId, ICollection<int> traineeIdList);
         Task AddDataToClassModule(int classId, ICollection<TrainerModule> moduleIdList);
