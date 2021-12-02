@@ -1299,9 +1299,10 @@ namespace kroniiapi.Services.Report
                     {
 
                         int i = 0;
-                        foreach (var score in dateScore.Value)
+                        foreach (var trainee in traineeList)
                         {
-                            cells[i].Value = score.Score;
+                            var score = dateScore.Value.FirstOrDefault(s => s.TraineeId == trainee.EmpId);
+                            cells[i].Value = (score == null) ? "" : score.Score;
                             i++;
                         }
                     });
@@ -1341,9 +1342,10 @@ namespace kroniiapi.Services.Report
                     {
 
                         int i = 0;
-                        foreach (var score in dateScore.Value)
+                        foreach (var trainee in traineeList)
                         {
-                            cells[i].Value = score.Score;
+                            var score = dateScore.Value.FirstOrDefault(s => s.TraineeId == trainee.EmpId);
+                            cells[i].Value = (score == null) ? "" : score.Score;
                             i++;
                         }
                     });
@@ -1700,9 +1702,10 @@ namespace kroniiapi.Services.Report
                     {
 
                         int i = 0;
-                        foreach (var score in dateScore.Value)
+                        foreach (var trainee in traineeList)
                         {
-                            cells[i].Value = score.Score;
+                            var score = dateScore.Value.FirstOrDefault(s => s.TraineeId == trainee.EmpId);
+                            cells[i].Value = (score == null) ? "" : score.Score;
                             i++;
                         }
                     });
@@ -1742,9 +1745,10 @@ namespace kroniiapi.Services.Report
                     {
 
                         int i = 0;
-                        foreach (var score in dateScore.Value)
+                        foreach (var trainee in traineeList)
                         {
-                            cells[i].Value = score.Score;
+                            var score = dateScore.Value.FirstOrDefault(s => s.TraineeId == trainee.EmpId);
+                            cells[i].Value = (score == null) ? "" : score.Score;
                             i++;
                         }
                     });
