@@ -211,7 +211,7 @@ namespace kroniiapi.Services
 
             return Tuple.Create(totalRecords, rs);
         }
-    
+
         /// <summary>
         /// Get detail of a class 
         /// </summary>
@@ -648,7 +648,7 @@ namespace kroniiapi.Services
             if (at == default(DateTime)) at = DateTime.Now;
             var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
                 .Select(a => a.Classes
-                    .Where(c => c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
+                    .Where(c => c.IsDeactivated == false && c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
                     .OrderByDescending(c => c.StartDay)
                     .ToList()
                 )
