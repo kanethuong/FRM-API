@@ -77,6 +77,7 @@ namespace kroniiapi.Services
             {
                 classes.Add(await _dataContext.Classes.Where(c => c.ClassId == item.ClassId && c.IsDeactivated == false).FirstOrDefaultAsync());
             }
+            classes.RemoveAll(i => i == null);
             //Delete duplicated class
             classes = classes.Distinct().ToList();
             List<ClassModule> classesModulesLegit = new List<ClassModule>();
