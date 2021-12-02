@@ -53,7 +53,7 @@ namespace kroniiapi
         public void ConfigureServices(IServiceCollection services)
         {
             // DB config
-            string connectionString = Configuration.GetConnectionString("PostgreDev2");
+            string connectionString = Configuration.GetConnectionString("Postgre");
             services.AddDbContext<DataContext>(opt => opt.UseNpgsql(connectionString));
             services.AddScoped<DataContext, DataContext>();
 
