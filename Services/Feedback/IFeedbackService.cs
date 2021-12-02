@@ -8,16 +8,10 @@ namespace kroniiapi.Services
 {
     public interface IFeedbackService
     {
-        // Task<ICollection<AdminFeedback>> GetAdminFeedbacksByClassId(int classId);
-
-        // Task<(int,string)> InsertNewAdminFeedback(AdminFeedback adminFeedback);
-
-        // Task<ICollection<TrainerFeedback>> GetTrainerFeedbacksByClassId(int classId);
-
         Task<(int,string)> InsertNewFeedback(Feedback feedback);
         Task<Feedback> GetFeedbackByTraineeId(int traineeId);
+        bool CheckTraineeHasFeedbackThisMonth(int traineeId);
 
-        // Task<ICollection<TrainerFeedback>> GetTrainerFeedbackByTrainerId(int trainerId);
 
     }
 }
