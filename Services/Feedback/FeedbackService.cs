@@ -87,28 +87,18 @@ namespace kroniiapi.Services
         /// <returns>-1 if invalid input & 0 if failed to insert & 1 if success</returns>
         public async Task<(int, string)> InsertNewFeedback(Feedback feedback)
         {
-            if (!_dataContext.Trainees.Any(t => t.TraineeId == feedback.TraineeId))
+            if (!_dataContext.Trainees.Any(t => t.TraineeId == feedback.TraineeId && t.IsDeactivated == false))
             {
                 return (-1, "Don't have this Trainee");
             }
             // if trainer has feedback this month, update feedback
             var fbInMonthBefore = await _dataContext.Feedbacks.Where(
-                        f => f.TraineeId == feedback.TraineeId && f.CreatedAt.Month == DateTime.Now.Month).FirstOrDefaultAsync();
+                        f => f.TraineeId == feedback.TraineeId
+                             && f.CreatedAt.Month == DateTime.Now.Month
+                             && f.CreatedAt.Year == DateTime.Now.Year).FirstOrDefaultAsync();
             if (fbInMonthBefore != null)
             {
-                fbInMonthBefore.TopicContent = feedback.TopicContent;
-                fbInMonthBefore.TopicObjective = feedback.TopicObjective;
-                fbInMonthBefore.ApproriateTopicLevel = feedback.ApproriateTopicLevel;
-                fbInMonthBefore.TopicUsefulness = feedback.TopicUsefulness;
-                fbInMonthBefore.TrainingMaterial = feedback.TrainingMaterial;
-                fbInMonthBefore.TrainerKnowledge = feedback.TrainerKnowledge;
-                fbInMonthBefore.SubjectCoverage = feedback.SubjectCoverage;
-                fbInMonthBefore.InstructionAndCommunicate = feedback.InstructionAndCommunicate;
-                fbInMonthBefore.TrainerSupport = feedback.TrainerSupport;
-                fbInMonthBefore.Logistics = feedback.Logistics;
-                fbInMonthBefore.InformationToTrainees = feedback.InformationToTrainees;
-                fbInMonthBefore.AdminSupport = feedback.AdminSupport;
-                fbInMonthBefore.OtherComment = feedback.OtherComment;
+                return (-2, "Trainee has already send feedbacks this month");
             }
             else _dataContext.Feedbacks.Add(feedback);
             int row = await _dataContext.SaveChangesAsync();
@@ -118,16 +108,25 @@ namespace kroniiapi.Services
 
         public async Task<Feedback> GetFeedbackByTraineeId(int traineeId)
         {
-            return await _dataContext.Feedbacks.Where(fb => fb.TraineeId==traineeId).FirstOrDefaultAsync();
+            return await _dataContext.Feedbacks.Where(fb => fb.TraineeId == traineeId).FirstOrDefaultAsync();
         }
 
         /// <summary>
-        /// Get trainer feedback by trainer ID
+        /// Check Trainee has feedback this month
         /// </summary>
-        /// <param name="trainerId"></param>
-        /// <returns>List of feedback</returns>
-        // public async Task<ICollection<TrainerFeedback>> GetTrainerFeedbackByTrainerId(int trainerId){
-        //     return await _dataContext.TrainerFeedbacks.Where(t => t.TrainerId==trainerId).ToListAsync();
-        // }
+        /// <param name="traineeId"></param>
+        /// <returns>true: trainee had sent FB / false: trainee didn't</returns>
+        public bool CheckTraineeHasFeedbackThisMonth(int traineeId)
+        {
+            var fbInMonth = _dataContext.Feedbacks.Any(
+                        f => f.TraineeId == traineeId
+                             && f.CreatedAt.Month == DateTime.Now.Month
+                             && f.CreatedAt.Year == DateTime.Now.Year);
+            if (fbInMonth is true)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

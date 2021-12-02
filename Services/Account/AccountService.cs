@@ -281,7 +281,7 @@ namespace kroniiapi.Services
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
             emailContent.ToEmail = email;
-            emailContent.Subject = "Your Password";
+            emailContent.Subject = "[Kronii] Your password";
             emailContent.Body = password;
             _emailService.SendEmailAsync(emailContent);
         }
@@ -422,6 +422,7 @@ namespace kroniiapi.Services
                             a.Email.Equals(adminstratorToAdd.Email)
                         ))
                         {
+                            passwordByEmail.Remove(account.Email);
                             failAccounts.Add(processingIndex, -1);
                             break;
                         }
@@ -446,6 +447,7 @@ namespace kroniiapi.Services
                         adminToAdd.Password = BCrypt.Net.BCrypt.HashPassword(passwordBeforeHash);
                         if (!_adminService.InsertNewAdminNoSaveChange(adminToAdd))
                         {
+                            passwordByEmail.Remove(account.Email);
                             failAccounts.Add(processingIndex, -1);
                             break;
                         }
@@ -469,6 +471,7 @@ namespace kroniiapi.Services
 
                         if (!_trainerService.InsertNewTrainerNoSaveChange(trainerToAdd))
                         {
+                            passwordByEmail.Remove(account.Email);
                             failAccounts.Add(processingIndex, -1);
                             break;
                         }
@@ -492,6 +495,7 @@ namespace kroniiapi.Services
 
                         if (!_traineeService.InsertNewTraineeNoSaveChange(traineeToAdd))
                         {
+                            passwordByEmail.Remove(account.Email);
                             failAccounts.Add(processingIndex, -1);
                             break;
                         }
@@ -515,6 +519,7 @@ namespace kroniiapi.Services
 
                         if (!_companyService.InsertNewCompanyNoSaveChange(companyToAdd))
                         {
+                            passwordByEmail.Remove(account.Email);
                             failAccounts.Add(processingIndex, -1);
                             break;
                         }
@@ -633,7 +638,7 @@ namespace kroniiapi.Services
             EmailContent emailContent = new EmailContent();
             emailContent.IsBodyHtml = true;
             emailContent.ToEmail = email;
-            emailContent.Subject = "Your New Password";
+            emailContent.Subject = "[Kronii] Your password was reset";
             emailContent.Body = password;
 
             await _emailService.SendEmailAsync(emailContent);

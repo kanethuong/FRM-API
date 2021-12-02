@@ -152,7 +152,6 @@ namespace kroniiapi.Services
             }
 
             existedCompany.Fullname = company.Fullname;
-            existedCompany.AvatarURL = company.AvatarURL;
             existedCompany.Phone = company.Phone;
             existedCompany.Address = company.Address;
             existedCompany.Facebook = company.Facebook;
@@ -356,7 +355,7 @@ namespace kroniiapi.Services
             {
                 Content = comreq.Content,
                 CompanyRequestDetails = comreq.CompanyRequestDetails
-                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && !c.Trainee.Status.ToLower().Contains("onboard"))
+                                            .Where(c => c.CompanyRequestId == comreq.CompanyRequestId && c.Trainee.IsDeactivated == false && c.Trainee.OnBoard == false)
                                             .Select(tr => new CompanyRequestDetail
                                             {
                                                 TraineeId = tr.TraineeId,
@@ -421,7 +420,7 @@ namespace kroniiapi.Services
         /// <returns>Accepted Trainee Id List</returns>
         public async Task<List<int>> GetAcceptedTraineeIdList()
         {
-            List<int> acceptedTraineeId = (List<int>)await _dataContext.CompanyRequestDetails.Where(c => c.CompanyRequest.IsAccepted == true).Select(c => c.TraineeId).Distinct().ToListAsync();
+            List<int> acceptedTraineeId = (List<int>)await _dataContext.CompanyRequestDetails.Where(c => c.CompanyRequest.IsAccepted == true || c.Trainee.OnBoard == true).Select(c => c.TraineeId).Distinct().ToListAsync();
             return acceptedTraineeId;
         }
 
