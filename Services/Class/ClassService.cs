@@ -288,6 +288,31 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Get Trainee List in a class with pagination
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassIdOfTrainer(int id, PaginationParameter paginationParameter)
+        {
+            IQueryable<Trainee> traineeList = _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
+            {
+                traineeList = traineeList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Fullname.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Username.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Trainee> rs = await traineeList
+                .GetCount(out var totalRecords)
+                .OrderBy(e => e.Fullname)
+                .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
