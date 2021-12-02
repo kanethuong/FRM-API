@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using kroniiapi.DB;
 using kroniiapi.DB.Models;
 using kroniiapi.DTO;
 using kroniiapi.DTO.ClassDTO;
@@ -42,6 +43,7 @@ namespace kroniiapi.Controllers
         private readonly ICertificateService _certificateService;
         private readonly IAttendanceService _attendanceServices;
         private readonly IRoomService _roomService;
+        private DataContext _datacontext;
         public ClassController(IClassService classService,
                                ITraineeService traineeService,
                                IAdminService adminService,
@@ -52,7 +54,8 @@ namespace kroniiapi.Controllers
                                IMarkService markService,
                                ICertificateService certificateService,
                                IAttendanceService attendanceServices,
-                               IRoomService roomService)
+                               IRoomService roomService,
+                               DataContext datacontext)
         {
             _classService = classService;
             _adminService = adminService;
@@ -66,6 +69,7 @@ namespace kroniiapi.Controllers
             _certificateService = certificateService;
             _attendanceServices = attendanceServices;
             _roomService = roomService;
+            _datacontext = datacontext;
         }
 
         /// <summary>
@@ -268,6 +272,19 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult> CreateNewClass([FromBody] NewClassInput newClassInput)
         {
+            // Check number of module must be equal or less than number of month
+            var start = newClassInput.StartDay;
+            var end = newClassInput.EndDay;
+            end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));// set end-date to end of month
+            var listMonth = Enumerable.Range(0, Int32.MaxValue)
+                                .Select(e => start.AddMonths(e))
+                                .TakeWhile(e => e <= end)
+                                .Select(e => e);     // get the list of month of class duration
+            if (listMonth.Count() < newClassInput.TrainerModuleList.Count())
+            {
+                return BadRequest(new ResponseDTO(400, "Number of modules must be equal or less than number of months"));
+            }
+            //Check admin exist
             if (_adminService.CheckAdminExist(newClassInput.AdminId) is false)
             {
                 return NotFound(new ResponseDTO
@@ -276,6 +293,7 @@ namespace kroniiapi.Controllers
                     Message = "Admin does not exist"
                 });
             }
+            //Check Trainer exist to teach
             foreach (var item in newClassInput.TrainerModuleList)
             {
                 if (_trainerService.CheckTrainerExist(item.TrainerId) is false)
@@ -287,6 +305,7 @@ namespace kroniiapi.Controllers
                     });
                 }
             }
+            // Check trainee exist
             foreach (var traineeId in newClassInput.TraineeIdList)
             {
                 if (_traineeService.CheckTraineeExist(traineeId) is false)
@@ -298,7 +317,7 @@ namespace kroniiapi.Controllers
                     });
                 }
             }
-            int totalSlot = 0;
+            //Check module exist
             foreach (var module in newClassInput.TrainerModuleList)
             {
                 var moduleToAssign = await _moduleService.GetModuleById(module.ModuleId);
@@ -306,36 +325,50 @@ namespace kroniiapi.Controllers
                 {
                     return NotFound(new ResponseDTO(404, "Module is not exist"));
                 }
-                totalSlot += moduleToAssign.NoOfSlot;
             }
+            // Check Trainer available  (Trainer is free in timetable or not)
             (bool isTrainerAvailable, string message) = _timetableService.CheckTrainersNewClass(newClassInput.TrainerModuleList, newClassInput.StartDay, newClassInput.EndDay);
             if (isTrainerAvailable is false)
             {
                 return BadRequest(new ResponseDTO(400, message));
             }
-            var rs = await _classService.InsertNewClass(newClassInput);
-            if (rs == -1)
+            // Insert class and attendance in transaction, if attendance fail, roll back before insert classs
+            using (var dbContextTransaction = _datacontext.Database.BeginTransaction())
             {
-                return Conflict(new ResponseDTO
+                try
                 {
-                    Status = 409,
-                    Message = "Class is already exist"
-                });
+                    var rs = await _classService.InsertNewClass(newClassInput);
+                    if (rs == -1)
+                    {
+                        return Conflict(new ResponseDTO
+                        {
+                            Status = 409,
+                            Message = "Class is already exist"
+                        });
+                    }
+                    else if (rs == -2)
+                    {
+                        return Conflict(new ResponseDTO(409, "One or more trainees already have class "));
+                    }
+                    else if (rs == 0)
+                    {
+                        return BadRequest(new ResponseDTO(400, "Some error occur"));
+                    }
+                    var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
+                    int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
+                    if (attRs != 1)
+                    {
+                        throw new Exception();
+                    }
+                    dbContextTransaction.Commit();
+                }
+                catch (Exception)
+                {
+                    dbContextTransaction.Rollback();
+                    return BadRequest(new ResponseDTO(400, "Can't create attendance"));
+                }
             }
-            else if (rs == -2)
-            {
-                return Conflict(new ResponseDTO(409, "One or more trainees already have class "));
-            }
-            else if (rs == 0)
-            {
-                return BadRequest(new ResponseDTO(400, "Some error occur"));
-            }
-            var classGet = await _classService.GetClassByClassName(newClassInput.ClassName);
-            int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(classGet.ClassId);
-            if(attRs !=1)
-            {
-                return BadRequest(new ResponseDTO(400, "Some error occur"));
-            }
+
             return Created("", new ResponseDTO(201, "Successfully inserted class with timetable"));
         }
 
@@ -688,7 +721,7 @@ namespace kroniiapi.Controllers
                     if (clazz is not null)
                     {
                         await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
-                        
+
                         int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
                         if (attRs != 1)
                         {

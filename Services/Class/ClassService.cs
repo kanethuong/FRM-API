@@ -37,10 +37,12 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class{
+            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class
+            {
                 ClassId = c.ClassId,
                 ClassName = c.ClassName,
-                Admin = new Admin{
+                Admin = new Admin
+                {
                     Fullname = c.Admin.Fullname
                 },
                 CreatedAt = c.CreatedAt,
@@ -360,11 +362,11 @@ namespace kroniiapi.Services
                     ModuleId = trainerModule.ModuleId,
                     TrainerId = trainerModule.TrainerId,
                     WeightNumber = trainerModule.WeightNumber,
-                    RoomId=roomId
+                    RoomId = roomId
                 };
                 _dataContext.ClassModules.Add(classModule);
                 _dataContext.SaveChanges();
-                int status = await _timetableService.InsertCalendarsToClass(classId,trainerModule.ModuleId);
+                int status = await _timetableService.InsertCalendarsToClass(classId, trainerModule.ModuleId);
             }
         }
 
@@ -386,10 +388,13 @@ namespace kroniiapi.Services
             }
             int rowInserted = 0;
             rowInserted = await SaveChange();
-            var newClass = await GetClassByClassName(newClassInput.ClassName);
-            await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
-            await SaveChange();
+            if (rowInserted != 0)
+            {
+                var newClass = await GetClassByClassName(newClassInput.ClassName);
+                await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
+                await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
+                await SaveChange();
+            }
             return rowInserted;
         }
 
@@ -403,7 +408,7 @@ namespace kroniiapi.Services
             var newClass = _mapper.Map<Class>(newClassInput);
 
             // Check duplicate class name
-            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName) && c.IsDeactivated == false))
             {
                 return -1;
             }
