@@ -115,7 +115,7 @@ namespace kroniiapi.Services
         {
             var slotNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
             DateTime lastDay = startDay;
-            while (TimetableHelper.BusinessDaysUntil(startDay,lastDay,holidayss) < slotNeed)
+            while (TimetableHelper.BusinessDaysUntil(startDay, lastDay, holidayss) < slotNeed)
             {
                 lastDay = lastDay.AddDays(1);
                 if (lastDay == endDay)
@@ -125,12 +125,12 @@ namespace kroniiapi.Services
             }
             for (int i = 1; i <= 10; i++)
             {
-                if(!_datacontext.Calendars.Any(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay&& c.Date <= lastDay))
+                if (!_datacontext.Calendars.Any(c => c.Class.ClassModules.Any(cm => cm.RoomId == i) && c.Date >= startDay && c.Date <= lastDay))
                 {
-                    return (i,lastDay.AddDays(1));
+                    return (i, lastDay.AddDays(1));
                 }
             }
-            return (0,startDay);
+            return (0, startDay);
         }
         /// <summary>
         /// 
@@ -139,7 +139,7 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        public (bool,string) CheckRoomsNewClass(List<int> moduleIds, DateTime startDay, DateTime endDay)
+        public (bool, string) CheckRoomsNewClass(List<int> moduleIds, DateTime startDay, DateTime endDay)
         {
             DateTime startAt = startDay;
             string message = " ";
@@ -153,8 +153,8 @@ namespace kroniiapi.Services
                 startAt = date;
                 message += check + " ";
             }
-            return (true,message);
-        }        
+            return (true, message);
+        }
         /// <summary>
         /// Check Trainer Available 
         /// </summary>
@@ -167,12 +167,12 @@ namespace kroniiapi.Services
         {
             var slotNeed = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
             DateTime lastDay = startDay;
-            while (TimetableHelper.BusinessDaysUntil(startDay,lastDay,holidayss) < slotNeed)
+            while (TimetableHelper.BusinessDaysUntil(startDay, lastDay, holidayss) < slotNeed)
             {
                 lastDay = lastDay.AddDays(1);
                 if (lastDay == endDay)
                 {
-                    return (false,startDay);
+                    return (false, startDay);
                 }
             }
             if (!_datacontext.Calendars.Any(cl => cl.Class.ClassModules.Any(cm => cm.TrainerId == trainerId) && cl.Date >= startDay && cl.Date <= lastDay))
@@ -188,7 +188,7 @@ namespace kroniiapi.Services
         /// <param name="startDay"></param>
         /// <param name="endDay"></param>
         /// <returns></returns>
-        public (bool,string) CheckTrainersNewClass(ICollection<TrainerModule> trainerModules, DateTime startDay, DateTime endDay)
+        public (bool, string) CheckTrainersNewClass(ICollection<TrainerModule> trainerModules, DateTime startDay, DateTime endDay)
         {
             DateTime startAt = startDay;
             foreach (var item in trainerModules)
@@ -196,11 +196,12 @@ namespace kroniiapi.Services
                 var (check, date) = CheckTrainerAvailableForModule(startAt, endDay, item.TrainerId, item.ModuleId);
                 if (!check)
                 {
-                    return (false, "TrainerId: " + item.TrainerId + " is not Available");
+                    var trainerName = _datacontext.Trainers.Where(t => t.TrainerId == item.TrainerId).Select(t => t.Fullname).FirstOrDefault();
+                    return (false, "Trainer " + trainerName + " is not Available");
                 };
                 startAt = date;
             }
-            return (true,"Ok");
+            return (true, "Ok");
         }
         /// <summary>
         /// Lay ngay cuoi cung cua cai lop dang hoc
@@ -214,7 +215,7 @@ namespace kroniiapi.Services
                 return _datacontext.Classes.Where(c => c.ClassId == classId).Select(c => c.StartDay).FirstOrDefault();
             }
             DateTime startDay = _datacontext.Calendars.Where(cl => cl.ClassId == classId).Select(cl => cl.Date).OrderBy(cl => cl).LastOrDefault().AddDays(1);
-            DateTime returnDay = new DateTime(startDay.Year, startDay.Month, startDay.Day, 0,0,0);
+            DateTime returnDay = new DateTime(startDay.Year, startDay.Month, startDay.Day, 0, 0, 0);
             while (DayOffCheck(returnDay))
             {
                 returnDay = returnDay.AddDays(1);
@@ -246,12 +247,12 @@ namespace kroniiapi.Services
         /// <param name="classId"></param>
         /// <param name="numSlotWeek"></param>
         /// <returns>status 1: Success / 0: Not enough Day</returns>
-        public async Task<int> InsertCalendarsToClass( int classId, int moduleId)
+        public async Task<int> InsertCalendarsToClass(int classId, int moduleId)
         {
-            var classGet = _datacontext.Classes.FirstOrDefault(c=>c.ClassId==classId);
+            var classGet = _datacontext.Classes.FirstOrDefault(c => c.ClassId == classId);
             var noOfSlot = _datacontext.Modules.Where(md => md.ModuleId == moduleId).Select(md => md.NoOfSlot).FirstOrDefault();
             DateTime dateCount = GetStartDayforClassToInsertModule(classId);
-            if (dateCount == new DateTime(1,1,1))
+            if (dateCount == new DateTime(1, 1, 1))
             {
                 dateCount = classGet.StartDay;
             }
@@ -260,7 +261,7 @@ namespace kroniiapi.Services
             {
                 while (DayOffCheck(dateCount))
                 {
-                    dateCount =  dateCount.AddDays(1);
+                    dateCount = dateCount.AddDays(1);
                 }
                 Calendar calendarMor = new Calendar
                 {
