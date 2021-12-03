@@ -83,7 +83,7 @@ namespace kroniiapi.Controllers
         /// <param name="date"></param>
         /// <returns>list module in 1 month / 404: Trainer Not found</returns>
         [HttpGet("{id:int}/timetable")]
-        [Authorize(Policy = "TrainerGet")]
+        //[Authorize(Policy = "TrainerGet")]
         public async Task<ActionResult<IEnumerable<TrainerTimeTable>>> ViewTimeTable(int id, DateTime date)
         {
             TimeSpan oneday = new TimeSpan(23, 59, 59);

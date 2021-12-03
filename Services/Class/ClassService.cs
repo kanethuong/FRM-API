@@ -37,10 +37,12 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class{
+            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class
+            {
                 ClassId = c.ClassId,
                 ClassName = c.ClassName,
-                Admin = new Admin{
+                Admin = new Admin
+                {
                     Fullname = c.Admin.Fullname
                 },
                 CreatedAt = c.CreatedAt,
@@ -251,8 +253,8 @@ namespace kroniiapi.Services
                 //     RoomName = c.Room.RoomName,
                 //     Classes = c.Room.Classes,
                 // },
-                ClassModules = c.ClassModules,
-                Modules = c.Modules,
+                //ClassModules = c.ClassModules,
+                //Modules = c.Modules,
                 DeleteClassRequests = c.DeleteClassRequests,
                 Calendars = c.Calendars,
             })
@@ -283,6 +285,31 @@ namespace kroniiapi.Services
                 .GetCount(out var totalRecords)
                 .OrderBy(e => e.Fullname)
                 .GetPage(paginationParameter)
+                .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
+        /// Get Trainee List in a class with pagination
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassIdOfTrainer(int id, PaginationParameter paginationParameter)
+        {
+            IQueryable<Trainee> traineeList = _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
+            {
+                traineeList = traineeList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Fullname.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Username.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Trainee> rs = await traineeList
+                .GetCount(out var totalRecords)
+                .OrderBy(e => e.Fullname)
                 .ToListAsync();
             return Tuple.Create(totalRecords, rs);
         }
@@ -360,11 +387,11 @@ namespace kroniiapi.Services
                     ModuleId = trainerModule.ModuleId,
                     TrainerId = trainerModule.TrainerId,
                     WeightNumber = trainerModule.WeightNumber,
-                    RoomId=roomId
+                    RoomId = roomId
                 };
                 _dataContext.ClassModules.Add(classModule);
                 _dataContext.SaveChanges();
-                int status = await _timetableService.InsertCalendarsToClass(classId,trainerModule.ModuleId);
+                int status = await _timetableService.InsertCalendarsToClass(classId, trainerModule.ModuleId);
             }
         }
 
@@ -386,10 +413,13 @@ namespace kroniiapi.Services
             }
             int rowInserted = 0;
             rowInserted = await SaveChange();
-            var newClass = await GetClassByClassName(newClassInput.ClassName);
-            await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
-            await SaveChange();
+            if (rowInserted != 0)
+            {
+                var newClass = await GetClassByClassName(newClassInput.ClassName);
+                await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
+                await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
+                await SaveChange();
+            }
             return rowInserted;
         }
 
@@ -403,7 +433,7 @@ namespace kroniiapi.Services
             var newClass = _mapper.Map<Class>(newClassInput);
 
             // Check duplicate class name
-            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName) && c.IsDeactivated == false))
             {
                 return -1;
             }
@@ -618,7 +648,7 @@ namespace kroniiapi.Services
             if (at == default(DateTime)) at = DateTime.Now;
             var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
                 .Select(a => a.Classes
-                    .Where(c => c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
+                    .Where(c => c.IsDeactivated == false && c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
                     .OrderByDescending(c => c.StartDay)
                     .ToList()
                 )

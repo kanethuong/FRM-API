@@ -53,7 +53,7 @@ namespace kroniiapi
         public void ConfigureServices(IServiceCollection services)
         {
             // DB config
-            string connectionString = Configuration.GetConnectionString("PostgreDev2");
+            string connectionString = Configuration.GetConnectionString("Postgre");
             services.AddDbContext<DataContext>(opt => opt.UseNpgsql(connectionString));
             services.AddScoped<DataContext, DataContext>();
 
@@ -110,7 +110,7 @@ namespace kroniiapi
                 options.AddPolicy("ClassPut", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "administrator" })));
                 options.AddPolicy("ClassModule", policy =>
-                    policy.Requirements.Add(new AccessRequirement(new string[] { "trainer" })));
+                    policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "trainer" })));
 
                 options.AddPolicy("Company", policy =>
                     policy.Requirements.Add(new AccessRequirement(new string[] { "admin", "company" })));

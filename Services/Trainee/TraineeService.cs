@@ -262,7 +262,7 @@ namespace kroniiapi.Services
         /// <returns>-1: Message / {classId}</returns>
         public async Task<(int, string)> GetClassIdByTraineeId(int id)
         {
-            var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id);
+            var trainee = await _dataContext.Trainees.FirstOrDefaultAsync(t => t.TraineeId == id && t.IsDeactivated == false);
 
             if (trainee == null)
             {
