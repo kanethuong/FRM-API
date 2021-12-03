@@ -389,7 +389,7 @@ namespace kroniiapi.Controllers
         /// Insert a list class to db using excel file
         /// </summary>
         /// <param name="file">Excel file to stores class data</param>
-        /// <returns>201: Class is created /400: File content inapproriate /409: Classname exist || Trainees or trainers already have class</returns>
+        /// <returns>201: Class is created / 400: File content inapproriate / 409: There are errors</returns>
         [HttpPost("excel")]
         [Authorize(Policy = "ClassPost")]
         public async Task<ActionResult<ExcelResponseDTO>> CreateNewClassByExcel([FromForm] IFormFile file)
@@ -407,370 +407,405 @@ namespace kroniiapi.Controllers
                 });
             }
 
-            using (var stream = new MemoryStream())
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            using var package = new ExcelPackage(stream);
+            Dictionary<string, ICollection<TrainerModule>> classModulesDict = new();
+            Dictionary<string, HashSet<int>> classTraineesDict = new();
+
+            // Check sheets
+            ExcelWorkbook workbook = package.Workbook;
+            ExcelWorksheet classSheet = workbook.Worksheets["Class"];
+            ExcelWorksheet moduleSheet = workbook.Worksheets["Module"];
+            ExcelWorksheet traineeSheet = workbook.Worksheets["Trainee"];
+            if (classSheet is null || moduleSheet is null || traineeSheet is null)
             {
-                await file.CopyToAsync(stream);
-                using var package = new ExcelPackage(stream);
-                Dictionary<string, ICollection<TrainerModule>> classModulesDict = new();
-                Dictionary<string, HashSet<int>> classTraineesDict = new();
-
-                // Check sheets
-                ExcelWorkbook workbook = package.Workbook;
-                ExcelWorksheet classSheet = workbook.Worksheets["Class"];
-                ExcelWorksheet moduleSheet = workbook.Worksheets["Module"];
-                ExcelWorksheet traineeSheet = workbook.Worksheets["Trainee"];
-                if (classSheet is null || moduleSheet is null || traineeSheet is null)
+                return BadRequest(new ExcelResponseDTO(400, "Missing required sheets")
                 {
-                    return BadRequest(new ExcelResponseDTO(400, "Missing required sheets")
-                    {
-                        Errors = excelErrors
-                    });
+                    Errors = excelErrors
+                });
+            }
+
+            // Export Class-Module dictionary
+            static bool moduleChecker(List<string> list) => list.ContainsAll("class", "module", "trainer", "weight");
+            List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
+            if (!success)
+            {
+                return BadRequest(new ExcelResponseDTO(400, "Error on Module: " + message)
+                {
+                    Errors = excelErrors
+                });
+            }
+            for (int i = 0; i < moduleDictList.Count; i++)
+            {
+                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                Dictionary<string, object> dict = moduleDictList[i];
+
+                // Get from cells
+                string className = dict["class"]?.ToString();
+                string module = dict["module"]?.ToString();
+                string trainerEmail = dict["trainer"]?.ToString();
+                string weight = dict["weight"]?.ToString();
+                if (className is null || module is null || trainerEmail is null || weight is null)
+                {
+                    continue;
                 }
 
-                // Export Class-Module dictionary
-                static bool moduleChecker(List<string> list) => list.ContainsAll("class", "module", "trainer", "weight");
-                List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
-                if (!success)
+                // Validate module & weight number format
+                if (!int.TryParse(module, out int moduleId))
                 {
-                    return BadRequest(new ExcelResponseDTO(400, "Error on Module: " + message)
+                    excelErrors.Add(new()
                     {
-                        Errors = excelErrors
+                        Sheet = moduleSheet.Name,
+                        Row = row,
+                        ColumnName = "module",
+                        Value = module,
+                        Error = "Module is in invalid format"
                     });
+                    continue;
                 }
-                for (int i = 0; i < moduleDictList.Count; i++)
+                if (!float.TryParse(weight, out float weightNumber))
                 {
-                    int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                    Dictionary<string, object> dict = moduleDictList[i];
-
-                    // Get from cells
-                    string className = dict["class"]?.ToString();
-                    string module = dict["module"]?.ToString();
-                    string trainerEmail = dict["trainer"]?.ToString();
-                    string weight = dict["weight"]?.ToString();
-                    if (className is null || module is null || trainerEmail is null || weight is null)
+                    excelErrors.Add(new()
                     {
-                        continue;
-                    }
+                        Sheet = moduleSheet.Name,
+                        Row = row,
+                        ColumnName = "weight",
+                        Value = weight,
+                        Error = "Weight is in invalid format"
+                    });
+                    continue;
+                }
 
-                    // Validate module & weight number format
-                    if (!int.TryParse(module, out int moduleId))
+                // Get the trainer module list or create one
+                ICollection<TrainerModule> list;
+                if (classModulesDict.ContainsKey(className))
+                {
+                    list = classModulesDict[className];
+                }
+                else
+                {
+                    list = new List<TrainerModule>();
+                    classModulesDict[className] = list;
+                }
+
+                // Validate and get trainer id
+                Trainer trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
+                if (trainer is null)
+                {
+                    excelErrors.Add(new()
+                    {
+                        Sheet = moduleSheet.Name,
+                        Row = row,
+                        ColumnName = "trainer",
+                        Value = trainerEmail,
+                        Error = "Trainer is not found"
+                    });
+                    continue;
+                }
+                int trainerId = trainer.TrainerId;
+
+                // Validate module id
+                if (await _moduleService.GetModuleById(moduleId) is null)
+                {
+                    excelErrors.Add(new()
+                    {
+                        Sheet = moduleSheet.Name,
+                        Row = row,
+                        ColumnName = "module",
+                        Value = moduleId,
+                        Error = "Module is not found"
+                    });
+                    continue;
+                }
+
+                // Add to list
+                list.Add(new()
+                {
+                    TrainerId = trainerId,
+                    ModuleId = moduleId,
+                    WeightNumber = weightNumber
+                });
+            }
+
+
+            // Export Class-Trainee dictionary
+            static bool traineeChecker(List<string> list) => list.ContainsAll("class", "email");
+            List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
+            if (!success)
+            {
+                return BadRequest(new ExcelResponseDTO(400, "Error on Trainee: " + message)
+                {
+                    Errors = excelErrors
+                });
+            }
+            for (int i = 0; i < traineeDictList.Count; i++)
+            {
+                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                Dictionary<string, object> dict = traineeDictList[i];
+
+                // Get from cells
+                string className = dict["class"]?.ToString();
+                string email = dict["email"]?.ToString();
+                if (className is null || email is null)
+                {
+                    continue;
+                }
+
+                // Get Trainee Id
+                int? traineeId = (await _traineeService.GetTraineeByEmail(email))?.TraineeId;
+                if (!traineeId.HasValue)
+                {
+                    excelErrors.Add(new()
+                    {
+                        Sheet = traineeSheet.Name,
+                        Row = row,
+                        ColumnName = "email",
+                        Value = email,
+                        Error = "Trainee is not found"
+                    });
+                    continue;
+                }
+
+                // Get the trainee list or create one
+                HashSet<int> list;
+                if (classTraineesDict.ContainsKey(className))
+                {
+                    list = classTraineesDict[className];
+                }
+                else
+                {
+                    list = new HashSet<int>();
+                    classTraineesDict[className] = list;
+                }
+
+                // Add to list
+                list.Add(traineeId.Value);
+            }
+
+            // Export Class list
+            static bool classChecker(List<string> list) => list.ContainsAll("name", "description", "admin", "start", "end");
+            List<Dictionary<string, object>> classDictList = classSheet.ExportDataFromExcel(classChecker, out success, out message);
+            if (!success)
+            {
+                return BadRequest(new ExcelResponseDTO(400, "Error on Class: " + message)
+                {
+                    Errors = excelErrors
+                });
+            }
+
+            // Start Transaction
+            using var dbContextTransaction = _datacontext.Database.BeginTransaction();
+
+            // Convert and insert classes
+            for (int i = 0; i < classDictList.Count; i++)
+            {
+                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                Dictionary<string, object> dict = classDictList[i];
+
+                // Create new class input
+                NewClassInput classInput = new();
+
+                // Set class name
+                classInput.ClassName = dict["name"]?.ToString();
+
+                // Set trainees
+                classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName)
+                    ? classTraineesDict[classInput.ClassName]
+                    : new();
+
+                // Set description
+                classInput.Description = dict["description"]?.ToString();
+
+                // Set start time
+                object start = dict["start"];
+                if (start is not null && start is DateTime startTine)
+                {
+                    classInput.StartDay = startTine;
+                }
+
+                // Set end time
+                object end = dict["end"];
+                if (end is not null && end is DateTime endTime)
+                {
+                    classInput.EndDay = endTime;
+                }
+
+                // Set Admin
+                string adminEmail = dict["admin"]?.ToString();
+                if (adminEmail is not null)
+                {
+                    Admin admin = await _adminService.GetAdminByEmail(adminEmail);
+                    if (admin is null)
                     {
                         excelErrors.Add(new()
                         {
-                            Sheet = moduleSheet.Name,
+                            Sheet = classSheet.Name,
                             Row = row,
-                            ColumnName = "module",
-                            Value = module,
-                            Error = "Module is in invalid format"
+                            ColumnName = "admin",
+                            Value = adminEmail,
+                            Error = "Admin is not found"
                         });
                         continue;
-                    }
-                    if (!float.TryParse(weight, out float weightNumber))
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = moduleSheet.Name,
-                            Row = row,
-                            ColumnName = "weight",
-                            Value = weight,
-                            Error = "Weight is in invalid format"
-                        });
-                        continue;
-                    }
-
-                    // Get the trainer module list or create one
-                    ICollection<TrainerModule> list;
-                    if (classModulesDict.ContainsKey(className))
-                    {
-                        list = classModulesDict[className];
                     }
                     else
                     {
-                        list = new List<TrainerModule>();
-                        classModulesDict[className] = list;
+                        classInput.AdminId = admin.AdminId;
                     }
+                }
 
-                    // Validate and get trainer id
-                    Trainer trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
-                    if (trainer is null)
+                // Validate & Insert the class
+                if (!classInput.Validate(out List<ValidationResult> validateResults))
+                {
+                    excelErrors.Add(new()
                     {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = moduleSheet.Name,
-                            Row = row,
-                            ColumnName = "trainer",
-                            Value = trainerEmail,
-                            Error = "Trainer is not found"
-                        });
-                        continue;
-                    }
-                    int trainerId = trainer.TrainerId;
-
-                    // Validate module id
-                    if (await _moduleService.GetModuleById(moduleId) is null)
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = moduleSheet.Name,
-                            Row = row,
-                            ColumnName = "module",
-                            Value = moduleId,
-                            Error = "Module is not found"
-                        });
-                        continue;
-                    }
-
-                    // Add to list
-                    list.Add(new()
-                    {
-                        TrainerId = trainerId,
-                        ModuleId = moduleId,
-                        WeightNumber = weightNumber
+                        Sheet = classSheet.Name,
+                        Row = row,
+                        Value = classInput,
+                        Errors = validateResults.Select(x => x.ErrorMessage).ToList()
                     });
                 }
-
-
-                // Export Class-Trainee dictionary
-                static bool traineeChecker(List<string> list) => list.ContainsAll("class", "email");
-                List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
-                if (!success)
+                else
                 {
-                    return BadRequest(new ExcelResponseDTO(400, "Error on Trainee: " + message)
-                    {
-                        Errors = excelErrors
-                    });
-                }
-                for (int i = 0; i < traineeDictList.Count; i++)
-                {
-                    int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                    Dictionary<string, object> dict = traineeDictList[i];
-
-                    // Get from cells
-                    string className = dict["class"]?.ToString();
-                    string email = dict["email"]?.ToString();
-                    if (className is null || email is null)
-                    {
-                        continue;
-                    }
-
-                    // Get Trainee Id
-                    int? traineeId = (await _traineeService.GetTraineeByEmail(email))?.TraineeId;
-                    if (!traineeId.HasValue)
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = traineeSheet.Name,
-                            Row = row,
-                            ColumnName = "email",
-                            Value = email,
-                            Error = "Trainee is not found"
-                        });
-                        continue;
-                    }
-
-                    // Get the trainee list or create one
-                    HashSet<int> list;
-                    if (classTraineesDict.ContainsKey(className))
-                    {
-                        list = classTraineesDict[className];
-                    }
-                    else
-                    {
-                        list = new HashSet<int>();
-                        classTraineesDict[className] = list;
-                    }
-
-                    // Add to list
-                    list.Add(traineeId.Value);
-                }
-
-                // Export Class list
-                static bool classChecker(List<string> list) => list.ContainsAll("name", "description", "admin", "start", "end");
-                List<Dictionary<string, object>> classDictList = classSheet.ExportDataFromExcel(classChecker, out success, out message);
-                if (!success)
-                {
-                    return BadRequest(new ExcelResponseDTO(400, "Error on Class: " + message)
-                    {
-                        Errors = excelErrors
-                    });
-                }
-                for (int i = 0; i < classDictList.Count; i++)
-                {
-                    int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                    Dictionary<string, object> dict = classDictList[i];
-
-                    // Create new class input
-                    NewClassInput classInput = new();
-
-                    // Set class name
-                    classInput.ClassName = dict["name"]?.ToString();
-
-                    // Set trainees
-                    classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName)
-                        ? classTraineesDict[classInput.ClassName]
-                        : new();
-
-                    // Set description
-                    classInput.Description = dict["description"]?.ToString();
-
-                    // Set start time
-                    object start = dict["start"];
-                    if (start is not null && start is DateTime startTine)
-                    {
-                        classInput.StartDay = startTine;
-                    }
-
-                    // Set end time
-                    object end = dict["end"];
-                    if (end is not null && end is DateTime endTime)
-                    {
-                        classInput.EndDay = endTime;
-                    }
-
-                    // Set Admin
-                    string adminEmail = dict["admin"]?.ToString();
-                    if (adminEmail is not null)
-                    {
-                        Admin admin = await _adminService.GetAdminByEmail(adminEmail);
-                        if (admin is null)
-                        {
-                            excelErrors.Add(new()
-                            {
-                                Sheet = classSheet.Name,
-                                Row = row,
-                                ColumnName = "admin",
-                                Value = adminEmail,
-                                Error = "Admin is not found"
-                            });
-                            continue;
-                        }
-                        else
-                        {
-                            classInput.AdminId = admin.AdminId;
-                        }
-                    }
-
-                    // Validate & Insert the class
-                    if (!classInput.Validate(out List<ValidationResult> validateResults))
+                    int result = await _classService.InsertNewClassNoSave(classInput);
+                    if (result < 0)
                     {
                         excelErrors.Add(new()
                         {
                             Sheet = classSheet.Name,
                             Row = row,
                             Value = classInput,
-                            Errors = validateResults.Select(x => x.ErrorMessage).ToList()
+                            Error = result switch
+                            {
+                                -1 => "Duplicate class name",
+                                -2 => "Trainee already have class",
+                                _ => "Unknown Error"
+                            }
                         });
                     }
-                    else
-                    {
-                        int result = await _classService.InsertNewClassNoSave(classInput);
-                        if (result < 0)
-                        {
-                            excelErrors.Add(new()
-                            {
-                                Sheet = classSheet.Name,
-                                Row = row,
-                                Value = classInput,
-                                Error = result switch
-                                {
-                                    -1 => "Duplicate class name",
-                                    -2 => "Trainee already have class",
-                                    _ => "Unknown Error"
-                                }
-                            });
-                        }
-                    }
                 }
+            }
 
-                // Throw remain errors
-                if (excelErrors.Count > 0)
+            // Throw remain errors
+            if (excelErrors.Count > 0)
+            {
+                dbContextTransaction.Rollback();
+                return Conflict(new ExcelResponseDTO(409, "Some errors when creating classes")
                 {
-                    _classService.DiscardChanges();
-                    return Conflict(new ExcelResponseDTO(409, "Some errors when creating classes")
-                    {
-                        Errors = excelErrors
-                    });
-                }
+                    Errors = excelErrors
+                });
+            }
 
-                // Insert Class-Module
-                foreach (var modulePair in classModulesDict)
+            // Insert Class-Module
+            foreach (var modulePair in classModulesDict)
+            {
+                var clazz = await _classService.GetClassByClassName(modulePair.Key);
+                if (clazz is not null)
                 {
-                    var clazz = await _classService.GetClassByClassName(modulePair.Key);
-                    if (clazz is not null)
-                    {
-                        var trainerModules = modulePair.Value;
-                        (bool isAvailable, string errorMessage) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
+                    // Check number of module must be equal or less than number of month
+                    var start = clazz.StartDay;
+                    var end = clazz.EndDay;
+                    end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));// set end-date to end of month
+                    var listMonth = Enumerable.Range(0, int.MaxValue)
+                                        .Select(e => start.AddMonths(e))
+                                        .TakeWhile(e => e <= end)
+                                        .Select(e => e);     // get the list of month of class duration
 
-                        if (isAvailable) await _classService.AddDataToClassModule(clazz.ClassId, trainerModules);
-                        else excelErrors.Add(new()
+                    var trainerModules = modulePair.Value;
+                    if (listMonth.Count() < trainerModules.Count)
+                    {
+                        excelErrors.Add(new()
                         {
                             Sheet = moduleSheet.Name,
                             Value = trainerModules,
-                            Error = errorMessage
+                            Error = "Number of modules must be equal or less than number of months"
                         });
+                        continue;
                     }
+
+                    (bool isAvailable, string errorMessage) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
+
+                    if (isAvailable) await _classService.AddDataToClassModule(clazz.ClassId, trainerModules);
+                    else excelErrors.Add(new()
+                    {
+                        Sheet = moduleSheet.Name,
+                        Value = trainerModules,
+                        Error = errorMessage
+                    });
                 }
+            }
 
-                // Insert Class-Trainee
-                foreach (var traineePair in classTraineesDict)
+            // Insert Class-Trainee
+            foreach (var traineePair in classTraineesDict)
+            {
+                foreach (var traineeId in traineePair.Value)
                 {
-                    foreach (var traineeId in traineePair.Value)
+                    if (await _traineeService.IsTraineeHasClass(traineeId))
                     {
-                        if (await _traineeService.IsTraineeHasClass(traineeId))
-                        {
-                            var trainee = await _traineeService.GetTraineeById(traineeId);
-                            if (trainee is not null)
-                            {
-                                excelErrors.Add(new()
-                                {
-                                    Sheet = traineeSheet.Name,
-                                    Value = trainee,
-                                    Error = $"Trainee {trainee.Username} ({trainee.Email}) has a class"
-                                });
-                            }
-                        }
-                    }
-                    var clazz = await _classService.GetClassByClassName(traineePair.Key);
-                    if (clazz is not null)
-                    {
-                        await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
-
-                        int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
-                        if (attRs != 1)
+                        var trainee = await _traineeService.GetTraineeById(traineeId);
+                        if (trainee is not null)
                         {
                             excelErrors.Add(new()
                             {
                                 Sheet = traineeSheet.Name,
-                                Value = clazz,
-                                Error = attRs switch
-                                {
-                                    -2 => $"Class {clazz.ClassName} already have attendance",
-                                    -1 => $"Class {clazz.ClassName} did not exist",
-                                    0 => $"Class {clazz.ClassName} failed to init attendance",
-                                    _ => "Unknown Error"
-                                }
+                                Value = trainee,
+                                Error = $"Trainee {trainee.Username} ({trainee.Email}) has a class"
                             });
                         }
                     }
                 }
+                var clazz = await _classService.GetClassByClassName(traineePair.Key);
+                if (clazz is not null)
+                {
+                    await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
 
-                // Save Changes
-                try
-                {
-                    await _classService.SaveChange();
-                }
-                catch (Exception)
-                {
-                    _classService.DiscardChanges();
-                    throw;
+                    int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
+                    if (attRs != 1)
+                    {
+                        excelErrors.Add(new()
+                        {
+                            Sheet = traineeSheet.Name,
+                            Value = clazz,
+                            Error = attRs switch
+                            {
+                                -2 => $"Class {clazz.ClassName} already have attendance",
+                                -1 => $"Class {clazz.ClassName} did not exist",
+                                0 => $"Class {clazz.ClassName} failed to init attendance",
+                                _ => "Unknown Error"
+                            }
+                        });
+                    }
                 }
             }
 
-            // All successful
-            return CreatedAtAction(nameof(GetClassList), new ExcelResponseDTO(201, "Created. Check Errors for error details")
+            // Save Changes
+            try
             {
-                Errors = excelErrors
-            });
+                await _classService.SaveChange();
+            }
+            catch
+            {
+                dbContextTransaction.Rollback();
+                throw;
+            }
+
+            // Commit if there is no error
+            if (excelErrors.Count > 0)
+            {
+                dbContextTransaction.Rollback();
+                return Conflict(new ExcelResponseDTO(409, "There are errors. Check Errors for Details")
+                {
+                    Errors = excelErrors
+                });
+            } 
+            else
+            {
+                dbContextTransaction.Commit();
+                return CreatedAtAction(nameof(GetClassList), new ExcelResponseDTO(201, "Created. Check Errors for error details")
+                {
+                    Errors = excelErrors
+                });
+            }
         }
 
         /// <summary>
