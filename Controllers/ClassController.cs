@@ -410,8 +410,6 @@ namespace kroniiapi.Controllers
             using var stream = new MemoryStream();
             await file.CopyToAsync(stream);
             using var package = new ExcelPackage(stream);
-            Dictionary<string, ICollection<TrainerModule>> classModulesDict = new();
-            Dictionary<string, HashSet<int>> classTraineesDict = new();
 
             // Check sheets
             ExcelWorkbook workbook = package.Workbook;
@@ -427,6 +425,7 @@ namespace kroniiapi.Controllers
             }
 
             // Export Class-Module dictionary
+            Dictionary<string, ICollection<TrainerModule>> classModulesDict = new();
             static bool moduleChecker(List<string> list) => list.ContainsAll("class", "module", "trainer", "weight");
             List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
             if (!success)
@@ -530,6 +529,7 @@ namespace kroniiapi.Controllers
 
 
             // Export Class-Trainee dictionary
+            Dictionary<string, HashSet<int>> classTraineesDict = new();
             static bool traineeChecker(List<string> list) => list.ContainsAll("class", "email");
             List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
             if (!success)
@@ -584,6 +584,8 @@ namespace kroniiapi.Controllers
             }
 
             // Export Class list
+            Dictionary<string, NewClassInput> classInputNameDict = new();
+            Dictionary<int, NewClassInput> classInputRowDict = new();
             static bool classChecker(List<string> list) => list.ContainsAll("name", "description", "admin", "start", "end");
             List<Dictionary<string, object>> classDictList = classSheet.ExportDataFromExcel(classChecker, out success, out message);
             if (!success)
@@ -594,10 +596,7 @@ namespace kroniiapi.Controllers
                 });
             }
 
-            // Start Transaction
-            using var dbContextTransaction = _datacontext.Database.BeginTransaction();
-
-            // Convert and insert classes
+            // Export Classes
             for (int i = 0; i < classDictList.Count; i++)
             {
                 int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
@@ -608,11 +607,18 @@ namespace kroniiapi.Controllers
 
                 // Set class name
                 classInput.ClassName = dict["name"]?.ToString();
-
-                // Set trainees
-                classInput.TraineeIdList = classInput.ClassName is not null && classTraineesDict.ContainsKey(classInput.ClassName)
-                    ? classTraineesDict[classInput.ClassName]
-                    : new();
+                if (classInput.ClassName is null)
+                {
+                    excelErrors.Add(new()
+                    {
+                        Sheet = classSheet.Name,
+                        Row = row,
+                        ColumnName = "name",
+                        Value = classInput.ClassName,
+                        Error = "Class name is empty"
+                    });
+                    continue;
+                }
 
                 // Set description
                 classInput.Description = dict["description"]?.ToString();
@@ -654,90 +660,59 @@ namespace kroniiapi.Controllers
                     }
                 }
 
-                // Validate & Insert the class
-                if (!classInput.Validate(out List<ValidationResult> validateResults))
+                // Add class input to dictionary
+                classInputNameDict[classInput.ClassName] = classInput;
+                classInputRowDict[row] = classInput;
+            }
+
+            // Add Modules to Class
+            foreach (var modulePair in classModulesDict)
+            {
+                var clazz = classInputNameDict[modulePair.Key];
+                var trainerModules = modulePair.Value;
+                if (clazz is null)
+                {
+                    continue;
+                }
+
+                // Check number of module must be equal or less than number of month
+                var start = clazz.StartDay;
+                var end = clazz.EndDay;
+                end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));// set end-date to end of month
+                var listMonth = Enumerable.Range(0, int.MaxValue)
+                                    .Select(e => start.AddMonths(e))
+                                    .TakeWhile(e => e <= end)
+                                    .Select(e => e);     // get the list of month of class duration
+                if (listMonth.Count() < trainerModules.Count)
                 {
                     excelErrors.Add(new()
                     {
-                        Sheet = classSheet.Name,
-                        Row = row,
-                        Value = classInput,
-                        Errors = validateResults.Select(x => x.ErrorMessage).ToList()
+                        Sheet = moduleSheet.Name,
+                        Value = trainerModules,
+                        Error = "Number of modules must be equal or less than number of months"
                     });
+                    continue;
                 }
+
+                // Check if trainers are available
+                (bool isAvailable, string errorMessage) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
+
+                // Add if trainers are available
+                if (isAvailable)
+                    clazz.TrainerModuleList = trainerModules;
                 else
-                {
-                    int result = await _classService.InsertNewClassNoSave(classInput);
-                    if (result < 0)
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = classSheet.Name,
-                            Row = row,
-                            Value = classInput,
-                            Error = result switch
-                            {
-                                -1 => "Duplicate class name",
-                                -2 => "Trainee already have class",
-                                _ => "Unknown Error"
-                            }
-                        });
-                    }
-                }
-            }
-
-            // Throw remain errors
-            if (excelErrors.Count > 0)
-            {
-                dbContextTransaction.Rollback();
-                return Conflict(new ExcelResponseDTO(409, "Some errors when creating classes")
-                {
-                    Errors = excelErrors
-                });
-            }
-
-            // Insert Class-Module
-            foreach (var modulePair in classModulesDict)
-            {
-                var clazz = await _classService.GetClassByClassName(modulePair.Key);
-                if (clazz is not null)
-                {
-                    // Check number of module must be equal or less than number of month
-                    var start = clazz.StartDay;
-                    var end = clazz.EndDay;
-                    end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));// set end-date to end of month
-                    var listMonth = Enumerable.Range(0, int.MaxValue)
-                                        .Select(e => start.AddMonths(e))
-                                        .TakeWhile(e => e <= end)
-                                        .Select(e => e);     // get the list of month of class duration
-
-                    var trainerModules = modulePair.Value;
-                    if (listMonth.Count() < trainerModules.Count)
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = moduleSheet.Name,
-                            Value = trainerModules,
-                            Error = "Number of modules must be equal or less than number of months"
-                        });
-                        continue;
-                    }
-
-                    (bool isAvailable, string errorMessage) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
-
-                    if (isAvailable) await _classService.AddDataToClassModule(clazz.ClassId, trainerModules);
-                    else excelErrors.Add(new()
+                    excelErrors.Add(new()
                     {
                         Sheet = moduleSheet.Name,
                         Value = trainerModules,
                         Error = errorMessage
                     });
-                }
             }
 
-            // Insert Class-Trainee
+            // Add Trainees to Class
             foreach (var traineePair in classTraineesDict)
             {
+                // Check if trainees are free
                 foreach (var traineeId in traineePair.Value)
                 {
                     if (await _traineeService.IsTraineeHasClass(traineeId))
@@ -754,34 +729,79 @@ namespace kroniiapi.Controllers
                         }
                     }
                 }
-                var clazz = await _classService.GetClassByClassName(traineePair.Key);
-                if (clazz is not null)
-                {
-                    await _classService.AddClassIdToTrainee(clazz.ClassId, traineePair.Value);
 
+                // Add trainees to class
+                var clazz = classInputNameDict[traineePair.Key];
+                if (clazz is null)
+                {
+                    continue;
+                }
+                clazz.TraineeIdList = traineePair.Value;
+            }
+
+            // Start Transaction
+            using var dbContextTransaction = _datacontext.Database.BeginTransaction();
+
+            // Insert Classes
+            try
+            {
+                foreach (var rowClassInput in classInputRowDict)
+                {
+                    var row = rowClassInput.Key;
+                    var classInput = rowClassInput.Value;
+
+                    // Validate class input
+                    if (!classInput.Validate(out List<ValidationResult> validateResults))
+                    {
+                        excelErrors.Add(new()
+                        {
+                            Sheet = classSheet.Name,
+                            Row = row,
+                            Value = classInput,
+                            Errors = validateResults.Select(x => x.ErrorMessage).ToList()
+                        });
+                        continue;
+                    }
+
+                    int result = await _classService.InsertNewClass(classInput);
+                    if (result <= 0)
+                    {
+                        excelErrors.Add(new()
+                        {
+                            Sheet = classSheet.Name,
+                            Row = row,
+                            Value = classInput,
+                            Error = result switch
+                            {
+                                -1 => "Duplicate class name",
+                                -2 => "Trainee already have class",
+                                _ => "Unknown Error"
+                            }
+                        });
+                        continue;
+                    }
+
+                    // Initialize Attendance
+                    var className = classInput.ClassName;
+                    var clazz = await _classService.GetClassByClassName(className);
                     int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
                     if (attRs != 1)
                     {
                         excelErrors.Add(new()
                         {
                             Sheet = traineeSheet.Name,
-                            Value = clazz,
+                            Row = row,
+                            Value = classInput,
                             Error = attRs switch
                             {
-                                -2 => $"Class {clazz.ClassName} already have attendance",
-                                -1 => $"Class {clazz.ClassName} did not exist",
-                                0 => $"Class {clazz.ClassName} failed to init attendance",
+                                -2 => $"Class {className} already have attendance",
+                                -1 => $"Class {className} did not exist",
+                                0 => $"Class {className} failed to init attendance",
                                 _ => "Unknown Error"
                             }
                         });
                     }
                 }
-            }
-
-            // Save Changes
-            try
-            {
-                await _classService.SaveChange();
             }
             catch
             {
@@ -789,7 +809,7 @@ namespace kroniiapi.Controllers
                 throw;
             }
 
-            // Commit if there is no error
+            // Rollback if there are errors
             if (excelErrors.Count > 0)
             {
                 dbContextTransaction.Rollback();
@@ -797,11 +817,11 @@ namespace kroniiapi.Controllers
                 {
                     Errors = excelErrors
                 });
-            } 
+            }
             else
             {
                 dbContextTransaction.Commit();
-                return CreatedAtAction(nameof(GetClassList), new ExcelResponseDTO(201, "Created. Check Errors for error details")
+                return CreatedAtAction(nameof(GetClassList), new ExcelResponseDTO(201, "Created")
                 {
                     Errors = excelErrors
                 });
