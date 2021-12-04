@@ -407,6 +407,7 @@ namespace kroniiapi.Controllers
                 });
             }
 
+            // Initialize Excel Package
             using var stream = new MemoryStream();
             await file.CopyToAsync(stream);
             using var package = new ExcelPackage(stream);
@@ -668,6 +669,7 @@ namespace kroniiapi.Controllers
             // Add Modules to Class
             foreach (var modulePair in classModulesDict)
             {
+                if (!classInputNameDict.ContainsKey(modulePair.Key)) continue;
                 var clazz = classInputNameDict[modulePair.Key];
                 var trainerModules = modulePair.Value;
                 if (clazz is null)
@@ -731,11 +733,9 @@ namespace kroniiapi.Controllers
                 }
 
                 // Add trainees to class
+                if (!classInputNameDict.ContainsKey(traineePair.Key)) continue;
                 var clazz = classInputNameDict[traineePair.Key];
-                if (clazz is null)
-                {
-                    continue;
-                }
+                if (clazz is null) continue;
                 clazz.TraineeIdList = traineePair.Value;
             }
 
