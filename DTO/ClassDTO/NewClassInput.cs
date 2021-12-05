@@ -20,6 +20,7 @@ namespace kroniiapi.DTO.ClassDTO
         public DateTime EndDay { get; set; }
         [Required]
         public ICollection<int> TraineeIdList { get; set; }
+        [Required]
         public ICollection<TrainerModule> TrainerModuleList { get; set; }
     }
 }
