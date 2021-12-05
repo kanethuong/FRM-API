@@ -427,6 +427,7 @@ namespace kroniiapi.Controllers
 
             // Export Class-Module dictionary
             Dictionary<string, ICollection<TrainerModule>> classModulesDict = new();
+            Dictionary<TrainerModule, int> moduleRowDict = new();
             static bool moduleChecker(List<string> list) => list.ContainsAll("class", "module", "trainer", "weight");
             List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
             if (!success)
@@ -520,17 +521,20 @@ namespace kroniiapi.Controllers
                 }
 
                 // Add to list
-                list.Add(new()
+                TrainerModule trainerModule = new()
                 {
                     TrainerId = trainerId,
                     ModuleId = moduleId,
                     WeightNumber = weightNumber
-                });
+                };
+                list.Add(trainerModule);
+                moduleRowDict[trainerModule] = row;
             }
 
 
             // Export Class-Trainee dictionary
             Dictionary<string, HashSet<int>> classTraineesDict = new();
+            Dictionary<int, int> traineeRowDict = new();
             static bool traineeChecker(List<string> list) => list.ContainsAll("class", "email");
             List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
             if (!success)
@@ -582,6 +586,7 @@ namespace kroniiapi.Controllers
 
                 // Add to list
                 list.Add(traineeId.Value);
+                traineeRowDict[traineeId.Value] = row;
             }
 
             // Export Class list
@@ -687,12 +692,16 @@ namespace kroniiapi.Controllers
                                     .Select(e => e);     // get the list of month of class duration
                 if (listMonth.Count() < trainerModules.Count)
                 {
-                    excelErrors.Add(new()
+                    foreach (var trainerModule in trainerModules)
                     {
-                        Sheet = moduleSheet.Name,
-                        Value = trainerModules,
-                        Error = "Number of modules must be equal or less than number of months"
-                    });
+                        excelErrors.Add(new()
+                        {
+                            Sheet = moduleSheet.Name,
+                            Row = moduleRowDict[trainerModule],
+                            Value = trainerModule,
+                            Error = "Number of modules must be equal or less than number of months"
+                        });
+                    }
                     continue;
                 }
 
@@ -703,12 +712,16 @@ namespace kroniiapi.Controllers
                 if (isAvailable)
                     clazz.TrainerModuleList = trainerModules;
                 else
-                    excelErrors.Add(new()
+                    foreach (var trainerModule in trainerModules)
                     {
-                        Sheet = moduleSheet.Name,
-                        Value = trainerModules,
-                        Error = errorMessage
-                    });
+                        excelErrors.Add(new()
+                        {
+                            Sheet = moduleSheet.Name,
+                            Row = moduleRowDict[trainerModule],
+                            Value = trainerModule,
+                            Error = "Number of modules must be equal or less than number of months"
+                        });
+                    }
             }
 
             // Add Trainees to Class
@@ -725,7 +738,9 @@ namespace kroniiapi.Controllers
                             excelErrors.Add(new()
                             {
                                 Sheet = traineeSheet.Name,
-                                Value = trainee,
+                                Row = traineeRowDict[traineeId],
+                                ColumnName = "email",
+                                Value = trainee.Email,
                                 Error = $"Trainee {trainee.Username} ({trainee.Email}) has a class"
                             });
                         }
