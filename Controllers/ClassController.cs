@@ -985,10 +985,10 @@ namespace kroniiapi.Controllers
         [HttpGet("admin/{id:int}")]
         public async Task<ActionResult<ICollection<AdminDashboardClassResponse>>> GetAdminClassByYear(int id, [FromQuery] DateTime at)
         {
-            if (at == default(DateTime))
-            {
-                at = DateTime.Now;
-            }
+            // if (at == default(DateTime))
+            // {
+            //     at = DateTime.Now;
+            // }
 
             var verify = _adminService.CheckAdminExist(id);
             if (verify == false)
