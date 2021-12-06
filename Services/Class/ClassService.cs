@@ -146,6 +146,9 @@ namespace kroniiapi.Services
                 existedClass.DeactivatedAt = DateTime.Now;
                 existedRequest.IsAccepted = true;
                 existedRequest.AcceptedAt = DateTime.Now;
+                // Delete Class Module
+                var classModuleList = _dataContext.ClassModules.Where(cm => cm.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.ClassModules.RemoveRange(classModuleList);
                 // Save Change 
                 var rs = await _dataContext.SaveChangesAsync();
                 if (rs == 2)
