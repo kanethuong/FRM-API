@@ -873,6 +873,19 @@ namespace kroniiapi.Controllers
                 return NotFound(new ResponseDTO(404, "Class is not exist"));
             }
 
+            Class classInfor = await _classService.GetClassByClassID(assignModuleInput.ClassId);
+            var start = classInfor.StartDay;
+            var end = classInfor.EndDay;
+            end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));// set end-date to end of month
+            var listMonth = Enumerable.Range(0, Int32.MaxValue)
+                                .Select(e => start.AddMonths(e))
+                                .TakeWhile(e => e <= end)
+                                .Select(e => e);     // get the list of month of class duration
+            if (listMonth.Count() <= classInfor.Modules.Count())
+            {
+                return Conflict(new ResponseDTO(409, "The number of module available for this class is full"));
+            }
+
             var isTrainerExist = _trainerService.CheckTrainerExist(assignModuleInput.TrainerId);
             if (isTrainerExist == false)
             {

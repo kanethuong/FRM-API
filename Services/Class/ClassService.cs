@@ -346,7 +346,20 @@ namespace kroniiapi.Services
         /// <returns> Class </returns>
         public async Task<Class> GetClassByClassID(int classId)
         {
-            return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).FirstOrDefaultAsync();
+            return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false)
+                                            .Select(c => new Class
+                                            {
+                                                ClassId = c.ClassId,
+                                                ClassName = c.ClassName,
+                                                Description = c.Description,
+                                                CreatedAt = c.CreatedAt,
+                                                StartDay = c.StartDay,
+                                                EndDay = c.EndDay,
+                                                IsDeactivated = c.IsDeactivated,
+                                                DeactivatedAt = c.DeactivatedAt,
+                                                Modules = c.Modules
+                                            })
+                                            .FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -655,5 +668,7 @@ namespace kroniiapi.Services
                 .FirstOrDefaultAsync();
             return (ICollection<Class>)classes;
         }
+
+
     }
 }
