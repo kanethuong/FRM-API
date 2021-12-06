@@ -645,14 +645,25 @@ namespace kroniiapi.Services
         /// <returns>Class list</returns>
         public async Task<ICollection<Class>> GetClassListByAdminId(int adminId, DateTime at = default(DateTime))
         {
-            if (at == default(DateTime)) at = DateTime.Now;
-            var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+            List<Class> classes;
+            if (at == default(DateTime)) {
+                classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+                .Select(a => a.Classes
+                    .Where(c => c.IsDeactivated == false)
+                    .OrderByDescending(c => c.StartDay)
+                    .ToList()
+                )
+                .FirstOrDefaultAsync();
+            } else {
+                classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
                 .Select(a => a.Classes
                     .Where(c => c.IsDeactivated == false && c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
                     .OrderByDescending(c => c.StartDay)
                     .ToList()
                 )
                 .FirstOrDefaultAsync();
+            }
+            
             return (ICollection<Class>)classes;
         }
     }
