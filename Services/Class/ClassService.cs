@@ -146,12 +146,12 @@ namespace kroniiapi.Services
                 existedClass.DeactivatedAt = DateTime.Now;
                 existedRequest.IsAccepted = true;
                 existedRequest.AcceptedAt = DateTime.Now;
+                // Delete Class Module
+                var classModuleList = _dataContext.ClassModules.Where(cm => cm.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.ClassModules.RemoveRange(classModuleList);
                 // Save Change 
-                var rs = await _dataContext.SaveChangesAsync();
-                if (rs == 2)
-                {
-                    return 1;
-                }
+                await _dataContext.SaveChangesAsync();
+                return 1;
             }
             else if (confirmDeleteClassInput.IsDeactivate == false)
             {
@@ -658,14 +658,25 @@ namespace kroniiapi.Services
         /// <returns>Class list</returns>
         public async Task<ICollection<Class>> GetClassListByAdminId(int adminId, DateTime at = default(DateTime))
         {
-            if (at == default(DateTime)) at = DateTime.Now;
-            var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+            List<Class> classes;
+            if (at == default(DateTime)) {
+                classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+                .Select(a => a.Classes
+                    .Where(c => c.IsDeactivated == false)
+                    .OrderByDescending(c => c.StartDay)
+                    .ToList()
+                )
+                .FirstOrDefaultAsync();
+            } else {
+                classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
                 .Select(a => a.Classes
                     .Where(c => c.IsDeactivated == false && c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
                     .OrderByDescending(c => c.StartDay)
                     .ToList()
                 )
                 .FirstOrDefaultAsync();
+            }
+            
             return (ICollection<Class>)classes;
         }
 
