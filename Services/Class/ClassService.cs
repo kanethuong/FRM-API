@@ -149,6 +149,11 @@ namespace kroniiapi.Services
                 // Delete Class Module
                 var classModuleList = _dataContext.ClassModules.Where(cm => cm.ClassId == confirmDeleteClassInput.ClassId).ToList();
                 _dataContext.ClassModules.RemoveRange(classModuleList);
+                // Delete Calendars and Attendance
+                var calendars = _dataContext.Calendars.Where(cl => cl.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.Calendars.RemoveRange(calendars);
+                var attendances = _dataContext.Attendances.Where(at => at.Trainee.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.Attendances.RemoveRange(attendances);
                 // Save Change 
                 await _dataContext.SaveChangesAsync();
                 return 1;
