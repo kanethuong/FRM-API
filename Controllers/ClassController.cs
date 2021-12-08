@@ -408,15 +408,15 @@ namespace kroniiapi.Controllers
             }
 
             // Initialize Excel Package
-            using var stream = new MemoryStream();
+            await using var stream = new MemoryStream();
             await file.CopyToAsync(stream);
             using var package = new ExcelPackage(stream);
 
             // Check sheets
-            ExcelWorkbook workbook = package.Workbook;
-            ExcelWorksheet classSheet = workbook.Worksheets["Class"];
-            ExcelWorksheet moduleSheet = workbook.Worksheets["Module"];
-            ExcelWorksheet traineeSheet = workbook.Worksheets["Trainee"];
+            var workbook = package.Workbook;
+            var classSheet = workbook.Worksheets["Class"];
+            var moduleSheet = workbook.Worksheets["Module"];
+            var traineeSheet = workbook.Worksheets["Trainee"];
             if (classSheet is null || moduleSheet is null || traineeSheet is null)
             {
                 return BadRequest(new ExcelResponseDTO(400, "Missing required sheets")
@@ -428,8 +428,8 @@ namespace kroniiapi.Controllers
             // Export Class-Module dictionary
             Dictionary<string, ICollection<TrainerModule>> classModulesDict = new();
             Dictionary<TrainerModule, int> moduleRowDict = new();
-            static bool moduleChecker(List<string> list) => list.ContainsAll("class", "module", "trainer", "weight");
-            List<Dictionary<string, object>> moduleDictList = moduleSheet.ExportDataFromExcel(moduleChecker, out success, out message);
+            static bool ModuleChecker(List<string> list) => list.ContainsAll("class", "module", "trainer", "weight");
+            var moduleDictList = moduleSheet.ExportDataFromExcel(ModuleChecker, out success, out message);
             if (!success)
             {
                 return BadRequest(new ExcelResponseDTO(400, "Error on Module: " + message)
@@ -437,25 +437,25 @@ namespace kroniiapi.Controllers
                     Errors = excelErrors
                 });
             }
-            for (int i = 0; i < moduleDictList.Count; i++)
+            for (var i = 0; i < moduleDictList.Count; i++)
             {
-                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                Dictionary<string, object> dict = moduleDictList[i];
+                var row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                var dict = moduleDictList[i];
 
                 // Get from cells
-                string className = dict["class"]?.ToString();
-                string module = dict["module"]?.ToString();
-                string trainerEmail = dict["trainer"]?.ToString();
-                string weight = dict["weight"]?.ToString();
+                var className = dict["class"]?.ToString();
+                var module = dict["module"]?.ToString();
+                var trainerEmail = dict["trainer"]?.ToString();
+                var weight = dict["weight"]?.ToString();
                 if (className is null || module is null || trainerEmail is null || weight is null)
                 {
                     continue;
                 }
 
                 // Validate module & weight number format
-                if (!int.TryParse(module, out int moduleId))
+                if (!int.TryParse(module, out var moduleId))
                 {
-                    excelErrors.Add(new()
+                    excelErrors.Add(new ExcelErrorDTO
                     {
                         Sheet = moduleSheet.Name,
                         Row = row,
@@ -465,9 +465,9 @@ namespace kroniiapi.Controllers
                     });
                     continue;
                 }
-                if (!float.TryParse(weight, out float weightNumber))
+                if (!float.TryParse(weight, out var weightNumber))
                 {
-                    excelErrors.Add(new()
+                    excelErrors.Add(new ExcelErrorDTO
                     {
                         Sheet = moduleSheet.Name,
                         Row = row,
@@ -491,10 +491,10 @@ namespace kroniiapi.Controllers
                 }
 
                 // Validate and get trainer id
-                Trainer trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
+                var trainer = await _trainerService.GetTrainerByEmail(trainerEmail);
                 if (trainer is null)
                 {
-                    excelErrors.Add(new()
+                    excelErrors.Add(new ExcelErrorDTO
                     {
                         Sheet = moduleSheet.Name,
                         Row = row,
@@ -504,12 +504,12 @@ namespace kroniiapi.Controllers
                     });
                     continue;
                 }
-                int trainerId = trainer.TrainerId;
+                var trainerId = trainer.TrainerId;
 
                 // Validate module id
                 if (await _moduleService.GetModuleById(moduleId) is null)
                 {
-                    excelErrors.Add(new()
+                    excelErrors.Add(new ExcelErrorDTO
                     {
                         Sheet = moduleSheet.Name,
                         Row = row,
@@ -535,8 +535,8 @@ namespace kroniiapi.Controllers
             // Export Class-Trainee dictionary
             Dictionary<string, HashSet<int>> classTraineesDict = new();
             Dictionary<int, int> traineeRowDict = new();
-            static bool traineeChecker(List<string> list) => list.ContainsAll("class", "email");
-            List<Dictionary<string, object>> traineeDictList = traineeSheet.ExportDataFromExcel(traineeChecker, out success, out message);
+            static bool TraineeChecker(List<string> list) => list.ContainsAll("class", "email");
+            var traineeDictList = traineeSheet.ExportDataFromExcel(TraineeChecker, out success, out message);
             if (!success)
             {
                 return BadRequest(new ExcelResponseDTO(400, "Error on Trainee: " + message)
@@ -544,24 +544,24 @@ namespace kroniiapi.Controllers
                     Errors = excelErrors
                 });
             }
-            for (int i = 0; i < traineeDictList.Count; i++)
+            for (var i = 0; i < traineeDictList.Count; i++)
             {
-                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                Dictionary<string, object> dict = traineeDictList[i];
+                var row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                var dict = traineeDictList[i];
 
                 // Get from cells
-                string className = dict["class"]?.ToString();
-                string email = dict["email"]?.ToString();
+                var className = dict["class"]?.ToString();
+                var email = dict["email"]?.ToString();
                 if (className is null || email is null)
                 {
                     continue;
                 }
 
                 // Get Trainee Id
-                int? traineeId = (await _traineeService.GetTraineeByEmail(email))?.TraineeId;
+                var traineeId = (await _traineeService.GetTraineeByEmail(email))?.TraineeId;
                 if (!traineeId.HasValue)
                 {
-                    excelErrors.Add(new()
+                    excelErrors.Add(new ExcelErrorDTO
                     {
                         Sheet = traineeSheet.Name,
                         Row = row,
@@ -592,8 +592,8 @@ namespace kroniiapi.Controllers
             // Export Class list
             Dictionary<string, NewClassInput> classInputNameDict = new();
             Dictionary<int, NewClassInput> classInputRowDict = new();
-            static bool classChecker(List<string> list) => list.ContainsAll("name", "description", "admin", "start", "end");
-            List<Dictionary<string, object>> classDictList = classSheet.ExportDataFromExcel(classChecker, out success, out message);
+            static bool ClassChecker(List<string> list) => list.ContainsAll("name", "description", "admin", "start", "end");
+            var classDictList = classSheet.ExportDataFromExcel(ClassChecker, out success, out message);
             if (!success)
             {
                 return BadRequest(new ExcelResponseDTO(400, "Error on Class: " + message)
@@ -603,19 +603,21 @@ namespace kroniiapi.Controllers
             }
 
             // Export Classes
-            for (int i = 0; i < classDictList.Count; i++)
+            for (var i = 0; i < classDictList.Count; i++)
             {
-                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                Dictionary<string, object> dict = classDictList[i];
+                var row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                var dict = classDictList[i];
 
                 // Create new class input
-                NewClassInput classInput = new();
+                NewClassInput classInput = new()
+                {
+                    // Set class name
+                    ClassName = dict["name"]?.ToString()
+                };
 
-                // Set class name
-                classInput.ClassName = dict["name"]?.ToString();
                 if (classInput.ClassName is null)
                 {
-                    excelErrors.Add(new()
+                    excelErrors.Add(new ExcelErrorDTO
                     {
                         Sheet = classSheet.Name,
                         Row = row,
@@ -630,27 +632,27 @@ namespace kroniiapi.Controllers
                 classInput.Description = dict["description"]?.ToString();
 
                 // Set start time
-                object start = dict["start"];
-                if (start is not null && start is DateTime startTine)
+                var start = dict["start"];
+                if (start is DateTime startTine)
                 {
                     classInput.StartDay = startTine;
                 }
 
                 // Set end time
-                object end = dict["end"];
-                if (end is not null && end is DateTime endTime)
+                var end = dict["end"];
+                if (end is DateTime endTime)
                 {
                     classInput.EndDay = endTime;
                 }
 
                 // Set Admin
-                string adminEmail = dict["admin"]?.ToString();
+                var adminEmail = dict["admin"]?.ToString();
                 if (adminEmail is not null)
                 {
-                    Admin admin = await _adminService.GetAdminByEmail(adminEmail);
+                    var admin = await _adminService.GetAdminByEmail(adminEmail);
                     if (admin is null)
                     {
-                        excelErrors.Add(new()
+                        excelErrors.Add(new ExcelErrorDTO
                         {
                             Sheet = classSheet.Name,
                             Row = row,
@@ -660,10 +662,8 @@ namespace kroniiapi.Controllers
                         });
                         continue;
                     }
-                    else
-                    {
-                        classInput.AdminId = admin.AdminId;
-                    }
+
+                    classInput.AdminId = admin.AdminId;
                 }
 
                 // Add class input to dictionary
@@ -672,11 +672,10 @@ namespace kroniiapi.Controllers
             }
 
             // Add Modules to Class
-            foreach (var modulePair in classModulesDict)
+            foreach (var (className, trainerModules) in classModulesDict)
             {
-                if (!classInputNameDict.ContainsKey(modulePair.Key)) continue;
-                var clazz = classInputNameDict[modulePair.Key];
-                var trainerModules = modulePair.Value;
+                if (!classInputNameDict.ContainsKey(className)) continue;
+                var clazz = classInputNameDict[className];
                 if (clazz is null)
                 {
                     continue;
@@ -692,83 +691,64 @@ namespace kroniiapi.Controllers
                                     .Select(e => e);     // get the list of month of class duration
                 if (listMonth.Count() < trainerModules.Count)
                 {
-                    foreach (var trainerModule in trainerModules)
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = moduleSheet.Name,
-                            Row = moduleRowDict[trainerModule],
-                            Value = trainerModule,
-                            Error = "Number of modules must be equal or less than number of months"
-                        });
-                    }
+                    excelErrors.AddRange(
+                        trainerModules.Select(trainerModule => new ExcelErrorDTO { Sheet = moduleSheet.Name, Row = moduleRowDict[trainerModule], Value = trainerModule, Error = "Number of modules must be equal or less than number of months" })
+                        );
                     continue;
                 }
 
                 // Check if trainers are available
-                (bool isAvailable, string errorMessage) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
+                var (isAvailable, _) = _timetableService.CheckTrainersNewClass(trainerModules, clazz.StartDay, clazz.EndDay);
 
                 // Add if trainers are available
                 if (isAvailable)
                     clazz.TrainerModuleList = trainerModules;
                 else
-                    foreach (var trainerModule in trainerModules)
-                    {
-                        excelErrors.Add(new()
-                        {
-                            Sheet = moduleSheet.Name,
-                            Row = moduleRowDict[trainerModule],
-                            Value = trainerModule,
-                            Error = "Number of modules must be equal or less than number of months"
-                        });
-                    }
+                    excelErrors.AddRange(
+                        trainerModules.Select(trainerModule => new ExcelErrorDTO() { Sheet = moduleSheet.Name, Row = moduleRowDict[trainerModule], Value = trainerModule, Error = "Number of modules must be equal or less than number of months" })
+                        );
             }
 
             // Add Trainees to Class
-            foreach (var traineePair in classTraineesDict)
+            foreach (var (className, traineesValue) in classTraineesDict)
             {
                 // Check if trainees are free
-                foreach (var traineeId in traineePair.Value)
+                foreach (var traineeId in traineesValue)
                 {
-                    if (await _traineeService.IsTraineeHasClass(traineeId))
+                    if (!await _traineeService.IsTraineeHasClass(traineeId)) continue;
+                    var trainee = await _traineeService.GetTraineeById(traineeId);
+                    if (trainee is not null)
                     {
-                        var trainee = await _traineeService.GetTraineeById(traineeId);
-                        if (trainee is not null)
+                        excelErrors.Add(new ExcelErrorDTO
                         {
-                            excelErrors.Add(new()
-                            {
-                                Sheet = traineeSheet.Name,
-                                Row = traineeRowDict[traineeId],
-                                ColumnName = "email",
-                                Value = trainee.Email,
-                                Error = $"Trainee {trainee.Username} ({trainee.Email}) has a class"
-                            });
-                        }
+                            Sheet = traineeSheet.Name,
+                            Row = traineeRowDict[traineeId],
+                            ColumnName = "email",
+                            Value = trainee.Email,
+                            Error = $"Trainee {trainee.Username} ({trainee.Email}) has a class"
+                        });
                     }
                 }
 
                 // Add trainees to class
-                if (!classInputNameDict.ContainsKey(traineePair.Key)) continue;
-                var clazz = classInputNameDict[traineePair.Key];
+                if (!classInputNameDict.ContainsKey(className)) continue;
+                var clazz = classInputNameDict[className];
                 if (clazz is null) continue;
-                clazz.TraineeIdList = traineePair.Value;
+                clazz.TraineeIdList = traineesValue;
             }
 
             // Start Transaction
-            using var dbContextTransaction = _datacontext.Database.BeginTransaction();
+            await using var dbContextTransaction = await _datacontext.Database.BeginTransactionAsync();
 
             // Insert Classes
             try
             {
-                foreach (var rowClassInput in classInputRowDict)
+                foreach (var (row, classInput) in classInputRowDict)
                 {
-                    var row = rowClassInput.Key;
-                    var classInput = rowClassInput.Value;
-
                     // Validate class input
-                    if (!classInput.Validate(out List<ValidationResult> validateResults))
+                    if (!classInput.Validate(out var validateResults))
                     {
-                        excelErrors.Add(new()
+                        excelErrors.Add(new ExcelErrorDTO
                         {
                             Sheet = classSheet.Name,
                             Row = row,
@@ -778,10 +758,10 @@ namespace kroniiapi.Controllers
                         continue;
                     }
 
-                    int result = await _classService.InsertNewClass(classInput);
+                    var result = await _classService.InsertNewClass(classInput);
                     if (result <= 0)
                     {
-                        excelErrors.Add(new()
+                        excelErrors.Add(new ExcelErrorDTO
                         {
                             Sheet = classSheet.Name,
                             Row = row,
@@ -799,10 +779,10 @@ namespace kroniiapi.Controllers
                     // Initialize Attendance
                     var className = classInput.ClassName;
                     var clazz = await _classService.GetClassByClassName(className);
-                    int attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
+                    var attRs = await _attendanceServices.InitAttendanceWhenCreateClass(clazz.ClassId);
                     if (attRs != 1)
                     {
-                        excelErrors.Add(new()
+                        excelErrors.Add(new ExcelErrorDTO
                         {
                             Sheet = traineeSheet.Name,
                             Row = row,
@@ -820,14 +800,14 @@ namespace kroniiapi.Controllers
             }
             catch
             {
-                dbContextTransaction.Rollback();
+                await dbContextTransaction.RollbackAsync();
                 throw;
             }
 
             // Rollback if there are errors
             if (excelErrors.Count > 0)
             {
-                dbContextTransaction.Rollback();
+                await dbContextTransaction.RollbackAsync();
                 return Conflict(new ExcelResponseDTO(409, "There are errors. Check Errors for Details")
                 {
                     Errors = excelErrors
@@ -835,7 +815,7 @@ namespace kroniiapi.Controllers
             }
             else
             {
-                dbContextTransaction.Commit();
+                await dbContextTransaction.CommitAsync();
                 return CreatedAtAction(nameof(GetClassList), new ExcelResponseDTO(201, "Created")
                 {
                     Errors = excelErrors
