@@ -219,7 +219,7 @@ namespace kroniiapi.AttendanceServicesss
             {
                 return null;
             }
-            var classes = await _datacontext.Classes.Where(c => c.AdminId == adminId && c.EndDay >= DateTime.Now).ToListAsync();
+            var classes = await _datacontext.Classes.Where(c => c.IsDeactivated == false && c.AdminId == adminId && c.EndDay >= DateTime.Now).ToListAsync();
             return classes;
         }
 
