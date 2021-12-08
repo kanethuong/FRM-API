@@ -37,10 +37,12 @@ namespace kroniiapi.Services
         /// <returns> Tuple List of Class List </returns>
         public async Task<Tuple<int, IEnumerable<Class>>> GetClassList(PaginationParameter paginationParameter)
         {
-            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class{
+            IQueryable<Class> classList = _dataContext.Classes.Where(c => c.IsDeactivated == false).Select(c => new Class
+            {
                 ClassId = c.ClassId,
                 ClassName = c.ClassName,
-                Admin = new Admin{
+                Admin = new Admin
+                {
                     Fullname = c.Admin.Fullname
                 },
                 CreatedAt = c.CreatedAt,
@@ -144,12 +146,17 @@ namespace kroniiapi.Services
                 existedClass.DeactivatedAt = DateTime.Now;
                 existedRequest.IsAccepted = true;
                 existedRequest.AcceptedAt = DateTime.Now;
+                // Delete Class Module
+                var classModuleList = _dataContext.ClassModules.Where(cm => cm.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.ClassModules.RemoveRange(classModuleList);
+                // Delete Calendars and Attendance
+                var calendars = _dataContext.Calendars.Where(cl => cl.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.Calendars.RemoveRange(calendars);
+                var attendances = _dataContext.Attendances.Where(at => at.Trainee.ClassId == confirmDeleteClassInput.ClassId).ToList();
+                _dataContext.Attendances.RemoveRange(attendances);
                 // Save Change 
-                var rs = await _dataContext.SaveChangesAsync();
-                if (rs == 2)
-                {
-                    return 1;
-                }
+                await _dataContext.SaveChangesAsync();
+                return 1;
             }
             else if (confirmDeleteClassInput.IsDeactivate == false)
             {
@@ -209,7 +216,7 @@ namespace kroniiapi.Services
 
             return Tuple.Create(totalRecords, rs);
         }
-    
+
         /// <summary>
         /// Get detail of a class 
         /// </summary>
@@ -288,6 +295,31 @@ namespace kroniiapi.Services
         }
 
         /// <summary>
+        /// Get Trainee List in a class with pagination
+        /// </summary>
+        /// <param name="id">id of the class</param>
+        /// <param name="paginationParameter">pagination param to get approriate trainee in a page</param>
+        /// <returns>tuple list of trainee</returns>
+        public async Task<Tuple<int, IEnumerable<Trainee>>> GetTraineesByClassIdOfTrainer(int id, PaginationParameter paginationParameter)
+        {
+            IQueryable<Trainee> traineeList = _dataContext.Trainees.Where(t => t.ClassId == id && t.IsDeactivated == false);
+            if (paginationParameter.SearchName != "")
+            {
+                traineeList = traineeList.Where(c => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(c.Fullname.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Username.ToLower())
+                                                                                        + " "
+                                                                                        + EF.Functions.Unaccent(c.Email.ToLower()))
+                    .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationParameter.SearchName.ToLower()))));
+            }
+            IEnumerable<Trainee> rs = await traineeList
+                .GetCount(out var totalRecords)
+                .OrderBy(e => e.Fullname)
+                .ToListAsync();
+            return Tuple.Create(totalRecords, rs);
+        }
+
+        /// <summary>
         /// Insert New Request Delete Class to db
         /// </summary>
         /// <param name="requestDeleteClassInput"></param>
@@ -319,7 +351,20 @@ namespace kroniiapi.Services
         /// <returns> Class </returns>
         public async Task<Class> GetClassByClassID(int classId)
         {
-            return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false).FirstOrDefaultAsync();
+            return await _dataContext.Classes.Where(c => c.ClassId == classId && c.IsDeactivated == false)
+                                            .Select(c => new Class
+                                            {
+                                                ClassId = c.ClassId,
+                                                ClassName = c.ClassName,
+                                                Description = c.Description,
+                                                CreatedAt = c.CreatedAt,
+                                                StartDay = c.StartDay,
+                                                EndDay = c.EndDay,
+                                                IsDeactivated = c.IsDeactivated,
+                                                DeactivatedAt = c.DeactivatedAt,
+                                                Modules = c.Modules
+                                            })
+                                            .FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -360,11 +405,11 @@ namespace kroniiapi.Services
                     ModuleId = trainerModule.ModuleId,
                     TrainerId = trainerModule.TrainerId,
                     WeightNumber = trainerModule.WeightNumber,
-                    RoomId=roomId
+                    RoomId = roomId
                 };
                 _dataContext.ClassModules.Add(classModule);
                 _dataContext.SaveChanges();
-                int status = await _timetableService.InsertCalendarsToClass(classId,trainerModule.ModuleId);
+                int status = await _timetableService.InsertCalendarsToClass(classId, trainerModule.ModuleId);
             }
         }
 
@@ -386,10 +431,13 @@ namespace kroniiapi.Services
             }
             int rowInserted = 0;
             rowInserted = await SaveChange();
-            var newClass = await GetClassByClassName(newClassInput.ClassName);
-            await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
-            await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
-            await SaveChange();
+            if (rowInserted != 0)
+            {
+                var newClass = await GetClassByClassName(newClassInput.ClassName);
+                await AddClassIdToTrainee(newClass.ClassId, newClassInput.TraineeIdList);
+                await AddDataToClassModule(newClass.ClassId, newClassInput.TrainerModuleList);
+                await SaveChange();
+            }
             return rowInserted;
         }
 
@@ -403,7 +451,7 @@ namespace kroniiapi.Services
             var newClass = _mapper.Map<Class>(newClassInput);
 
             // Check duplicate class name
-            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName)))
+            if (_dataContext.Classes.Any(c => c.ClassName.Equals(newClass.ClassName) && c.IsDeactivated == false))
             {
                 return -1;
             }
@@ -615,15 +663,28 @@ namespace kroniiapi.Services
         /// <returns>Class list</returns>
         public async Task<ICollection<Class>> GetClassListByAdminId(int adminId, DateTime at = default(DateTime))
         {
-            if (at == default(DateTime)) at = DateTime.Now;
-            var classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+            List<Class> classes;
+            if (at == default(DateTime)) {
+                classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
                 .Select(a => a.Classes
-                    .Where(c => c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
+                    .Where(c => c.IsDeactivated == false)
                     .OrderByDescending(c => c.StartDay)
                     .ToList()
                 )
                 .FirstOrDefaultAsync();
+            } else {
+                classes = await _dataContext.Admins.Where(a => a.AdminId == adminId && a.IsDeactivated == false)
+                .Select(a => a.Classes
+                    .Where(c => c.IsDeactivated == false && c.StartDay.Year == at.Year || c.EndDay.Year == at.Year)
+                    .OrderByDescending(c => c.StartDay)
+                    .ToList()
+                )
+                .FirstOrDefaultAsync();
+            }
+            
             return (ICollection<Class>)classes;
         }
+
+
     }
 }
