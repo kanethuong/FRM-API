@@ -139,6 +139,7 @@ namespace kroniiapi.Controllers
             {
                 Room r = await _roomService.GetRoom(item.ClassId, item.ModuleId);
                 item.RoomName = r.RoomName;
+                item.SlotDuration = item.SlotDuration/2;
             }
             return Ok(tdbDto);
         }
