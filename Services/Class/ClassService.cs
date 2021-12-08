@@ -69,7 +69,7 @@ namespace kroniiapi.Services
         /// <returns> Class </returns>
         public async Task<Class> GetClassByClassName(string className)
         {
-            return await _dataContext.Classes.Where(c => c.ClassName == className).FirstOrDefaultAsync();
+            return await _dataContext.Classes.Where(c => c.ClassName == className && c.IsDeactivated == false).FirstOrDefaultAsync();
         }
 
         /// <summary>
