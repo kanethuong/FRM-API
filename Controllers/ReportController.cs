@@ -53,10 +53,5 @@ namespace kroniiapi.Controllers
             return File(stream1, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{classGet.ClassName}_Report {reportAt.Month}/{reportAt.Year}.xlsx");
 
         }
-        [HttpGet("Grade/{classId:int}")]
-        public async Task<TopicGrades> GetTopicGrades(int classId)
-        {
-            return _reportService.GetTopicGrades(classId);
-        }
     }
 }
