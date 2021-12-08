@@ -112,6 +112,7 @@ namespace kroniiapi.Controllers
                     item.Class.TrainerEmail = tempTrainer.Email;
                     Room tempRoom = await _roomService.GetRoom(classCheck.ClassId, item.ModuleId);
                     item.Class.RoomName = tempRoom.RoomName;
+                    item.SlotDuration = item.SlotDuration/2;
                     i++;
                 }
             }
