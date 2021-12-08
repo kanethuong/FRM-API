@@ -53,6 +53,5 @@ namespace kroniiapi.Controllers
             return File(stream1, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{classGet.ClassName}_Report {reportAt.Month}/{reportAt.Year}.xlsx");
 
         }
-        
     }
 }
