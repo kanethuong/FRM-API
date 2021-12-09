@@ -105,11 +105,9 @@ namespace kroniiapi.Controllers
         public async Task<ActionResult<ExcelResponseDTO>> CreateNewAccountByExcel([FromForm] IFormFile file)
         {
             List<ExcelErrorDTO> excelErrorList = new();
-            bool success;
-            string message;
 
             // Check the file extension
-            (success, message) = FileHelper.CheckExcelExtension(file);
+            var (success, message) = FileHelper.CheckExcelExtension(file);
             if (!success)
             {
                 return BadRequest(new ExcelResponseDTO(400, message)
@@ -119,21 +117,21 @@ namespace kroniiapi.Controllers
             }
 
             // Arrange the checker and the converter
-            static bool checker(List<string> list) => list.Contains("username") && list.Contains("fullname") && list.Contains("email") && list.Contains("role");
-            static AccountInput converter(Dictionary<string, object> dict) => new()
+            static bool Checker(List<string> list) => list.Contains("username") && list.Contains("fullname") && list.Contains("email") && list.Contains("role");
+            static AccountInput Converter(Dictionary<string, object> dict) => new()
             {
-                Username = dict["username"]?.ToString().Trim(),
-                Fullname = dict["fullname"]?.ToString().Trim(),
-                Email = dict["email"]?.ToString().Trim(),
-                Role = dict["role"]?.ToString().Trim()
+                Username = dict["username"]?.ToString()?.Trim(),
+                Fullname = dict["fullname"]?.ToString()?.Trim(),
+                Email = dict["email"]?.ToString()?.Trim(),
+                Role = dict["role"]?.ToString()?.Trim()
             };
 
             // Try to export data from the file
             List<AccountInput> list;
-            using (var stream = new MemoryStream())
+            await using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
-                list = stream.ExportDataFromExcel(converter, checker, out success, out message);
+                list = stream.ExportDataFromExcel(Converter, Checker, out success, out message);
             }
 
             // Return if the attempt is failed
@@ -147,13 +145,13 @@ namespace kroniiapi.Controllers
 
 
             // Loop through each data and validate the model
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
-                int row = i + 2; // row starts from 1, but we skip the first row as it's the column name
-                AccountInput accountInput = list[i];
+                var row = i + 2; // row starts from 1, but we skip the first row as it's the column name
+                var accountInput = list[i];
 
                 // Validate the account
-                if (!accountInput.Validate(out List<ValidationResult> validationResults))
+                if (!accountInput.Validate(out var validationResults))
                 {
                     excelErrorList.Add(new ExcelErrorDTO()
                     {
@@ -177,10 +175,9 @@ namespace kroniiapi.Controllers
             try
             {
                 var failIndexes = await _accountService.InsertNewAccount(list);
-                foreach (var errorItem in failIndexes)
-                {
-                    var row = errorItem.Key + 2; // row starts from 1, but we skip the first row as it's the column name
-                    excelErrorList.Add(new ExcelErrorDTO()
+                excelErrorList.AddRange(from errorItem in failIndexes
+                    let row = errorItem.Key + 2
+                    select new ExcelErrorDTO()
                     {
                         Row = row,
                         Value = list[errorItem.Key],
@@ -192,7 +189,6 @@ namespace kroniiapi.Controllers
                             _ => "Unknown Error"
                         }
                     });
-                }
                 return CreatedAtAction(nameof(GetAccountList), new ExcelResponseDTO(201, "Successfully inserted. Check Errors for details to failed accounts")
                 {
                     Errors = excelErrorList
