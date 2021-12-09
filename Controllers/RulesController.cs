@@ -18,7 +18,7 @@ namespace kroniiapi.Controllers
     [Route("api/[controller]")]
     public class RulesController : ControllerBase
     {
-        private static string CACHE_KEY = "RulesContent";
+        private const string CacheKey = "RulesContent";
         private readonly ICacheProvider _cacheProvider;
         private readonly IMegaHelper _uploadHelper;
         private readonly IMemoryCache _memoryCache;
@@ -39,25 +39,26 @@ namespace kroniiapi.Controllers
         [Authorize(Policy = "RulePost")]
         public async Task<ActionResult> Upload([FromForm] IFormFile file)
         {
-            (bool success, string message) = FileHelper.CheckPDFExtension(file);
+            var (success, message) = FileHelper.CheckPDFExtension(file);
             if (!success)
             {
                 return BadRequest(new ResponseDTO(400, message));
             }
-            using (var stream = file.OpenReadStream())
+
+            await using (var stream = file.OpenReadStream())
             {
                 var name = file.FileName;
                 var type = file.ContentType;
                 var url = await _uploadHelper.Upload(stream, name, "Rules");
-                FileDTO fileDTO = new()
+                FileDTO fileDto = new()
                 {
                     Name = name,
                     ContentType = type,
                     Url = url
                 };
-                await _cacheProvider.SetCache<FileDTO>("RulesURL", fileDTO);
+                await _cacheProvider.SetCache("RulesURL", fileDto);
             }
-            _memoryCache.Remove(CACHE_KEY);
+            _memoryCache.Remove(CacheKey);
             return CreatedAtAction(nameof(Get), new ResponseDTO(201, "Uploaded"));
         }
 
@@ -69,23 +70,21 @@ namespace kroniiapi.Controllers
         // [Authorize(Policy = "RuleGet")]
         public async Task<ActionResult> Get()
         {
-            FileDTO fileDTO = await _cacheProvider.GetFromCache<FileDTO>("RulesURL");
-            if (fileDTO is null)
+            var fileDto = await _cacheProvider.GetFromCache<FileDTO>("RulesURL");
+            if (fileDto is null)
             {
                 return NotFound(new ResponseDTO(404, "The Rules is not found"));
             }
-            return await _memoryCache.GetOrCreateAsync(CACHE_KEY, async entry =>
+            return await _memoryCache.GetOrCreateAsync(CacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
-                var stream = await _uploadHelper.Download(new Uri(fileDTO.Url));
-                using (var memoryStream = new MemoryStream())
+                var stream = await _uploadHelper.Download(new Uri(fileDto.Url));
+                await using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                return new FileContentResult(memoryStream.ToArray(), fileDto.ContentType)
                 {
-                    await stream.CopyToAsync(memoryStream);
-                    return new FileContentResult(memoryStream.ToArray(), fileDTO.ContentType)
-                    {
-                        FileDownloadName = fileDTO.Name
-                    };
-                }
+                    FileDownloadName = fileDto.Name
+                };
             });
         }
     }
