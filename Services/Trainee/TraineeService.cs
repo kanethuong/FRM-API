@@ -498,8 +498,8 @@ namespace kroniiapi.Services
             if (paginationCompanyParameter.SearchSkill != "")
             {
                 trainees = trainees.Where(e => e.Class.Modules.Any(
-                    module => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(module.ModuleName.ToLower()))
-                        .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchSkill.ToLower())))
+                    module => EF.Functions.ToTsVector("simple", EF.Functions.Unaccent(paginationCompanyParameter.SearchSkill.ToLower()))
+                        .Matches(EF.Functions.ToTsQuery("simple", EF.Functions.Unaccent(module.ModuleName.ToLower())))
                     )
                 );
             }
