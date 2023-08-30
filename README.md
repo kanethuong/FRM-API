@@ -1,4 +1,4 @@
-# Kronii API Project
+# FRM API Project
 
 ASP.NET Core API architecture project
 
