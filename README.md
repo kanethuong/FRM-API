@@ -7,7 +7,7 @@ ASP.NET Core API architecture project
 Use dotnet cli to install all packages in Project.
 
 ```bash
-dotnet restore idolapi.csproj
+dotnet restore kroniiapi.csproj
 ```
 
 ## Usage
